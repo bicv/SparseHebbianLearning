@@ -3,6 +3,7 @@
 #pragma keywords Laurent Perrinet; Neuronal representation; Inverse linear model; Over-complete dictionaries; Distributed probabilistic representation; Spike-event computation; Matching pursuit; Sparse spike coding
 #pragma description This page is about reasearch interest of Laurent Perrinet. 
 
+ * see also https://github.com/meduz/SHL_scripts
 
 = Reproducible research =
 
@@ -55,7 +56,7 @@
  * the {{{Contents.m}}} script points to the different experiments. This produces a report using pdflatex: {{{pdflatex results.tex}}} (see [[http://www.incm.cnrs-mrs.fr/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target=results.pdf|results.pdf]]).
  *  Notation is kept from the !SparseNet package. Remember for the  variables : n=network ; e=experiment; s=stats
    
- * on a multicore machine, you may try something like: {{
+ * on a multicore machine, you may try something like: {{{
 for i in {1..8}; do cd /Volumes/perrinet/sci/dyva/lup/Learning/SHL_scripts/code  && sleep 0.$(( RANDOM%1000 )) ; matlab -nodisplay < Contents20100322T151819.m & done
 for i in {1..6}; do cd /master0/perrinet/sci/dyva/lup/Learning/SHL_scripts/code  && sleep 0.$(( RANDOM%1000 )) ; matlab -nodisplay < Contents20100322T151819.m & done
 for i in {1..4}; do cd /data/work/perrinet/sci/dyva/Learning/SHL_scripts/code && sleep 0.$(( RANDOM%1000 )) ; octave  Contents20100322T151819.m & cexec 'cd /data/work/perrinet/sci/dyva/Learning/SHL_scripts/code && sleep 0.$(( RANDOM%100 )) ;  octave Contents20100322T151819.m' & done 
