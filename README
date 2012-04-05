@@ -1,7 +1,93 @@
+#acl LaurentPerrinet,LaurentPerrinetGroup:read,write,delete,revert All:read
+## rajoute des meta pour google
+#pragma keywords Laurent Perrinet; Neuronal representation; Inverse linear model; Over-complete dictionaries; Distributed probabilistic representation; Spike-event computation; Matching pursuit; Sparse spike coding
+#pragma description This page is about reasearch interest of Laurent Perrinet. 
 
-= Reproducible research =
+= Reproducible research : Python implementation of SparseHebbianLearning =
 
- . (!) [[attachment:SHL_scripts.zip|Download and run matlab code along with data (natural images) to reproduce figures]]. 
+||<tablestyle="width: 35%; float: right; margin-left:20px; margin-right:20px; border-style: 0px;  font-size: 8pt;"> [[SparseHebbianLearning|{{attachment:SparseHebbianLearning/ssc.gif|Animation of the formation of RFs during aSSC learning|width=100%,align="right"}}]] <<BR>> ''Animation of the formation of RFs during aSSC learning.'' ||
+
+ /!\ Read before using! This piece of code is distributed under the terms of the GNU General Public License (GPL), check http://www.gnu.org/copyleft/gpl.html if you have not red the term of the license yet. 
+
+ *  (!)  tl;dr : [[attachment:assc_python.zip|Download the code|&do=get]]. Or directly from the command-line, do {{{
+
+wget "http://invibe.net/LaurentPerrinet/SparseHebbianLearning/ReproducibleResearch?action=AttachFile&do=get&target=assc_python.zip"
+unzip ReproducibleResearch\?action\=AttachFile\&do\=get\&target\=assc_python.zip 
+cd assc_python
+python learn.py
+}}}
+
+== Object ==
+
+ * This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the !SparseNet algorithm  from Bruno Olshausen.
+
+ * this has been published as Perrinet, Neural Computation (2010) (see  http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl ): {{{#!bibtex
+@article{Perrinet10shl,
+    Author = {Perrinet, Laurent U.},
+    Date-Added = {2007-06-25 15:49:50 +0200},
+    Date-Modified = {2010-04-24 17:52:43 +0200},
+    Doi = {10.1162/neco.2010.05-08-795},
+    Journal = {Neural Computation},
+    Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
+    Month = {July},
+    Number = {7},
+    Title = {Role of homeostasis in learning sparse representations},
+    Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
+    Volume = {22},
+    Year = {2010},
+    Annote = {Posted Online March 17, 2010.},
+}
+}}}
+ * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@gmail.com
+ * find out updates on http://invibe.net/LaurentPerrinet/SparseHebbianLearning
+
+== Get Ready! ==
+
+ Be sure to have :
+ * a computer (tested on Mac, Linux) with python + numpy (tested using the [[http://www.enthought.com/products/epd.php|Enthought Python Distribution]] version 7.1 on macosx and the standard python packages on ubuntu 11.04). You will not need any special toolbox, only {{{progress bar}}}.
+ * grab the sources from the [[http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target=assc_python.zip|zip file]]. 
+ * These scripts should be platform independent, however, there is a heavy bias toward UN*X users when generating figures.
+
+== Contents ==
+
+ * {{{README.txt}}} : this file
+ * {{{learn.py}}} : the scripts (see Contents.m  for a script pointing to the different experiments)
+ * {{{sec.py}}} : the individual experiments
+ * {{{IMAGES_*.mat}}} : the image files (if absent, they get downloaded from [[http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile|this page]])
+
+
+== Some useful code tidbits ==
+ * get the code with CLI  {{{
+wget "http://invibe.net/LaurentPerrinet/SparseHebbianLearning/ReproducibleResearch?action=AttachFile&do=get&target=assc_python.zip"
+}}}
+ * decompress  {{{
+unzip ReproducibleResearch\?action\=AttachFile\&do\=get\&target\=assc_python.zip 
+}}}
+ * get to the code {{{
+cd assc_python
+}}}
+
+ * run the main script {{{
+python learn.py
+}}}
+
+ * remove SSC related files to start over {{{
+rm -f IMAGES_*.mat.pdf *.hdf5
+}}}
+
+== Changelog ==
+
+ * 1.0 : initial release, 27-Oct-2011
+
+== TODO ==
+
+ * integrate to [[http://mdp-toolkit.sourceforge.net/|MDP]], the Modular toolkit for Data Processing.
+
+= Reproducible research : matlab(c) implementation of SparseHebbianLearning =
+
+ * see also https://github.com/meduz/SHL_scripts
+
+ . (!) [[attachment:SHL_scripts.zip|Download and run matlab code along with data (natural images) to reproduce figures|&do=get]]. 
 
  /!\ Read before using! This piece of code is distributed under the terms of the GNU General Public License (GPL), check http://www.gnu.org/copyleft/gpl.html if you have not red the term of the license yet. 
 
@@ -28,7 +114,7 @@
 }}}
  * This includes a set of "experiments" to test the effect of various parameters (and eventually a 'good-night, computer' {{{Contents.m}}} script for running all experiments and generate all figures that are included in the "report"). I recommend using [[GnuLinuxUbuntu/UsingScreen|Gnu Screen]].
 
- * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@incm.cnrs-mrs.fr
+ * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@gmail.com
  * find out updates on http://invibe.net/LaurentPerrinet/SparseHebbianLearning
 
 == Get Ready! ==
@@ -135,3 +221,5 @@ rm -f fig* *ssc* MP.mat L* stability_eta.mat stability_homeo.mat hist.mat MP_non
   * better Windows reactions (duh!)
 
  * 1.0 : initial release, 10-Nov-2003
+----
+TagCode
