@@ -9,7 +9,7 @@
 
  * This is a collection of matlab (c) scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the !SparseNet algorithm  from Bruno Olshausen.
 
- * this has been published as Perrinet, Neural Computation (2010) (see  http://www.incm.cnrs-mrs.fr/LaurentPerrinet/Publications/Perrinet10shl ): {{{#!bibtex
+ * this has been published as Perrinet, Neural Computation (2010) (see  http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl ): {{{#!bibtex
 @article{Perrinet10shl,
     Author = {Perrinet, Laurent U.},
     Date-Added = {2007-06-25 15:49:50 +0200},
@@ -20,7 +20,7 @@
     Month = {July},
     Number = {7},
     Title = {Role of homeostasis in learning sparse representations},
-    Url = {http://www.incm.cnrs-mrs.fr/LaurentPerrinet/Publications/Perrinet10shl},
+    Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
     Volume = {22},
     Year = {2010},
     Annote = {Posted Online March 17, 2010.},
@@ -29,13 +29,13 @@
  * This includes a set of "experiments" to test the effect of various parameters (and eventually a 'good-night, computer' {{{Contents.m}}} script for running all experiments and generate all figures that are included in the "report"). I recommend using [[GnuLinuxUbuntu/UsingScreen|Gnu Screen]].
 
  * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@incm.cnrs-mrs.fr
- * find out updates on http://www.incm.cnrs-mrs.fr/perrinet/dynn/SparseHebbianLearning
+ * find out updates on http://invibe.net/LaurentPerrinet/SparseHebbianLearning
 
 == Get Ready! ==
 
  Be sure to have :
  * a computer (tested on Mac, Linux, Irix, Windows2k) with Matlab (tested on R13 and R14, 2007, R2009a) or [[http://www.gnu.org/software/octave/|Octave]] (get  Octave > 3.0 to get {{{imwrite.m}}}). You will not need any special toolbox.
- * grab the sources from the [[http://www.incm.cnrs-mrs.fr/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target=SHL_scripts.zip|zip file]]. Then:
+ * grab the sources from the [[http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target=SHL_scripts.zip|zip file]]. Then:
   * if needed (that is, if the code does break complaining it does not find the {{{cgf}}} function), compile the {{{cgf}}} routines used by B. Olshausen compiled for your platform (some compiled mex routines are included)
   * to generate PDFs, you have to get the {{{epstopdf}}} script (see {{{fig2pdf.m}}}) 
   * the source files {{{exportfig}}} and {{{ppm2fli}}} may be found in the src folder,
@@ -47,7 +47,7 @@
 
  * First, if you just want to experiment with the learning scheme using Competition-Optimized  Matching Pursuit, go to the scripts folder and run {{{experiment_simple.m}}}
  * Simply run one of the {{{experiment_*.m}}} files of your interest ---for example {{{experiment_stability_cgf.m}}} to test the role of parameters in the learning scheme with CGF--- (or the whole collection in {{{Contents.m}}}) and edit it to change the parameters of the experiments. This will create a set of pdf figures in a dated folder depending on your preferences (see {{{default.m}}})
- * the {{{Contents.m}}} script points to the different experiments. This produces a report using pdflatex: {{{pdflatex results.tex}}} (see [[http://www.incm.cnrs-mrs.fr/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target=results.pdf|results.pdf]]).
+ * the {{{Contents.m}}} script points to the different experiments. This produces a report using pdflatex: {{{pdflatex results.tex}}} (see [[http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target=results.pdf|results.pdf]]).
  *  Notation is kept from the !SparseNet package. Remember for the  variables : n=network ; e=experiment; s=stats
    
  * on a multicore machine, you may try something like: {{{
@@ -66,7 +66,7 @@ for i in {1..4}; do cd /data/work/perrinet/sci/dyva/Learning/SHL_scripts/code &&
 
 == Some useful code tidbits ==
  * get the code {{{
-wget "http://www.incm.cnrs-mrs.fr/LaurentPerrinet/SparseHebbianLearning/ReproducibleResearch?action=AttachFile&do=get&target=SHL_scripts.zip"
+wget "http://invibe.net/LaurentPerrinet/SparseHebbianLearning/ReproducibleResearch?action=AttachFile&do=get&target=SHL_scripts.zip"
 unzip ReproducibleResearch\?action\=AttachFile\&do\=get\&target\=SHL_scripts.zip 
 }}}
  * get to the code {{{
