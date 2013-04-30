@@ -11,8 +11,8 @@
 
  *  (!)  tl;dr : [[attachment:assc_python.zip|Download the code|&do=get]]. Or directly from the command-line, do {{{
 
-wget "http://invibe.net/LaurentPerrinet/SparseHebbianLearning/ReproducibleResearch?action=AttachFile&do=get&target=assc_python.zip"
-unzip ReproducibleResearch\?action\=AttachFile\&do\=get\&target\=assc_python.zip 
+wget https://github.com/meduz/SHL_scripts/archive/master.zip
+unzip master.zip -d assc_python
 cd assc_python
 python learn.py
 }}}
@@ -24,8 +24,6 @@ python learn.py
  * this has been published as Perrinet, Neural Computation (2010) (see  http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl ): {{{#!bibtex
 @article{Perrinet10shl,
     Author = {Perrinet, Laurent U.},
-    Date-Added = {2007-06-25 15:49:50 +0200},
-    Date-Modified = {2010-04-24 17:52:43 +0200},
     Doi = {10.1162/neco.2010.05-08-795},
     Journal = {Neural Computation},
     Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
@@ -45,7 +43,7 @@ python learn.py
 
  Be sure to have :
  * a computer (tested on Mac, Linux) with python + numpy (tested using the [[http://www.enthought.com/products/epd.php|Enthought Python Distribution]] version 7.1 on macosx and the standard python packages on ubuntu 11.04). You will not need any special toolbox, only {{{progress bar}}}.
- * grab the sources from the [[http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target=assc_python.zip|zip file]]. 
+ * grab the sources from the [[http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target=assc_python.zip|zip file]] or from [[https://github.com/meduz/SHL_scripts/archive/master.zip|github]]. 
  * These scripts should be platform independent, however, there is a heavy bias toward UN*X users when generating figures.
 
 == Contents ==
@@ -53,15 +51,15 @@ python learn.py
  * {{{README.txt}}} : this file
  * {{{learn.py}}} : the scripts (see Contents.m  for a script pointing to the different experiments)
  * {{{sec.py}}} : the individual experiments
- * {{{IMAGES_*.mat}}} : the image files (if absent, they get downloaded from [[http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile|this page]])
+ * {{{IMAGES_*.mat}}} : the image files (if absent, they get automagically downloaded from [[http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile|this page]])
 
 
 == Some useful code tidbits ==
  * get the code with CLI  {{{
-wget "http://invibe.net/LaurentPerrinet/SparseHebbianLearning/ReproducibleResearch?action=AttachFile&do=get&target=assc_python.zip"
-}}}
+wget https://github.com/meduz/SHL_scripts/archive/master.zip
+}}}.
  * decompress  {{{
-unzip ReproducibleResearch\?action\=AttachFile\&do\=get\&target\=assc_python.zip 
+unzip master.zip -d assc_python
 }}}
  * get to the code {{{
 cd assc_python
