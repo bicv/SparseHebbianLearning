@@ -5,10 +5,9 @@
  /!\ Read before using! This piece of code is distributed under the terms of the GNU General Public License (GPL), check http://www.gnu.org/copyleft/gpl.html if you have not red the term of the license yet. 
 
  *  (!)  tl;dr : [[attachment:assc_python.zip|Download the code|&do=get]]. Or directly from the command-line, do {{{
-
-wget https://github.com/meduz/SHL_scripts/archive/master.zip
-unzip master.zip -d assc_python
-cd assc_python
+wget https://github.com/meduz/SHL_scripts/archive/master.zip 
+unzip master.zip -d SHL_scripts
+cd SHL_scripts/python_src
 python learn.py
 }}}
 
