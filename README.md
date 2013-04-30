@@ -1,8 +1,3 @@
-#acl LaurentPerrinet,LaurentPerrinetGroup:read,write,delete,revert All:read
-## rajoute des meta pour google
-#pragma keywords Laurent Perrinet; Neuronal representation; Inverse linear model; Over-complete dictionaries; Distributed probabilistic representation; Spike-event computation; Matching pursuit; Sparse spike coding
-#pragma description This page is about reasearch interest of Laurent Perrinet. 
-
 = Reproducible research : Python implementation of SparseHebbianLearning =
 
 ||<tablestyle="width: 35%; float: right; margin-left:20px; margin-right:20px; border-style: 0px;  font-size: 8pt;"> [[SparseHebbianLearning|{{attachment:SparseHebbianLearning/ssc.gif|Animation of the formation of RFs during aSSC learning|width=100%,align="right"}}]] <<BR>> ''Animation of the formation of RFs during aSSC learning.'' ||
