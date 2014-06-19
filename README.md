@@ -1,8 +1,8 @@
 Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
-<img src="http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif" width="100%">
-Animation of the formation of RFs during aSSC learning.
+![Animation of the formation of RFs during aSSC learning.]
+(http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif)
 
 This piece of code is distributed under the terms of the GNU General Public License (GPL), check http://www.gnu.org/copyleft/gpl.html if you have not red the term of the license yet.
 
@@ -11,7 +11,7 @@ This piece of code is distributed under the terms of the GNU General Public Lice
 ```
 wget https://github.com/meduz/SHL_scripts/archive/master.zip
 unzip master.zip -d SHL_scripts
-cd SHL_scripts/python_src
+cd SHL_scripts/
 python learn.py
 ```
 
@@ -46,7 +46,7 @@ Get Ready!
 
  Be sure to have :
 
-* a computer (tested on Mac, Linux) with ``python`` + ``numpy` (on macosx, you may consider using [HomeBrew](https://github.com/meduz/dotfiles/blob/master/init/osx_brew_python.sh),
+* a computer (tested on Mac, Linux) with ``python`` + ``numpy`` (on macosx, you may consider using [HomeBrew](https://github.com/meduz/dotfiles/blob/master/init/osx_brew_python.sh),
 * grab the sources from the [Download the code](https://github.com/meduz/SHL_scripts/archive/master.zip),
 * These scripts should be platform independent, however, there is a heavy bias toward unix users when generating figures.
 
@@ -56,8 +56,8 @@ Contents
 
  * ``README.md`` : this file
  * ``learn.py`` : the scripts (see Contents.m  for a script pointing to the different experiments)
- * ``sec.py`` : the individual experiments
- * ``IMAGES_.mat`` : the image files (if absent, they get automagically downloaded from [this link](http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile|this page).
+ * ``ssc.py`` : the individual experiments
+ * ``IMAGES_sparsenet.mat`` : the image files (if absent, they get automagically downloaded from [this link](http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile|this page).
 * ``matlab_code`` : some obsolete matlab code
 
 
@@ -68,10 +68,10 @@ Some useful code tidbits
 wget https://github.com/meduz/SHL_scripts/archive/master.zip
 ``.
 * decompress  ``
-unzip master.zip -d assc_python
+unzip master.zip -d SHL_scripts
 ``
 * get to the code ``
-cd assc_python
+cd SHL_scripts
 ``
 
 * run the main script ``
@@ -81,7 +81,6 @@ python learn.py
 * remove SSC related files to start over ``
 rm -f IMAGES_*.mat.pdf *.hdf5
 ``
-
 
 Changelog
 ---------
