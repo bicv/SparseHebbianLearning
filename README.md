@@ -57,7 +57,7 @@ Contents
  * ``README.md`` : this file
  * ``learn.py`` : the scripts (see Contents.m  for a script pointing to the different experiments)
  * ``sec.py`` : the individual experiments
- * ``IMAGES_*.mat`` : the image files (if absent, they get automagically downloaded from [this link](http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile|this page).
+ * ``IMAGES_.mat`` : the image files (if absent, they get automagically downloaded from [this link](http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile|this page).
 * ``matlab_code`` : some obsolete matlab code
 
 
