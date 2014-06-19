@@ -46,9 +46,9 @@ Get Ready!
 
  Be sure to have :
 
-* a computer (tested on Mac, Linux) with python + numpy (tested using the [[http://www.enthought.com/products/epd.php|Enthought Python Distribution]] version 7.1 on macosx and the standard python packages on ubuntu 11.04). You will not need any special toolbox, only ``progress bar``.
-* grab the sources from the [Download the code](https://github.com/meduz/SHL_scripts/archive/master.zip).
-* These scripts should be platform independent, however, there is a heavy bias toward ``UN*X`` users when generating figures.
+* a computer (tested on Mac, Linux) with ``python`` + ``numpy` (on macosx, you may consider using [HomeBrew](https://github.com/meduz/dotfiles/blob/master/init/osx_brew_python.sh),
+* grab the sources from the [Download the code](https://github.com/meduz/SHL_scripts/archive/master.zip),
+* These scripts should be platform independent, however, there is a heavy bias toward unix users when generating figures.
 
 Contents
 --------
