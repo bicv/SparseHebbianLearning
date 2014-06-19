@@ -93,4 +93,4 @@ Changelog
 TODO
 ----
 
- * integrate to [[http://mdp-toolkit.sourceforge.net/|MDP]], the Modular toolkit for Data Processing.
+ * integrate to [MDP, the Modular toolkit for Data Processing](http://mdp-toolkit.sourceforge.net/).
