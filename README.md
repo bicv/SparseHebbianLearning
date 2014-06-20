@@ -84,13 +84,13 @@ rm -f IMAGES_*.mat.pdf *.hdf5
 
 Changelog
 ---------
+
+* in the pipes:
+ * use ``sklearn.decomposition.SparseCoder``
+
 * 1.1 : 14-06-18
-  * documentation
-  * dropped Matlab support
+ * documentation
+ * dropped Matlab support
 
 * 1.0 : initial release, 27-Oct-2011
 
-TODO
-----
-
- * integrate to [MDP, the Modular toolkit for Data Processing](http://mdp-toolkit.sourceforge.net/).

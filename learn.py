@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib
+matplotlib.use("pdf")
 import matplotlib.pyplot as plt
 import ssc
 try:
@@ -36,7 +37,7 @@ def show_basis(psi):
     return fig
 
 
-def ssc_learn(images_file="IMAGES.mat", iters=100,
+def ssc_learn(images_file="data/IMAGES.mat", iters=100,
               patch_width = 10, patch_height = 10, num_basis = 196,
               load_file="data/ssc_test.hdf5", save_file="data/ssc_test.hdf5"):
 
@@ -82,13 +83,6 @@ def ssc_learn(images_file="IMAGES.mat", iters=100,
 if __name__ == "__main__":
     for name in databases:
         matfile = "data/IMAGES_" + name + ".mat"
-        if not os.path.exists(matfile):
-            print "Downloading data ", matfile
-            import urllib
-            opener = urllib.urlopen(
-                        'http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target='+ matfile)
-            open(matfile, 'wb').write(opener.read())
-
         print "learning with the ", name, " database "
         ssc_learn(images_file=matfile, iters=iters,
                   load_file="data/" + name + ".hdf5",

@@ -1,5 +1,0 @@
-
-This files correspond to a slightly modified version of the CGF source code used by Bruno Olshausen and to compiled binaries on Mac, linux x32 and x64 for Matlab R14 (version 7).
-The Makefiles have been modified to produce Octave compatible files. To compile for Matlab for Matlab switch back to `mex'. 
- 
-To compile for your architecture, simply type make in the nrf folder and then in this folder (and hope you don't get an error).
