@@ -18,11 +18,11 @@ python learn.py
 Object
 ------
 
-* This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the !SparseNet algorithm  from Bruno Olshausen.
+* This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the [SparseNet algorithm from Bruno Olshausen](http://redwood.berkeley.edu/bruno/sparsenet/).
 
 * this has been published as Perrinet, Neural Computation (2010) (see  http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl ):
 
-```
+```bibtex
 @article{Perrinet10shl,
     Author = {Perrinet, Laurent U.},
     Doi = {10.1162/neco.2010.05-08-795},
