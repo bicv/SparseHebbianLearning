@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 import numpy as np
-import pylab
 import matplotlib
+import matplotlib.pyplot as plt
 import ssc
 try:
     # see http://projects.scipy.org/pipermail/scipy-dev/2008-January/008200.html
@@ -12,14 +12,11 @@ except:
     print 'progressbar could not be imported'
     PROGRESS = False
 
-
-randomize = False # set to True to start over learning
-randomize = True
 iters = 50000
 each_iter = iters/1000 # how often we refresh plotting / saving data
 
-databases = ["sparsenet", "icabench_decorr"]
-#databases = ["sparsenet"]
+#databases = ["sparsenet", "icabench_decorr"]
+databases = ["sparsenet"]
 import os
 def show_basis(psi):
     def get_format(count):
@@ -27,7 +24,7 @@ def show_basis(psi):
         cols = np.ceil(count / rows)
         return int(rows), int(cols)
 
-    fig = pylab.figure(figsize=(12, 12), subplotpars=matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,))
+    fig = plt.figure(figsize=(12, 12), subplotpars=matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,))
     rows, cols = get_format(psi.shape[1])
     for col in range(psi.shape[1]):
 #    a = fig.add_axes((border, border, 1.-2*border, 1.-2*border))#, frameon=False, axisbg='w')
@@ -35,24 +32,23 @@ def show_basis(psi):
     # Assume square patch. Height/width order are probably wrong.
         height = width = int(np.sqrt(psi.shape[0]))
         a.imshow(np.reshape(psi[:, col], (height, width)),
-                 interpolation="nearest", cmap=pylab.cm.gray)
+                 interpolation="nearest", cmap=plt.cm.gray)
         a.axis("off")
-#  pylab.show()
     return fig
 
 
-def ssc_learn(images_file="IMAGES.mat", randomize=False, iters=100,
-              load_file="ssc8_test.hdf5", save_file="ssc8_test.hdf5"):
-    patch_width = 10
-    patch_height = 10
-    num_basis = 196
+def ssc_learn(images_file="IMAGES.mat", iters=100,
+              patch_width = 10, patch_height = 10, num_basis = 196,
+              load_file="data/ssc_test.hdf5", save_file="data/ssc_test.hdf5"):
+
     image_data = ssc.ImageData(images_file=images_file, patch_width=patch_width, patch_height=patch_height)
 
     coder = ssc.Ssc()
-    if randomize:
+    if not os.path.exists(load_file):
         coder.init_random(patch_width * patch_height, num_basis, iters=iters)
     else:
         coder.load_hdf5(load_file, iters=iters)
+
     if PROGRESS:
         pbar = progressbar.ProgressBar(widgets=["calculating", " ", progressbar.Percentage(), ' ',
         progressbar.Bar(), ' ', progressbar.ETA()], maxval=coder.iters)
@@ -69,7 +65,7 @@ def ssc_learn(images_file="IMAGES.mat", randomize=False, iters=100,
         residual = x - np.dot(coder.psi, a)
         coder.L0[coder.i_iter], coder.SE[coder.i_iter] = np.nonzero(a)[0].size*1./num_basis, np.dot(residual.T, residual)
         if (coder.i_iter % each_iter) == 0:
-            fig = pylab.figure(figsize=(6, 6))
+            fig = plt.figure(figsize=(6, 6))
             a = fig.add_subplot(111)
             a.plot(coder.L0, 'b', alpha=.5)
             a.plot(coder.SE, 'r', alpha=.5)
@@ -77,7 +73,7 @@ def ssc_learn(images_file="IMAGES.mat", randomize=False, iters=100,
             fig.savefig(images_file + '_L0vsSE.pdf')
             fig = show_basis(coder.psi)
             fig.savefig(images_file + '.pdf')
-            pylab.close('all')
+            plt.close('all')
             coder.save_hdf5(save_file)
 
         coder.i_iter += 1
@@ -86,7 +82,7 @@ def ssc_learn(images_file="IMAGES.mat", randomize=False, iters=100,
 
 if __name__ == "__main__":
     for name in databases:
-        matfile = "IMAGES_" + name + ".mat"
+        matfile = "data/IMAGES_" + name + ".mat"
         if not os.path.exists(matfile):
             print "Downloading data ", matfile
             import urllib
@@ -95,5 +91,7 @@ if __name__ == "__main__":
             open(matfile, 'wb').write(opener.read())
 
         print "learning with the ", name, " database "
-        ssc_learn(images_file=matfile, randomize=randomize, iters=iters, load_file=name + ".hdf5", save_file=name + ".hdf5")
+        ssc_learn(images_file=matfile.replace('data', 'results'), iters=iters,
+                  load_file="data/" + name + ".hdf5",
+                  save_file="data/" + name + ".hdf5")
 

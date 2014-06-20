@@ -76,14 +76,14 @@ class Ssc(Coder):
             self.L0 = self.L0[:iters]
             self.SE = self.SE[:iters]
             self.iters = iters
-
         h5file.close()
+
         self.init()
 
     def init_random(self, data_size, num_basis, iters,
                   random_state=_ssc_random_state):
-        # self.psi = random_state.standard_normal((data_size, num_basis))
-        self.psi = random_state.lognormal(size=(data_size, num_basis))
+        self.psi = random_state.standard_normal((data_size, num_basis))
+#         self.psi = random_state.lognormal(size=(data_size, num_basis))
         self.num_basis = self.psi.shape[1]
         self.f = np.outer(np.ones((self.num_basis)), self.edges[:-1])
         self.i_iter = 0
