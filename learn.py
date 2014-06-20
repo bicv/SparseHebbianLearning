@@ -5,7 +5,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import ssc
 try:
-    # see http://projects.scipy.org/pipermail/scipy-dev/2008-January/008200.html
     import progressbar
     PROGRESS = True
 except:
@@ -70,9 +69,9 @@ def ssc_learn(images_file="IMAGES.mat", iters=100,
             a.plot(coder.L0, 'b', alpha=.5)
             a.plot(coder.SE, 'r', alpha=.5)
 #            a.plot(1-coder.L0, coder.SE, alpha=.1)
-            fig.savefig(images_file + '_L0vsSE.pdf')
+            fig.savefig(images_file.replace('data', 'results') + '_L0vsSE.pdf')
             fig = show_basis(coder.psi)
-            fig.savefig(images_file + '.pdf')
+            fig.savefig(images_file.replace('data', 'results') + '.pdf')
             plt.close('all')
             coder.save_hdf5(save_file)
 
@@ -91,7 +90,7 @@ if __name__ == "__main__":
             open(matfile, 'wb').write(opener.read())
 
         print "learning with the ", name, " database "
-        ssc_learn(images_file=matfile.replace('data', 'results'), iters=iters,
+        ssc_learn(images_file=matfile, iters=iters,
                   load_file="data/" + name + ".hdf5",
                   save_file="data/" + name + ".hdf5")
 

@@ -5,9 +5,6 @@ import tables
 
 _ssc_random_state = np.random.RandomState(0)
 
-#def is_vector(x):
-#    return np.ndarray == x.__class__ and len(x.shape) == 1
-
 class ImageData:
     def __init__(self, images_file="IMAGES.mat", patch_width=8,
                patch_height=8, random_state=_ssc_random_state):
