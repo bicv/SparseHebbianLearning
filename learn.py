@@ -75,6 +75,11 @@ def ssc_learn(images_file="data/IMAGES.mat", iters=100,
             fig.savefig(images_file.replace('data', 'results') + '.pdf')
             plt.close('all')
             coder.save_hdf5(save_file)
+        if (coder.i_iter % each_iter) == 0:
+            fig = plt.figure(figsize=(6, 6))
+            a = fig.add_subplot(111)
+            a.imshow(coder.f)
+            fig.savefig(images_file.replace('data', 'results') + '_f.pdf')
 
         coder.i_iter += 1
         if PROGRESS: pbar.update(coder.i_iter)
