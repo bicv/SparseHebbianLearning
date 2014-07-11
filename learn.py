@@ -12,7 +12,7 @@ except:
     print 'progressbar could not be imported'
     PROGRESS = False
 
-iters = 50000
+iters = 5000
 each_iter = iters/1000 # how often we refresh plotting / saving data
 
 #databases = ["sparsenet", "icabench_decorr"]
@@ -37,15 +37,17 @@ def show_basis(psi):
     return fig
 
 
-def ssc_learn(images_file="data/IMAGES.mat", iters=100,
+def ssc_learn(images_file="data/IMAGES.mat", iters=100, name='',
+              graded_solver="least_squares", #"matching_pursuit",
+              nu=0.02, nu_homeo=0.01, alpha=0.02, threshold=0.01, theta = 0.3,
               patch_width = 10, patch_height = 10, num_basis = 196,
               load_file="data/ssc_test.hdf5", save_file="data/ssc_test.hdf5"):
 
     image_data = ssc.ImageData(images_file=images_file, patch_width=patch_width, patch_height=patch_height)
 
-    coder = ssc.Ssc()
+    coder = ssc.Ssc(graded_solver=graded_solver, nu=nu, nu_homeo=nu, alpha=alpha, threshold=threshold)
     if not os.path.exists(load_file):
-        coder.init_random(patch_width * patch_height, num_basis, iters=iters)
+        coder.init_random(patch_width * patch_height, num_basis, iters=iters, theta=theta)
     else:
         coder.load_hdf5(load_file, iters=iters)
 
@@ -70,16 +72,16 @@ def ssc_learn(images_file="data/IMAGES.mat", iters=100,
             a.plot(coder.L0, 'b', alpha=.5)
             a.plot(coder.SE, 'r', alpha=.5)
 #            a.plot(1-coder.L0, coder.SE, alpha=.1)
-            fig.savefig(images_file.replace('data', 'results') + '_L0vsSE.pdf')
+            fig.savefig(images_file.replace('data', 'results') + name + '_L0vsSE.pdf')
             fig = show_basis(coder.psi)
-            fig.savefig(images_file.replace('data', 'results') + '.pdf')
+            fig.savefig(images_file.replace('data', 'results') + name + '.pdf')
             plt.close('all')
             coder.save_hdf5(save_file)
         if (coder.i_iter % each_iter) == 0:
             fig = plt.figure(figsize=(6, 6))
             a = fig.add_subplot(111)
             a.imshow(coder.f)
-            fig.savefig(images_file.replace('data', 'results') + '_f.pdf')
+            fig.savefig(images_file.replace('data', 'results') + name + '_f.pdf')
 
         coder.i_iter += 1
         if PROGRESS: pbar.update(coder.i_iter)
@@ -89,7 +91,5 @@ if __name__ == "__main__":
     for name in databases:
         matfile = "data/IMAGES_" + name + ".mat"
         print "learning with the ", name, " database "
-        ssc_learn(images_file=matfile, iters=iters,
-                  load_file="data/" + name + ".hdf5",
-                  save_file="data/" + name + ".hdf5")
+        ssc_learn(images_file=matfile, iters=iters, load_file="data/" + name + ".hdf5", save_file="data/" + name + ".hdf5")
 
