@@ -9,7 +9,7 @@ try:
     import progressbar
     PROGRESS = True
 except:
-    print 'progressbar could not be imported'
+    print('progressbar could not be imported')
     PROGRESS = False
 
 iters = 5000
@@ -90,6 +90,6 @@ def ssc_learn(images_file="data/IMAGES.mat", iters=100, name='',
 if __name__ == "__main__":
     for name in databases:
         matfile = "data/IMAGES_" + name + ".mat"
-        print "learning with the ", name, " database "
+        print("learning with the ", name, " database ")
         ssc_learn(images_file=matfile, iters=iters, load_file="data/" + name + ".hdf5", save_file="data/" + name + ".hdf5")
 

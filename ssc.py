@@ -10,7 +10,7 @@ class ImageData:
                patch_height=8, random_state=_ssc_random_state):
         import os
         if not os.path.exists(images_file):
-            print "Downloading data ", images_file
+            print("Downloading data ", images_file)
             import urllib
             URL = 'http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile&do=get&target='
             opener = urllib.urlopen(URL + images_file.replace('data/', ''))
@@ -38,8 +38,11 @@ class Coder:
     pass
 
 
-def mdot(*args):
-  return reduce(np.dot, args)
+# def mdot(*args):
+#   return reduce(np.dot, args)
+
+def mdot(a, b, c):
+  return np.dot(a, np.dot(b, c))
 
 def inner(a, b):
   return np.dot(a, b.T)
@@ -102,7 +105,7 @@ class Ssc(Coder):
         self.SE = np.array(h5file.get_node('/Coder', 'SE').read())
         self.theta = np.array(h5file.get_node('/Coder', 'theta').read())
         if iters > self.iters:
-            print self.L0.shape, np.ones((iters-self.iters)).shape
+            print(self.L0.shape, np.ones((iters-self.iters)).shape)
             self.L0 = np.hstack((self.L0, np.ones((iters-self.iters))))
             self.SE = np.hstack((self.SE, np.zeros((iters-self.iters))))
             self.iters = iters
