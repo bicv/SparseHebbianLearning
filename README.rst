@@ -1,4 +1,19 @@
-Reproducible research : Python implementation of SparseHebbianLearning
+SHL_scripts
+=================
+
+Installation
+-------------
+
+``sh
+        python setup.py clean build install
+``
+
+Licence
+--------
+
+
+Contribute
+------------Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 ![Animation of the formation of RFs during aSSC learning.]
@@ -86,7 +101,7 @@ Changelog
 ---------
 
 * in the pipes:
- * use ``sklearn.decomposition.SparseCoder``
+ * use ``sklearn.decomposition.SparseCoder`` see http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.htm and http://www.cs.utexas.edu/~leif/pubs/20130626-scipy-johnson.pdf
 
 * 1.1 : 14-06-18
  * documentation
