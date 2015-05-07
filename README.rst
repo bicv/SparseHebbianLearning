@@ -1,25 +1,10 @@
 SHL_scripts
 =================
-
-Installation
--------------
-
-``sh
-        python setup.py clean build install
-``
-
-Licence
---------
-
-
-Contribute
-------------Reproducible research : Python implementation of SparseHebbianLearning
+Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 ![Animation of the formation of RFs during aSSC learning.]
 (http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif)
-
-This piece of code is distributed under the terms of the GNU General Public License (GPL), check http://www.gnu.org/copyleft/gpl.html if you have not red the term of the license yet.
 
 *  (!)  tl;dr : [Download the code](https://github.com/meduz/SHL_scripts/archive/master.zip). Or directly from the command-line, do
 
@@ -55,6 +40,22 @@ Object
 
 * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@gmail.com
 * find out updates on http://invibe.net/LaurentPerrinet/SparseHebbianLearning
+
+
+Installation
+-------------
+
+``sh
+        python setup.py clean build install
+``
+
+Licence
+--------
+
+This piece of code is distributed under the terms of the GNU General Public License (GPL), check http://www.gnu.org/copyleft/gpl.html if you have not red the term of the license yet.
+
+Contribute
+------------
 
 Get Ready!
 ----------
