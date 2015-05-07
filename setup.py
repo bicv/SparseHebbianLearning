@@ -2,15 +2,14 @@ from setuptools import setup, find_packages
 
 setup(name='SHL_scripts',
       version='0.0.0.0',
-      author='',
-      description='SHL_scripts description',
+      author='Laurent PERRINET, Institut de Neurosciences de la Timon (CNRS/Aix-Marseille Université)',
+      description=' This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the [SparseNet algorithm from Bruno Olshausen](http://redwood.berkeley.edu/bruno/sparsenet/).',
       long_description=open('README.rst').read(),
       license='LICENSE.txt',
-      keywords="",
+      keywords="Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit",
 
       # package source directory
       package_dir={'': 'src'},
       packages=find_packages('src', exclude='docs')
-
 
 )

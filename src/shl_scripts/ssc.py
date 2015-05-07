@@ -30,6 +30,7 @@ class ImageData:
             take(c + np.arange(self.patch_width), axis=0).\
             take(r + np.arange(self.patch_height), axis=1)
         x = np.reshape(patch, (-1,))
+
         x -= np.mean(x)
 #         x /= np.sqrt(np.sum(x ** 2))
         return x
