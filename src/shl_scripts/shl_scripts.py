@@ -34,7 +34,7 @@ class SHL(object):
                  width = 256,
                  patch_size = (16, 16),
                  n_components = 18**2,
-                 n_iter=50000,
+                 n_iter = 50000,
                  max_patches = 1000,
                  n_image = 300,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment<D-d>
@@ -64,7 +64,7 @@ class SHL(object):
 
     def get_data(self, name_database='serre07_distractors'):
         if self.verb:
-            print('Extracting data...')
+            print('Extracting data...', end=' ')
             t0 = time.time()
         imagelist = self.slip.make_imagelist(name_database=name_database)
         for filename, croparea in imagelist:
@@ -88,26 +88,28 @@ class SHL(object):
 
 
     def learn_dico(self, learning_algorithm='comp', name_database='serre07_distractors', **kwargs):
+        data = self.get_data(name_database)
         # Learn the dictionary from reference patches
-        if self.verb: print('Learning the dictionary...')
+        if self.verb: print('Learning the dictionary...', end=' ')
         t0 = time.time()
         dico = MiniBatchDictionaryLearning(n_components=self.n_components,
                                             transform_algorithm=learning_algorithm,
                                             n_iter=self.n_iter,
                                            **kwargs)
-        data = self.get_data(name_database)
-        if self.verb: print('Training on %d patches' % len(data))
+        if self.verb: print('Training on %d patches' % len(data), end='... ')
         dico.fit(data)
-        dt = time.time() - t0
-        if self.verb: print('done in %.2fs.' % dt)
+        if self.verb:
+            dt = time.time() - t0
+            print('done in %.2fs.' % dt)
         return dico
 
     def show_dico(self, dico):
         subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
-        fig = plt.figure(figsize=(11, 11), subplotpars=subplotpars)
+        fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
         for i, comp in enumerate(dico.components_):
             ax = fig.add_subplot(np.sqrt(self.n_components), np.sqrt(self.n_components), i + 1)
-            ax.imshow(comp.reshape(self.patch_size), cmap=plt.cm.gray_r,
+            cmax = np.max(np.abs(comp))
+            ax.imshow(comp.reshape(self.patch_size), cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
                     interpolation='nearest')
             ax.set_xticks(())
             ax.set_yticks(())
@@ -118,6 +120,9 @@ class SHL(object):
         return fig
 
     def code(self, data, dico, intercept, coding_algorithm='omp', **kwargs):
+        if self.verb:
+            print('Coding data...', end=' ')
+            t0 = time.time()
         dico.set_params(transform_algorithm=coding_algorithm, **kwargs)
         code = dico.transform(data)
         V = dico.components_
@@ -132,4 +137,7 @@ class SHL(object):
         if coding_algorithm == 'threshold':
             patches -= patches.min()
             patches /= patches.max()
+        if self.verb:
+            dt = time.time() - t0
+            print('done in %.2fs.' % dt)
         return patches
