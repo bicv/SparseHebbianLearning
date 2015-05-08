@@ -34,11 +34,11 @@ class SHL(object):
                  width = 256,
                  patch_size = (16, 16),
                  n_components = 18**2,
-                 n_iter=5000,
+                 n_iter=50000,
                  max_patches = 1000,
                  n_image = 300,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment<D-d>
-                 verb=1,
+                 verb=20,
                  ):
         self.height = height
         self.width = width
@@ -63,13 +63,15 @@ class SHL(object):
 
 
     def get_data(self, name_database='serre07_distractors'):
+        if self.verb:
+            print('Extracting data...')
+            t0 = time.time()
         imagelist = self.slip.make_imagelist(name_database=name_database)
         for filename, croparea in imagelist:
             # whitening
             image, filename_, croparea_ = self.slip.patch(name_database, filename=filename, croparea=croparea, center=False)
             image = self.slip.whitening(image)
             # Extract all reference patches
-            t0 = time.time()
             data_ = extract_patches_2d(image, self.patch_size, max_patches=int(self.max_patches))
             data_ = data_.reshape(data_.shape[0], -1)
             data_ -= np.mean(data_, axis=0)
@@ -78,6 +80,9 @@ class SHL(object):
                 data = np.vstack((data, data_))
             except:
                 data = data_.copy()
+        if self.verb:
+            dt = time.time() - t0
+            print('done in %.2fs.' % dt)
         return data
 
 
@@ -99,7 +104,7 @@ class SHL(object):
 
     def show_dico(self, dico):
         subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
-        fig = plt.figure(figsize=(12, 12), subplotpars=subplotpars)
+        fig = plt.figure(figsize=(11, 11), subplotpars=subplotpars)
         for i, comp in enumerate(dico.components_):
             ax = fig.add_subplot(np.sqrt(self.n_components), np.sqrt(self.n_components), i + 1)
             ax.imshow(comp.reshape(self.patch_size), cmap=plt.cm.gray_r,

@@ -101,12 +101,13 @@ rm -f IMAGES_*.mat.pdf *.hdf5
 Changelog
 ---------
 
-* in the pipes:
- * use ``sklearn.decomposition.SparseCoder`` see http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.htm and http://www.cs.utexas.edu/~leif/pubs/20130626-scipy-johnson.pdf
+* 2.0 - 2015-05-07: 
+ * use sklearn to do all the hard low-level work, in particular ``sklearn.decomposition.SparseCoder`` see http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.htm and http://www.cs.utexas.edu/~leif/pubs/20130626-scipy-johnson.pdf
+ * transform to a class to just do the Sparse Hebbian Learning (high-level) experiments (getting data from an image folder, learning, coding, analyszing)
 
-* 1.1 : 14-06-18
+* 1.1 - 2014-06-18:
  * documentation
  * dropped Matlab support
 
-* 1.0 : initial release, 27-Oct-2011
+* 1.0 - 2011-10-27 : initial release
 
