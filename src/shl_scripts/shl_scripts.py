@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" SHL_scripts """
+""" shl_scripts """
 # -*- coding: utf-8 -*
 
 
@@ -10,7 +10,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-from sklearn.decomposition import MiniBatchDictionaryLearning
+from sklearn.decomposition import SparseHebbianLearning
+# from sklearn.decomposition import MiniBatchDictionaryLearning
+# from sklearn.decomposition import DictionaryLearning
 from sklearn.feature_extraction.image import extract_patches_2d
 
 
@@ -18,7 +20,6 @@ from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
 import numpy as np
-
 
 class SHL(object):
     """
@@ -32,11 +33,12 @@ class SHL(object):
     def __init__(self,
                  height=256,
                  width = 256,
-                 patch_size = (16, 16),
-                 n_components = 18**2,
+                 patch_size = (12, 12),
+                 n_components = 13**2,
                  n_iter = 50000,
-                 max_patches = 1000,
-                 n_image = 300,
+                 eta = 0.01,
+                 max_patches = 10000,
+                 n_image = 200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment<D-d>
                  verb=20,
                  ):
@@ -47,6 +49,8 @@ class SHL(object):
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
         self.n_image = int(n_image/DEBUG_DOWNSCALE)
+
+        self.eta = eta
 
         self.verb = verb
         # Load natural images and extract patches
@@ -62,17 +66,17 @@ class SHL(object):
                            'N_image': n_image}))
 
 
-    def get_data(self, name_database='serre07_distractors'):
+    def get_data(self, name_database='serre07_distractors', seed=None):
         if self.verb:
             print('Extracting data...', end=' ')
             t0 = time.time()
-        imagelist = self.slip.make_imagelist(name_database=name_database)
+        imagelist = self.slip.make_imagelist(name_database=name_database)#, seed=seed)
         for filename, croparea in imagelist:
             # whitening
-            image, filename_, croparea_ = self.slip.patch(name_database, filename=filename, croparea=croparea, center=False)
+            image, filename_, croparea_ = self.slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, , seed=seed)
             image = self.slip.whitening(image)
             # Extract all reference patches
-            data_ = extract_patches_2d(image, self.patch_size, max_patches=int(self.max_patches))
+            data_ = extract_patches_2d(image, self.patch_size, max_patches=int(self.max_patches))#, seed=seed)
             data_ = data_.reshape(data_.shape[0], -1)
             data_ -= np.mean(data_, axis=0)
             data_ /= np.std(data_, axis=0)
@@ -86,16 +90,16 @@ class SHL(object):
         return data
 
 
-
     def learn_dico(self, learning_algorithm='comp', name_database='serre07_distractors', **kwargs):
         data = self.get_data(name_database)
         # Learn the dictionary from reference patches
         if self.verb: print('Learning the dictionary...', end=' ')
         t0 = time.time()
-        dico = MiniBatchDictionaryLearning(n_components=self.n_components,
-                                            transform_algorithm=learning_algorithm,
-                                            n_iter=self.n_iter,
-                                           **kwargs)
+        dico = SparseHebbianLearning(eta=self.eta, n_components=self.n_components,
+                                     n_jobs=-1,
+                                     transform_algorithm=learning_algorithm,
+                                     n_iter=self.n_iter,
+                                     **kwargs)
         if self.verb: print('Training on %d patches' % len(data), end='... ')
         dico.fit(data)
         if self.verb:

@@ -1,4 +1,4 @@
-""" SHL_scripts/__init__.py """
+""" shl_scripts/__init__.py """
 # -*- coding: utf-8 -*
 
 __all__ = []
