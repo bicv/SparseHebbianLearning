@@ -1,18 +1,16 @@
-SHL_scripts
-=================
 Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 ![Animation of the formation of RFs during aSSC learning.]
 (http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif)
 
-*  (!)  tl;dr : [Download the code](https://github.com/meduz/SHL_scripts/archive/master.zip). Or directly from the command-line, do
+*  (!)  tl;dr : [Download the code](https://github.com/meduz/shl_scripts/archive/master.zip). Or directly from the command-line, do
 
 ```
-wget https://github.com/meduz/SHL_scripts/archive/master.zip
-unzip master.zip -d SHL_scripts
-cd SHL_scripts/
-python learn.py
+wget https://github.com/meduz/shl_scripts/archive/master.zip
+unzip master.zip -d shl_scripts
+cd shl_scripts/
+ipython notebook
 ```
 
 Object
@@ -63,7 +61,7 @@ Get Ready!
  Be sure to have :
 
 * a computer (tested on Mac, Linux) with ``python`` + ``numpy`` (on macosx, you may consider using [HomeBrew](https://github.com/meduz/dotfiles/blob/master/init/osx_brew_python.sh),
-* grab the sources from the [Download the code](https://github.com/meduz/SHL_scripts/archive/master.zip),
+* grab the sources from the [Download the code](https://github.com/meduz/shl_scripts/archive/master.zip),
 * These scripts should be platform independent, however, there is a heavy bias toward unix users when generating figures.
 
 Contents
@@ -81,13 +79,13 @@ Some useful code tidbits
 ------------------------
 
 * get the code with CLI  ``
-wget https://github.com/meduz/SHL_scripts/archive/master.zip
+wget https://github.com/meduz/shl_scripts/archive/master.zip
 ``.
 * decompress  ``
-unzip master.zip -d SHL_scripts
+unzip master.zip -d shl_scripts
 ``
 * get to the code ``
-cd SHL_scripts
+cd shl_scripts
 ``
 
 * run the main script ``
