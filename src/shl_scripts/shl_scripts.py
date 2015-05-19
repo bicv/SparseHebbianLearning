@@ -33,14 +33,16 @@ class SHL(object):
     def __init__(self,
                  height=256,
                  width = 256,
-                 patch_size = (12, 12),
-                 n_components = 13**2,
+                 patch_size = (10, 10),
+                 n_components = 11**2,
+                 transform_n_nonzero_coefs = 20,
                  n_iter = 50000,
-                 eta = 0.01,
+                 eta = 0.02,
+                 eta_homeo = 0.01,
                  max_patches = 10000,
                  n_image = 200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment<D-d>
-                 verb=20,
+                 verbose=20,
                  ):
         self.height = height
         self.width = width
@@ -50,9 +52,11 @@ class SHL(object):
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
         self.n_image = int(n_image/DEBUG_DOWNSCALE)
 
+        self.transform_n_nonzero_coefs = transform_n_nonzero_coefs
         self.eta = eta
+        self.eta_homeo = eta_homeo
 
-        self.verb = verb
+        self.verbose = verbose
         # Load natural images and extract patches
         self.slip = Image(ParameterSet({'N_X':height, 'N_Y':width, 'white_n_learning' : 0,
                            'seed': None,
@@ -67,7 +71,7 @@ class SHL(object):
 
 
     def get_data(self, name_database='serre07_distractors', seed=None):
-        if self.verb:
+        if self.verbose:
             print('Extracting data...', end=' ')
             t0 = time.time()
         imagelist = self.slip.make_imagelist(name_database=name_database)#, seed=seed)
@@ -84,25 +88,26 @@ class SHL(object):
                 data = np.vstack((data, data_))
             except:
                 data = data_.copy()
-        if self.verb:
+        if self.verbose:
             dt = time.time() - t0
             print('done in %.2fs.' % dt)
         return data
 
 
-    def learn_dico(self, learning_algorithm='comp', name_database='serre07_distractors', **kwargs):
+    def learn_dico(self, learning_algorithm='omp', name_database='serre07_distractors', **kwargs):
         data = self.get_data(name_database)
         # Learn the dictionary from reference patches
-        if self.verb: print('Learning the dictionary...', end=' ')
+        if self.verbose: print('Learning the dictionary...', end=' ')
         t0 = time.time()
-        dico = SparseHebbianLearning(eta=self.eta, n_components=self.n_components,
-                                     n_jobs=-1,
+        dico = SparseHebbianLearning(eta=self.eta, gain_rate=self.eta_homeo, 
+                                     n_components=self.n_components, transform_n_nonzero_coefs=self.transform_n_nonzero_coefs,
+                                     n_jobs=1, batch_size=8, verbose=self.verbose,
                                      transform_algorithm=learning_algorithm,
                                      n_iter=self.n_iter,
                                      **kwargs)
-        if self.verb: print('Training on %d patches' % len(data), end='... ')
+        if self.verbose: print('Training on %d patches' % len(data), end='... ')
         dico.fit(data)
-        if self.verb:
+        if self.verbose:
             dt = time.time() - t0
             print('done in %.2fs.' % dt)
         return dico
@@ -124,7 +129,7 @@ class SHL(object):
         return fig
 
     def code(self, data, dico, intercept, coding_algorithm='omp', **kwargs):
-        if self.verb:
+        if self.verbose:
             print('Coding data...', end=' ')
             t0 = time.time()
         dico.set_params(transform_algorithm=coding_algorithm, **kwargs)
@@ -141,7 +146,7 @@ class SHL(object):
         if coding_algorithm == 'threshold':
             patches -= patches.min()
             patches /= patches.max()
-        if self.verb:
+        if self.verbose:
             dt = time.time() - t0
             print('done in %.2fs.' % dt)
         return patches
