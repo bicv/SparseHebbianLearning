@@ -2,6 +2,12 @@
 """ shl_scripts """
 # -*- coding: utf-8 -*
 
+import time
+import sys
+
+toolbar_width = 40
+
+
 
 import matplotlib
 import time
@@ -32,15 +38,18 @@ class SHL(object):
     """
     def __init__(self,
                  height=256,
-                 width = 256,
-                 patch_size = (10, 10),
-                 n_components = 11**2,
-                 transform_n_nonzero_coefs = 20,
-                 n_iter = 50000,
-                 eta = 0.02,
-                 eta_homeo = 0.01,
-                 max_patches = 10000,
-                 n_image = 200,
+                 width=256,
+                 patch_size=(10, 10),
+                 n_components=11**2,
+                 learning_algorithm='omp',
+                 transform_n_nonzero_coefs=20,
+                 n_iter=50000,
+                 eta=1./25,
+                 eta_homeo=0.001,
+                 alpha_homeo=0.02,
+                 max_patches=10000,
+                 batch_size=100,
+                 n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment<D-d>
                  verbose=20,
                  ):
@@ -51,28 +60,35 @@ class SHL(object):
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
         self.n_image = int(n_image/DEBUG_DOWNSCALE)
+        self.batch_size = batch_size
+        self.learning_algorithm = learning_algorithm
 
         self.transform_n_nonzero_coefs = transform_n_nonzero_coefs
         self.eta = eta
         self.eta_homeo = eta_homeo
+        self.alpha_homeo = alpha_homeo
 
         self.verbose = verbose
         # Load natural images and extract patches
-        self.slip = Image(ParameterSet({'N_X':height, 'N_Y':width, 'white_n_learning' : 0,
-                           'seed': None,
-                           'white_N' : .07,
-                           'white_N_0' : .0, # olshausen = 0.
-                           'white_f_0' : .4, # olshausen = 0.2
-                           'white_alpha' : 1.4,
-                           'white_steepness' : 4.,
-                           'datapath': '/Users/lolo/pool/science/PerrinetBednar15/database/',
-                           'do_mask':True,
-                           'N_image': n_image}))
+        self.slip = Image(ParameterSet({'N_X':height, 'N_Y':width, 
+                                        'white_n_learning' : 0,
+                                        'seed': None,
+                                        'white_N' : .07,
+                                        'white_N_0' : .0, # olshausen = 0.
+                                        'white_f_0' : .4, # olshausen = 0.2
+                                        'white_alpha' : 1.4,
+                                        'white_steepness' : 4.,
+                                        'datapath': '/Users/lolo/pool/science/PerrinetBednar15/database/',
+                                        'do_mask':True,
+                                        'N_image': n_image}))
 
 
     def get_data(self, name_database='serre07_distractors', seed=None):
         if self.verbose:
-            print('Extracting data...', end=' ')
+            # setup toolbar
+            sys.stdout.write('Extracting data...')
+            sys.stdout.flush()
+            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
             t0 = time.time()
         imagelist = self.slip.make_imagelist(name_database=name_database)#, seed=seed)
         for filename, croparea in imagelist:
@@ -88,23 +104,31 @@ class SHL(object):
                 data = np.vstack((data, data_))
             except:
                 data = data_.copy()
+            if self.verbose:
+                # update the bar
+                sys.stdout.write(filename + ", ")
+                sys.stdout.flush()
         if self.verbose:
             dt = time.time() - t0
-            print('done in %.2fs.' % dt)
+            sys.stdout.write("\n")
+            sys.stdout.write("Data is of shape : "+ str(data.shape))
+            sys.stdout.write('done in %.2fs.' % dt)
+            sys.stdout.flush()
         return data
 
 
-    def learn_dico(self, learning_algorithm='omp', name_database='serre07_distractors', **kwargs):
+    def learn_dico(self, name_database='serre07_distractors', **kwargs):
         data = self.get_data(name_database)
         # Learn the dictionary from reference patches
         if self.verbose: print('Learning the dictionary...', end=' ')
         t0 = time.time()
-        dico = SparseHebbianLearning(eta=self.eta, gain_rate=self.eta_homeo, 
-                                     n_components=self.n_components, transform_n_nonzero_coefs=self.transform_n_nonzero_coefs,
-                                     n_jobs=1, batch_size=8, verbose=self.verbose,
-                                     transform_algorithm=learning_algorithm,
-                                     n_iter=self.n_iter,
-                                     **kwargs)
+        dico = SparseHebbianLearning(eta=self.eta,
+                                     n_components=self.n_components, n_iter=self.n_iter,
+                                     gain_rate=self.eta_homeo, alpha_homeo=self.alpha_homeo,
+                                     transform_n_nonzero_coefs=self.transform_n_nonzero_coefs,
+                                     batch_size=self.batch_size, verbose=self.verbose,
+                                     transform_algorithm=self.learning_algorithm,
+                                                                          **kwargs)
         if self.verbose: print('Training on %d patches' % len(data), end='... ')
         dico.fit(data)
         if self.verbose:
