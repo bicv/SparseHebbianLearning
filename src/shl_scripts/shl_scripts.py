@@ -42,6 +42,7 @@ class SHL(object):
                  patch_size=(10, 10),
                  n_components=11**2,
                  learning_algorithm='omp',
+                 alpha=None,
                  transform_n_nonzero_coefs=20,
                  n_iter=50000,
                  eta=1./25,
@@ -62,6 +63,7 @@ class SHL(object):
         self.n_image = int(n_image/DEBUG_DOWNSCALE)
         self.batch_size = batch_size
         self.learning_algorithm = learning_algorithm
+        self.alpha=alpha
 
         self.transform_n_nonzero_coefs = transform_n_nonzero_coefs
         self.eta = eta
@@ -126,9 +128,8 @@ class SHL(object):
                                      n_components=self.n_components, n_iter=self.n_iter,
                                      gain_rate=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                      transform_n_nonzero_coefs=self.transform_n_nonzero_coefs,
-                                     batch_size=self.batch_size, verbose=self.verbose,
-                                     transform_algorithm=self.learning_algorithm,
-                                                                          **kwargs)
+                                     batch_size=self.batch_size, verbose=self.verbose, n_jobs=1,
+                                     transform_algorithm=self.learning_algorithm, transform_alpha=self.alpha, **kwargs)
         if self.verbose: print('Training on %d patches' % len(data), end='... ')
         dico.fit(data)
         if self.verbose:
@@ -136,7 +137,7 @@ class SHL(object):
             print('done in %.2fs.' % dt)
         return dico
 
-    def show_dico(self, dico):
+    def show_dico(self, dico, title=None):
         subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
         fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
         for i, comp in enumerate(dico.components_):
@@ -146,11 +147,17 @@ class SHL(object):
                     interpolation='nearest')
             ax.set_xticks(())
             ax.set_yticks(())
+        if title is not None:
+            ax = fig.add_subplot(1, 1, 1)
+            ax.set_xticks(())
+            ax.set_yticks(())
+            ax.text(0, 1, title, fontsize=12, horizontalalignment='right',
+                verticalalignment='bottom', bbox=dict(facecolor='white', alpha=0.5))
 #         fig.suptitle('Dictionary learned from image patches\n' +
 #                     'Using ' + learning_algorithm.replace('_', ' '),
 #                     fontsize=12)
         #fig.tight_layout(rect=[0, 0, .9, 1])
-        return fig
+        return fig, ax
 
     def code(self, data, dico, intercept, coding_algorithm='omp', **kwargs):
         if self.verbose:
