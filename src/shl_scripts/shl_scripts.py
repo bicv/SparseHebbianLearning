@@ -148,14 +148,7 @@ class SHL(object):
             ax.set_xticks(())
             ax.set_yticks(())
         if title is not None:
-            ax = fig.add_subplot(1, 1, 1)
-            ax.set_xticks(())
-            ax.set_yticks(())
-            ax.text(0, 1, title, fontsize=12, horizontalalignment='right',
-                verticalalignment='bottom', bbox=dict(facecolor='white', alpha=0.5))
-#         fig.suptitle('Dictionary learned from image patches\n' +
-#                     'Using ' + learning_algorithm.replace('_', ' '),
-#                     fontsize=12)
+            fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
         #fig.tight_layout(rect=[0, 0, .9, 1])
         return fig, ax
 
