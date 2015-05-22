@@ -21,10 +21,7 @@ from sklearn.decomposition import SparseHebbianLearning
 # from sklearn.decomposition import DictionaryLearning
 from sklearn.feature_extraction.image import extract_patches_2d
 
-
-from NeuroTools.parameters import ParameterSet
 from SLIP import Image
-from LogGabor import LogGabor
 import numpy as np
 
 class SHL(object):
@@ -72,7 +69,7 @@ class SHL(object):
 
         self.verbose = verbose
         # Load natural images and extract patches
-        self.slip = Image(ParameterSet({'N_X':height, 'N_Y':width, 
+        self.slip = Image({'N_X':height, 'N_Y':width, 
                                         'white_n_learning' : 0,
                                         'seed': None,
                                         'white_N' : .07,
@@ -82,7 +79,7 @@ class SHL(object):
                                         'white_steepness' : 4.,
                                         'datapath': '/Users/lolo/pool/science/PerrinetBednar15/database/',
                                         'do_mask':True,
-                                        'N_image': n_image}))
+                                        'N_image': n_image})
 
 
     def get_data(self, name_database='serre07_distractors', seed=None):
