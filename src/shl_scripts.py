@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
-""" shl_scripts """
+#!/usr/bin/env python
 # -*- coding: utf-8 -*
+from __future__ import division, print_function, absolute_import
 
 import time
 import sys
@@ -42,9 +42,9 @@ class SHL(object):
                  alpha=None,
                  transform_n_nonzero_coefs=20,
                  n_iter=50000,
-                 eta=1./25,
-                 eta_homeo=0.005,
-                 alpha_homeo=0.02,
+                 eta=1./250,
+                 eta_homeo=0.001,
+                 alpha_homeo=1.,
                  max_patches=10000,
                  batch_size=100,
                  n_image=200,
