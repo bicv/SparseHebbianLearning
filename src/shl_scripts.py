@@ -43,7 +43,7 @@ class SHL(object):
                  transform_n_nonzero_coefs=20,
                  n_iter=50000,
                  eta=1./25,
-                 eta_homeo=0.001,
+                 eta_homeo=0.005,
                  alpha_homeo=0.02,
                  max_patches=10000,
                  batch_size=100,

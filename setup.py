@@ -3,8 +3,10 @@
 from setuptools import setup, find_packages
 
 NAME = 'shl_scripts'
+version = '2.0'
+
 setup(name=NAME,
-      version='2.0',
+      version=version,
       author='Laurent PERRINET, Institut de Neurosciences de la Timone (CNRS/Aix-Marseille Université)',
       description=' This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the [SparseNet algorithm from Bruno Olshausen](http://redwood.berkeley.edu/bruno/sparsenet/).',
       long_description=open('README.rst').read(),
