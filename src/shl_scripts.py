@@ -44,11 +44,11 @@ class SHL(object):
                  n_iter=50000,
                  eta=.001,
                  eta_homeo=0.001,
-                 alpha_homeo=1.,
+                 alpha_homeo=.5,
                  max_patches=10000,
                  batch_size=100,
                  n_image=200,
-                 DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment<D-d>
+                 DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=20,
                  ):
         self.height = height

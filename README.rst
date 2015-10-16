@@ -44,7 +44,10 @@ Installation
 -------------
 
 ``sh
-        python setup.py clean build install
+        pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
+        pip3 install -U git+https://github.com/meduz/SLIP.git
+        pip3 install -U git+https://github.com/meduz/scikit-learn.git
+        ipython setup.py clean build install
 ``
 
 Licence
@@ -100,7 +103,7 @@ Changelog
 ---------
 
 * 2.0 - 2015-05-07: 
- * use sklearn to do all the hard low-level work, in particular ``sklearn.decomposition.SparseCoder`` see http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.htm and http://www.cs.utexas.edu/~leif/pubs/20130626-scipy-johnson.pdf
+ * use sklearn to do all the hard low-level work, in particular ``sklearn.decomposition.SparseCoder`` see http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.html and http://www.cs.utexas.edu/~leif/pubs/20130626-scipy-johnson.pdf
  * transform to a class to just do the Sparse Hebbian Learning (high-level) experiments (getting data from an image folder, learning, coding, analyszing)
 
 * 1.1 - 2014-06-18:
