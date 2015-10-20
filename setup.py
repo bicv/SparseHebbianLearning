@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 NAME = 'shl_scripts'
-version = '2.0'
+version = '2.1'
 
 setup(name=NAME,
       version=version,

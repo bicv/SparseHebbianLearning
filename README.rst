@@ -102,7 +102,10 @@ rm -f IMAGES_*.mat.pdf *.hdf5
 Changelog
 ---------
 
-* 2.0 - 2015-05-07: 
+* 2.1 -2015-10-20:
+ * finalizing the code to reproduce the sparsenet algorithm
+
+* 2.0 - 2015-05-07:
  * use sklearn to do all the hard low-level work, in particular ``sklearn.decomposition.SparseCoder`` see http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.html and http://www.cs.utexas.edu/~leif/pubs/20130626-scipy-johnson.pdf
  * transform to a class to just do the Sparse Hebbian Learning (high-level) experiments (getting data from an image folder, learning, coding, analyszing)
 
