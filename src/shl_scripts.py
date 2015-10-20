@@ -36,16 +36,16 @@ class SHL(object):
     def __init__(self,
                  height=256,
                  width=256,
-                 patch_size=(10, 10),
-                 n_components=11**2,
+                 patch_size=(12, 12),
+                 n_components=14**2,
                  learning_algorithm='omp',
                  alpha=None,
                  transform_n_nonzero_coefs=20,
-                 n_iter=50000,
-                 eta=.001,
-                 eta_homeo=0.001,
-                 alpha_homeo=.5,
-                 max_patches=10000,
+                 n_iter=5000,
+                 eta=.01,
+                 eta_homeo=.01,
+                 alpha_homeo=.01,
+                 max_patches=1000,
                  batch_size=100,
                  n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
@@ -81,8 +81,7 @@ class SHL(object):
                                         'do_mask':True,
                                         'N_image': n_image})
 
-
-    def get_data(self, name_database='serre07_distractors', seed=None):
+    def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True):
         if self.verbose:
             # setup toolbar
             sys.stdout.write('Extracting data...')
@@ -94,11 +93,13 @@ class SHL(object):
             # whitening
             image, filename_, croparea_ = self.slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, , seed=seed)
             image = self.slip.whitening(image)
-            # Extract all reference patches
+            # Extract all reference patches and ravel them
             data_ = extract_patches_2d(image, self.patch_size, max_patches=int(self.max_patches))#, seed=seed)
             data_ = data_.reshape(data_.shape[0], -1)
             data_ -= np.mean(data_, axis=0)
-            data_ /= np.std(data_, axis=0)
+            if patch_norm:
+                data_ /= np.std(data_, axis=0)
+            # collect everything as a matrix 
             try:
                 data = np.vstack((data, data_))
             except:
@@ -125,7 +126,7 @@ class SHL(object):
                                      n_components=self.n_components, n_iter=self.n_iter,
                                      gain_rate=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                      transform_n_nonzero_coefs=self.transform_n_nonzero_coefs,
-                                     batch_size=self.batch_size, verbose=self.verbose, n_jobs=1,
+                                     batch_size=self.batch_size, verbose=self.verbose, n_jobs=-1,
                                      transform_algorithm=self.learning_algorithm, transform_alpha=self.alpha, **kwargs)
         if self.verbose: print('Training on %d patches' % len(data), end='... ')
         dico.fit(data)
@@ -149,7 +150,7 @@ class SHL(object):
         #fig.tight_layout(rect=[0, 0, .9, 1])
         return fig, ax
 
-    def code(self, data, dico, intercept, coding_algorithm='omp', **kwargs):
+    def code(self, data, dico, intercept=0., coding_algorithm='omp', **kwargs):
         if self.verbose:
             print('Coding data...', end=' ')
             t0 = time.time()
@@ -163,7 +164,7 @@ class SHL(object):
             patches /= patches.max()
 
         patches += intercept
-        patches = patches.reshape(len(data), *self.patch_size)
+#         patches = patches.reshape(len(data), *self.patch_size)
         if coding_algorithm == 'threshold':
             patches -= patches.min()
             patches /= patches.max()
