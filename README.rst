@@ -15,16 +15,16 @@ Object
 
    @article{Perrinet10shl,
         Author = {Perrinet, Laurent U.},
+        Title = {Role of homeostasis in learning sparse representations},
+        Year = {2010}
+        Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
         Doi = {10.1162/neco.2010.05-08-795},
         Journal = {Neural Computation},
+        Volume = {22},
+        Number = {7},
         Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
         Month = {July},
-        Number = {7},
-        Title = {Role of homeostasis in learning sparse representations},
-        Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
-        Volume = {22},
-        Year = {2010},
-        Annote = {Posted Online March 17, 2010.},}
+        }
 
 * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@gmail.com
 * find out updates on http://invibe.net/LaurentPerrinet/SparseHebbianLearning
