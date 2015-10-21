@@ -2,6 +2,10 @@ Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 
+.. image:: http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif
+   :alt: Animation of the formation of RFs during aSSC learning.
+ 
+
 Object
 ------
 
@@ -35,9 +39,6 @@ Be sure to have dependencies installed::
     pip3 install -U git+https://github.com/meduz/SLIP.git
     pip3 install -U git+https://github.com/meduz/scikit-learn.git
     ipython setup.py clean build install
-
-![Animation of the formation of RFs during aSSC learning.]
-(http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif)
 
 *  Then, [download the code](https://github.com/meduz/shl_scripts/archive/master.zip). You may also grab it directly using the command-line::
 
