@@ -1,17 +1,6 @@
 Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
-![Animation of the formation of RFs during aSSC learning.]
-(http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif)
-
-*  (!)  tl;dr : [Download the code](https://github.com/meduz/shl_scripts/archive/master.zip). Or directly from the command-line, do
-
-```
-wget https://github.com/meduz/shl_scripts/archive/master.zip
-unzip master.zip -d shl_scripts
-cd shl_scripts/
-ipython notebook
-```
 
 Object
 ------
@@ -32,8 +21,7 @@ Object
     Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
     Volume = {22},
     Year = {2010},
-    Annote = {Posted Online March 17, 2010.},
-}
+    Annote = {Posted Online March 17, 2010.},}
 ```
 
 * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@gmail.com
@@ -43,11 +31,26 @@ Object
 Installation
 -------------
 
+Be sure to have dependencies installed:
+
 ``sh
-        pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
-        pip3 install -U git+https://github.com/meduz/SLIP.git
-        pip3 install -U git+https://github.com/meduz/scikit-learn.git
-        ipython setup.py clean build install
+    pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
+    pip3 install -U git+https://github.com/meduz/SLIP.git
+    pip3 install -U git+https://github.com/meduz/scikit-learn.git
+    ipython setup.py clean build install
+``
+
+
+![Animation of the formation of RFs during aSSC learning.]
+(http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif)
+
+*  Then, [download the code](https://github.com/meduz/shl_scripts/archive/master.zip). You may also grab it directly using the command-line:
+
+``
+wget https://github.com/meduz/shl_scripts/archive/master.zip
+unzip master.zip -d shl_scripts
+cd shl_scripts/
+jupyter notebook
 ``
 
 Licence
@@ -55,49 +58,14 @@ Licence
 
 This piece of code is distributed under the terms of the GNU General Public License (GPL), check http://www.gnu.org/copyleft/gpl.html if you have not red the term of the license yet.
 
-Contribute
-------------
-
-Get Ready!
-----------
-
- Be sure to have :
-
-* a computer (tested on Mac, Linux) with ``python`` + ``numpy`` (on macosx, you may consider using [HomeBrew](https://github.com/meduz/dotfiles/blob/master/init/osx_brew_python.sh),
-* grab the sources from the [Download the code](https://github.com/meduz/shl_scripts/archive/master.zip),
-* These scripts should be platform independent, however, there is a heavy bias toward unix users when generating figures.
-
 Contents
 --------
 
 
- * ``README.md`` : this file
- * ``learn.py`` : the scripts (see Contents.m  for a script pointing to the different experiments)
- * ``ssc.py`` : the individual experiments
- * ``IMAGES_sparsenet.mat`` : the image files (if absent, they get automagically downloaded from [this link](http://invibe.net/LaurentPerrinet/SparseHebbianLearning?action=AttachFile|this page).
-* ``matlab_code`` : some obsolete matlab code
-
-
-Some useful code tidbits
-------------------------
-
-* get the code with CLI  ``
-wget https://github.com/meduz/shl_scripts/archive/master.zip
-``.
-* decompress  ``
-unzip master.zip -d shl_scripts
-``
-* get to the code ``
-cd shl_scripts
-``
-
-* run the main script ``
-python learn.py
-``
-
-* remove SSC related files to start over ``
-rm -f IMAGES_*.mat.pdf *.hdf5
-``
+ * ``README.rst`` : this file
+ * ``src/shl_scripts.py`` : the class file
+ * ``*.ipynb`` : the individual experiments as notebooks
+ * ``database`` : the image files.
 
 Changelog
 ---------
