@@ -13,7 +13,7 @@ Object
 
 * this has been published as Perrinet, Neural Computation (2010) (see  http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl )::
 
-    @article{Perrinet10shl,
+   @article{Perrinet10shl,
         Author = {Perrinet, Laurent U.},
         Doi = {10.1162/neco.2010.05-08-795},
         Journal = {Neural Computation},
@@ -35,17 +35,21 @@ Installation
 
 Be sure to have dependencies installed::
 
-    pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
-    pip3 install -U git+https://github.com/meduz/SLIP.git
-    pip3 install -U git+https://github.com/meduz/scikit-learn.git
-    ipython setup.py clean build install
+   pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
+   pip3 install -U git+https://github.com/meduz/SLIP.git
+   pip3 install -U git+https://github.com/meduz/scikit-learn.git
+   ipython setup.py clean build install
 
-*  Then, [download the code](https://github.com/meduz/shl_scripts/archive/master.zip). You may also grab it directly using the command-line::
+*  Then, download the code @ https://github.com/meduz/shl_scripts/archive/master.zip. You may also grab it directly using the command-line::
 
-    wget https://github.com/meduz/shl_scripts/archive/master.zip
-    unzip master.zip -d shl_scripts
-    cd shl_scripts/
-    jupyter notebook
+   wget https://github.com/meduz/shl_scripts/archive/master.zip
+   unzip master.zip -d shl_scripts
+   cd shl_scripts/
+   jupyter notebook
+
+* developpers may use all the power of git with::
+
+   git clone https://github.com/meduz/SHL_scripts.git
 
 Licence
 --------
