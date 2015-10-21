@@ -33,14 +33,14 @@ Object
 Installation
 -------------
 
-Be sure to have dependencies installed::
+* Be sure to have dependencies installed::
 
    pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
    pip3 install -U git+https://github.com/meduz/SLIP.git
    pip3 install -U git+https://github.com/meduz/scikit-learn.git
    ipython setup.py clean build install
 
-*  Then, download the code @ https://github.com/meduz/shl_scripts/archive/master.zip. You may also grab it directly using the command-line::
+* Then, download the code @ https://github.com/meduz/shl_scripts/archive/master.zip. You may also grab it directly using the command-line::
 
    wget https://github.com/meduz/shl_scripts/archive/master.zip
    unzip master.zip -d shl_scripts
