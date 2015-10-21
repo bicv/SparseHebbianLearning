@@ -173,4 +173,5 @@ if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='omp', verbose=verbose)
     dico = shl.learn_dico()
-    _ = shl.show_dico(dico)
+    fig, ax = shl.show_dico(dico)
+    plt.savefig('assc.png')
