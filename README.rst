@@ -7,22 +7,20 @@ Object
 
 * This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the [SparseNet algorithm from Bruno Olshausen](http://redwood.berkeley.edu/bruno/sparsenet/).
 
-* this has been published as Perrinet, Neural Computation (2010) (see  http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl ):
+* this has been published as Perrinet, Neural Computation (2010) (see  http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl )::
 
-```bibtex
-@article{Perrinet10shl,
-    Author = {Perrinet, Laurent U.},
-    Doi = {10.1162/neco.2010.05-08-795},
-    Journal = {Neural Computation},
-    Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
-    Month = {July},
-    Number = {7},
-    Title = {Role of homeostasis in learning sparse representations},
-    Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
-    Volume = {22},
-    Year = {2010},
-    Annote = {Posted Online March 17, 2010.},}
-```
+    @article{Perrinet10shl,
+        Author = {Perrinet, Laurent U.},
+        Doi = {10.1162/neco.2010.05-08-795},
+        Journal = {Neural Computation},
+        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
+        Month = {July},
+        Number = {7},
+        Title = {Role of homeostasis in learning sparse representations},
+        Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
+        Volume = {22},
+        Year = {2010},
+        Annote = {Posted Online March 17, 2010.},}
 
 * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@gmail.com
 * find out updates on http://invibe.net/LaurentPerrinet/SparseHebbianLearning
@@ -31,27 +29,22 @@ Object
 Installation
 -------------
 
-Be sure to have dependencies installed:
+Be sure to have dependencies installed::
 
-``sh
     pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
     pip3 install -U git+https://github.com/meduz/SLIP.git
     pip3 install -U git+https://github.com/meduz/scikit-learn.git
     ipython setup.py clean build install
-``
-
 
 ![Animation of the formation of RFs during aSSC learning.]
 (http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif)
 
-*  Then, [download the code](https://github.com/meduz/shl_scripts/archive/master.zip). You may also grab it directly using the command-line:
+*  Then, [download the code](https://github.com/meduz/shl_scripts/archive/master.zip). You may also grab it directly using the command-line::
 
-``
-wget https://github.com/meduz/shl_scripts/archive/master.zip
-unzip master.zip -d shl_scripts
-cd shl_scripts/
-jupyter notebook
-``
+    wget https://github.com/meduz/shl_scripts/archive/master.zip
+    unzip master.zip -d shl_scripts
+    cd shl_scripts/
+    jupyter notebook
 
 Licence
 --------
@@ -61,11 +54,10 @@ This piece of code is distributed under the terms of the GNU General Public Lice
 Contents
 --------
 
-
- * ``README.rst`` : this file
- * ``src/shl_scripts.py`` : the class file
- * ``*.ipynb`` : the individual experiments as notebooks
- * ``database`` : the image files.
+* ``README.rst`` : this file
+* ``src/shl_scripts.py`` : the class file
+* ``*.ipynb`` : the individual experiments as notebooks
+* ``database`` : the image files.
 
 Changelog
 ---------
