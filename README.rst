@@ -2,8 +2,8 @@ Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 
-.. image:: http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=ssc.gif
-   :alt: Animation of the formation of RFs during aSSC learning.
+.. image:: http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=assc.png
+   :alt: Set of RFs after aSSC learning.
  
 
 Object
