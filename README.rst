@@ -3,6 +3,7 @@ Reproducible research : Python implementation of SparseHebbianLearning
 
 
 .. image:: http://invibe.net/cgi-bin/index.cgi/SparseHebbianLearning?action=AttachFile&do=get&target=assc.png
+   :scale: 100%
    :alt: Set of RFs after aSSC learning.
  
 
