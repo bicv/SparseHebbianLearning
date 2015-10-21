@@ -7,18 +7,13 @@ import sys
 
 toolbar_width = 40
 
-
-
 import matplotlib
 import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 from sklearn.decomposition import SparseHebbianLearning
-# from sklearn.decomposition import MiniBatchDictionaryLearning
-# from sklearn.decomposition import DictionaryLearning
 from sklearn.feature_extraction.image import extract_patches_2d
 
 from SLIP import Image
@@ -77,7 +72,7 @@ class SHL(object):
                                         'white_f_0' : .4, # olshausen = 0.2
                                         'white_alpha' : 1.4,
                                         'white_steepness' : 4.,
-                                        'datapath': '/Users/lolo/pool/science/PerrinetBednar15/database/',
+                                        'datapath': 'database/',
                                         'do_mask':True,
                                         'N_image': n_image})
 
@@ -172,3 +167,10 @@ class SHL(object):
             dt = time.time() - t0
             print('done in %.2fs.' % dt)
         return patches
+
+if __name__ == '__main__':
+    DEBUG_DOWNSCALE, verbose = 1, 0
+    DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
+    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='omp', verbose=verbose)
+    dico = shl.learn_dico()
+    _ = shl.show_dico(dico)
