@@ -72,8 +72,9 @@ Changelog
  * finalizing the code to reproduce the sparsenet algorithm
 
 * 2.0 - 2015-05-07:
- * use sklearn to do all the hard low-level work, in particular ``sklearn.decomposition.SparseCoder`` see http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.html and http://www.cs.utexas.edu/~leif/pubs/20130626-scipy-johnson.pdf
  * transform to a class to just do the Sparse Hebbian Learning (high-level) experiments (getting data from an image folder, learning, coding, analyszing)
+ * use sklearn to do all the hard low-level work, in particular ``sklearn.decomposition.SparseCoder`` see http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.html and http://www.cs.utexas.edu/~leif/pubs/20130626-scipy-johnson.pdf
+ * The dictionary learning is tested in http://blog.invibe.net/posts/2015-05-05-reproducing-olshausens-classical-sparsenet.html and the corresponding PR is tested in http://blog.invibe.net/posts/2015-05-06-reproducing-olshausens-classical-sparsenet-part-2.html
 
 * 1.1 - 2014-06-18:
  * documentation
