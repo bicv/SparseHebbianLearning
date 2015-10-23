@@ -61,6 +61,7 @@ class SHL(object):
                  height=256,
                  width=256,
                  patch_size=(12, 12),
+                 database = 'database/',
                  n_components=14**2,
                  learning_algorithm='omp',
                  alpha=None,
@@ -77,6 +78,7 @@ class SHL(object):
                  ):
         self.height = height
         self.width = width
+        self.database = database
         self.patch_size = patch_size
         self.n_components = n_components
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
@@ -101,7 +103,7 @@ class SHL(object):
                                         'white_f_0' : .4, # olshausen = 0.2
                                         'white_alpha' : 1.4,
                                         'white_steepness' : 4.,
-                                        'datapath': 'database/',
+                                        'datapath': self.database,
                                         'do_mask':True,
                                         'N_image': n_image})
 
@@ -150,7 +152,7 @@ class SHL(object):
                                      n_components=self.n_components, n_iter=self.n_iter,
                                      gain_rate=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                      transform_n_nonzero_coefs=self.transform_n_nonzero_coefs,
-                                     batch_size=self.batch_size, verbose=self.verbose, n_jobs=-1,
+                                     batch_size=self.batch_size, verbose=self.verbose, n_jobs=1,
                                      transform_algorithm=self.learning_algorithm, transform_alpha=self.alpha, **kwargs)
         if self.verbose: print('Training on %d patches' % len(data), end='... ')
         dico.fit(data)
@@ -198,8 +200,8 @@ class SHL(object):
         return patches
 
 if __name__ == '__main__':
-    DEBUG_DOWNSCALE, verbose = 1, 0
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
+    DEBUG_DOWNSCALE, verbose = 1, 0
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='omp', verbose=verbose)
     dico = shl.learn_dico()
     fig, ax = shl.show_dico(dico)
