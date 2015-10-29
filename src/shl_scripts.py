@@ -74,7 +74,7 @@ class SHL(object):
                  batch_size=100,
                  n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
-                 verbose=20,
+                 verbose=0,
                  ):
         self.height = height
         self.width = width
@@ -161,19 +161,20 @@ class SHL(object):
             print('done in %.2fs.' % dt)
         return dico
 
-    def show_dico(self, dico, title=None):
+    def show_dico(self, dico, title=None, fname=None):
         subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
         fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
-        for i, comp in enumerate(dico.components_):
+        for i, component in enumerate(dico.components_):
             ax = fig.add_subplot(np.sqrt(self.n_components), np.sqrt(self.n_components), i + 1)
-            cmax = np.max(np.abs(comp))
-            ax.imshow(comp.reshape(self.patch_size), cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
+            cmax = np.max(np.abs(component))
+            ax.imshow(component.reshape(self.patch_size), cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
                     interpolation='nearest')
             ax.set_xticks(())
             ax.set_yticks(())
         if title is not None:
             fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
         #fig.tight_layout(rect=[0, 0, .9, 1])
+        if not fname is None: fig.savefig(fname, dpi=dpi)
         return fig, ax
 
     def code(self, data, dico, intercept=0., coding_algorithm='omp', **kwargs):
@@ -199,6 +200,35 @@ class SHL(object):
             print('done in %.2fs.' % dt)
         return patches
 
+    def plot_variance(self, dico, name_database='serre07_distractors', fname=None):
+        data = self.get_data(name_database)
+        code = self.code(data, dico)
+        Z = np.mean(code**2)
+        fig = plt.figure(figsize=(12, 4))
+        ax = fig.add_subplot(111)
+        ax.bar(np.arange(self.n_components), np.mean(code**2/Z, axis=0))#, yerr=np.std(code**2/Z, axis=0))
+        ax.set_title('Variance of coefficients')
+        ax.set_ylabel('Variance')
+        ax.set_xlabel('#')
+        ax.axis('tight')
+        if not fname is None: fig.savefig(fname, dpi=dpi)
+        return fig, ax
+
+    def plot_variance_histogram(self, dico, name_database='serre07_distractors', fname=None):
+        data = self.get_data(name_database)
+        import pandas as pd
+        import seaborn as sns
+        code = self.code(data, dico)
+        fig = plt.figure(figsize=(6, 4))
+        ax = fig.add_subplot(111)
+        data = pd.DataFrame(np.mean(code**2, axis=0)/np.mean(code**2), columns=['Variance'])
+        with sns.axes_style("white"):
+            ax = sns.distplot(data['Variance'],  kde_kws={'clip':(0., 5.)})
+        ax.set_title('distribution of the mean variance of coefficients')
+        ax.set_ylabel('pdf')
+        if not fname is None: fig.savefig(fname, dpi=dpi)
+        return fig, ax        
+    
 if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 0
