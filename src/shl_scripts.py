@@ -174,7 +174,7 @@ class SHL(object):
         if title is not None:
             fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
         #fig.tight_layout(rect=[0, 0, .9, 1])
-        if not fname is None: fig.savefig(fname, dpi=dpi)
+        if not fname is None: fig.savefig(fname, dpi=200)
         return fig, ax
 
     def code(self, data, dico, intercept=0., coding_algorithm='omp', **kwargs):
@@ -211,7 +211,7 @@ class SHL(object):
         ax.set_ylabel('Variance')
         ax.set_xlabel('#')
         ax.axis('tight')
-        if not fname is None: fig.savefig(fname, dpi=dpi)
+        if not fname is None: fig.savefig(fname, dpi=200)
         return fig, ax
 
     def plot_variance_histogram(self, dico, name_database='serre07_distractors', fname=None):
