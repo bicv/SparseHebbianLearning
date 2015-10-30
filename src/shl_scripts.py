@@ -226,7 +226,7 @@ class SHL(object):
             ax = sns.distplot(data['Variance'],  kde_kws={'clip':(0., 5.)})
         ax.set_title('distribution of the mean variance of coefficients')
         ax.set_ylabel('pdf')
-        if not fname is None: fig.savefig(fname, dpi=dpi)
+        if not fname is None: fig.savefig(fname, dpi=200)
         return fig, ax        
     
 if __name__ == '__main__':
