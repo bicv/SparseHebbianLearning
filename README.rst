@@ -27,7 +27,7 @@ Object
         Month = {July},
         }
 
-* all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@gmail.com
+* all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@univ-amu.fr
 * find out updates on http://invibe.net/LaurentPerrinet/SparseHebbianLearning
 
 
