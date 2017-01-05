@@ -1,3 +1,10 @@
 .ipynb_checkpoints
 index_files
-src/SHL_scripts.egg-info
+shl_scripts/SHL_scripts.egg-info
+.DS_Store
+
+debug.log
+
+*.pyc
+
+shl_scripts/shl_scripts.egg-info/top_level.txt

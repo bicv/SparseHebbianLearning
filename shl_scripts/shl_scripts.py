@@ -95,7 +95,7 @@ class SHL(object):
 
         self.verbose = verbose
         # Load natural images and extract patches
-        self.slip = Image({'N_X':height, 'N_Y':width, 
+        self.slip = Image({'N_X':height, 'N_Y':width,
                                         'white_n_learning' : 0,
                                         'seed': None,
                                         'white_N' : .07,
@@ -125,7 +125,7 @@ class SHL(object):
             data_ -= np.mean(data_, axis=0)
             if patch_norm:
                 data_ /= np.std(data_, axis=0)
-            # collect everything as a matrix 
+            # collect everything as a matrix
             try:
                 data = np.vstack((data, data_))
             except:
@@ -182,10 +182,11 @@ class SHL(object):
             print('Coding data...', end=' ')
             t0 = time.time()
         dico.set_params(transform_algorithm=coding_algorithm, **kwargs)
-        code = dico.transform(data)
+        sparse_code = dico.transform(data)
         V = dico.components_
 
-        patches = np.dot(code, V)
+        patches = np.dot(sparse_code, V)
+
         if coding_algorithm == 'threshold':
             patches -= patches.min()
             patches /= patches.max()
@@ -202,19 +203,21 @@ class SHL(object):
 
     def plot_variance(self, dico, name_database='serre07_distractors', fname=None):
         data = self.get_data(name_database)
-        code = self.code(data, dico)
-        Z = np.mean(code**2)
+        sparse_code = dico.transform(data)
+        # code = self.code(data, dico)
+        Z = np.mean(sparse_code**2)
         fig = plt.figure(figsize=(12, 4))
         ax = fig.add_subplot(111)
-        ax.bar(np.arange(self.n_components), np.mean(code**2/Z, axis=0))#, yerr=np.std(code**2/Z, axis=0))
+        ax.bar(np.arange(self.n_components), np.mean(sparse_code**2/Z, axis=0))#, yerr=np.std(code**2/Z, axis=0))
         ax.set_title('Variance of coefficients')
         ax.set_ylabel('Variance')
         ax.set_xlabel('#')
-        ax.axis('tight')
+        ax.set_xlim(0, self.n_components)
         if not fname is None: fig.savefig(fname, dpi=200)
         return fig, ax
 
     def plot_variance_histogram(self, dico, name_database='serre07_distractors', fname=None):
+        from scipy.stats import gamma
         data = self.get_data(name_database)
         import pandas as pd
         import seaborn as sns
@@ -223,12 +226,12 @@ class SHL(object):
         ax = fig.add_subplot(111)
         data = pd.DataFrame(np.mean(code**2, axis=0)/np.mean(code**2), columns=['Variance'])
         with sns.axes_style("white"):
-            ax = sns.distplot(data['Variance'],  kde_kws={'clip':(0., 5.)})
+            ax = sns.distplot(data['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
         ax.set_title('distribution of the mean variance of coefficients')
         ax.set_ylabel('pdf')
         if not fname is None: fig.savefig(fname, dpi=200)
-        return fig, ax        
-    
+        return fig, ax
+
 if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 0
