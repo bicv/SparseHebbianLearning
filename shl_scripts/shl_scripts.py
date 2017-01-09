@@ -48,6 +48,9 @@ from sklearn.feature_extraction.image import extract_patches_2d
 from SLIP import Image
 import numpy as np
 
+import warnings
+warnings.simplefilter('ignore', category=RuntimeWarning)
+
 class SHL(object):
     """
     Base class to define SHL experiments:
@@ -208,7 +211,7 @@ class SHL(object):
         Z = np.mean(sparse_code**2)
         fig = plt.figure(figsize=(12, 4))
         ax = fig.add_subplot(111)
-        ax.bar(np.arange(self.n_components), np.mean(sparse_code**2/Z, axis=0))#, yerr=np.std(code**2/Z, axis=0))
+        ax.bar(np.arange(self.n_components), np.mean(sparse_code**2, axis=0)/Z)#, yerr=np.std(code**2/Z, axis=0))
         ax.set_title('Variance of coefficients')
         ax.set_ylabel('Variance')
         ax.set_xlabel('#')
@@ -218,17 +221,20 @@ class SHL(object):
 
     def plot_variance_histogram(self, dico, name_database='serre07_distractors', fname=None):
         from scipy.stats import gamma
-        data = self.get_data(name_database)
         import pandas as pd
         import seaborn as sns
-        code = self.code(data, dico)
+        data = self.get_data(name_database)
+        sparse_code = dico.transform(data)
+        Z = np.mean(sparse_code**2)
+        df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
+        #code = self.code(data, dico)
         fig = plt.figure(figsize=(6, 4))
         ax = fig.add_subplot(111)
-        data = pd.DataFrame(np.mean(code**2, axis=0)/np.mean(code**2), columns=['Variance'])
         with sns.axes_style("white"):
-            ax = sns.distplot(data['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
+            ax = sns.distplot(df['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
         ax.set_title('distribution of the mean variance of coefficients')
         ax.set_ylabel('pdf')
+        ax.set_xlim(0)
         if not fname is None: fig.savefig(fname, dpi=200)
         return fig, ax
 
