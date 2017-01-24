@@ -131,7 +131,7 @@ class SHL(object):
             # collect everything as a matrix
             try:
                 data = np.vstack((data, data_))
-            except:
+            except Exception:
                 data = data_.copy()
             if self.verbose:
                 # update the bar
