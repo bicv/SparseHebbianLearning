@@ -14,8 +14,8 @@ setup(
     long_description=open('README.rst').read(),
     license='LICENSE.txt',
     keywords="Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit",
-    url = 'https://github.com/meduz/' + NAME, # use the URL to the github repo
-    download_url = 'https://github.com/meduz/' + NAME + '/tarball/' + VERSION,
+    url = 'https://github.com/laurentperrinet/' + NAME, # use the URL to the github repo
+    download_url = 'https://github.com/laurentperrinet/' + NAME + '/tarball/' + VERSION,
     classifiers = ['Development Status :: 3 - Alpha',
                'Environment :: Console',
                'License :: OSI Approved :: GNU General Public License (GPL)',
