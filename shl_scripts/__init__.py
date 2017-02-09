@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, absolute_import
 __author__ = "Laurent Perrinet INT - CNRS"
-__version__ = '2016-12-05'
+__version__ = '2017-02-09'
 __licence__ = 'GPLv2'
 __all__ = []
 
