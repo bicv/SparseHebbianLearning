@@ -69,9 +69,9 @@ class SHL(object):
                  alpha=None,
                  l0_sparseness=10,
                  n_iter=2**14,
-                 eta=.005,
-                 eta_homeo=.08,
-                 alpha_homeo=.03,
+                 eta=.01,
+                 eta_homeo=.05,
+                 alpha_homeo=.2,
                  max_patches=1024,
                  batch_size=256,
                  n_image=200,
@@ -152,7 +152,7 @@ class SHL(object):
         t0 = time.time()
         dico = SparseHebbianLearning(eta=self.eta,
                                      n_dictionary=self.n_dictionary, n_iter=self.n_iter,
-                                     gain_rate=self.eta_homeo, alpha_homeo=self.alpha_homeo,
+                                     eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                      l0_sparseness=self.l0_sparseness,
                                      batch_size=self.batch_size, verbose=self.verbose,
                                      fit_tol=self.alpha, **kwargs)
@@ -247,7 +247,7 @@ class SparseHebbianLearning:
     n_iter : int,
         total number of iterations to perform
 
-    gain_rate : float
+    eta_homeo : float
         Gives the learning parameter for the homeostatic gain.
 
     alpha_homeo : float
@@ -305,14 +305,14 @@ class SparseHebbianLearning:
 
     """
     def __init__(self, n_dictionary=None, eta=0.02, n_iter=40000,
-                 gain_rate=0.001, alpha_homeo=0.02, dict_init=None,
+                 eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
                  fit_algorithm='mp', batch_size=100,
                  l0_sparseness=None, fit_tol=None,
                  verbose=False, random_state=None):
         self.eta = eta
         self.n_dictionary = n_dictionary
         self.n_iter = n_iter
-        self.gain_rate = gain_rate
+        self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
         self.fit_algorithm = fit_algorithm
         self.batch_size = batch_size
@@ -339,7 +339,7 @@ class SparseHebbianLearning:
 
         self.dictionary = dict_learning(
             X, self.eta, self.n_dictionary, self.l0_sparseness,
-            n_iter=self.n_iter, gain_rate=self.gain_rate, alpha_homeo=self.alpha_homeo,
+            n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
             method=self.fit_algorithm, dict_init=self.dict_init,
             batch_size=self.batch_size, verbose=self.verbose, random_state=self.random_state)
 
@@ -367,7 +367,7 @@ class SparseHebbianLearning:
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
-                       gain_rate=0.01, alpha_homeo=0.02, dict_init=None,
+                       eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
                        batch_size=100, verbose=False,
                        method='mp', random_state=None):
     """
@@ -410,7 +410,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
     n_iter : int,
         total number of iterations to perform
 
-    gain_rate : float
+    eta_homeo : float
         Gives the learning parameter for the homeostatic gain.
 
     alpha_homeo : float
@@ -465,7 +465,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
     if verbose == 1:
         print('[dict_learning]', end=' ')
     gain = np.ones(n_dictionary)
-    gain_ = np.ones(n_dictionary)
+    mean_var = np.ones(n_dictionary)
     if method=='comp':
         mod = np.dot(np.linspace(1., 0, n_components, endpoint=True).T, np.ones((n_samples, 1)))
     else:
@@ -487,23 +487,27 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
                        % (ii, n_iter, dt, dt//60))
 
+        # Sparse cooding
         sparse_code = sparse_encode(this_X, dictionary, algorithm=method, fit_tol=fit_tol,
                                   mod=mod, l0_sparseness=l0_sparseness)
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
-        residual /= sparse_code.shape[1] # divide by the number of samples
+        residual /= n_dictionary # divide by the number of features
         dictionary += eta * sparse_code.T @ residual
+
+        # Update mod
+        if method=='comp': mod = update_mod(mod, dictionary.T, X.T, eta_homeo, verbose=verbose)
+
+        # homeostasis
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
-        # Update mod
-        if method=='comp': mod = update_mod(mod, dictionary.T, X.T, gain_rate, verbose=verbose)
-
         # Update and apply gain
-        if gain_rate>0.:
-            gain_ = update_gain(gain_, sparse_code, gain_rate, verbose=verbose)
-            gain = gain_**alpha_homeo
+        if eta_homeo>0.:
+            mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
+            gain = mean_var**alpha_homeo
             gain /= gain.mean()
+            # print(np.mean(sparse_code**2, axis=0), gain, gain.mean())
             dictionary /= gain[:, np.newaxis]
 
     if verbose > 1:
@@ -518,7 +522,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
     return dictionary
 
 
-def update_gain(gain, code, gain_rate, verbose=False):
+def update_gain(gain, code, eta_homeo, verbose=False):
     """Update the estimated variance of coefficients in place.
 
     Following the classical SparseNet algorithm from Olshausen, we
@@ -543,7 +547,7 @@ def update_gain(gain, code, gain_rate, verbose=False):
     code: array of shape (n_dictionary, n_samples)
         Sparse coding of the data against which to optimize the dictionary.
 
-    gain_rate: float
+    eta_homeo: float
         Gives the learning parameter for the gain.
 
     verbose:
@@ -557,14 +561,14 @@ def update_gain(gain, code, gain_rate, verbose=False):
     """
     if code.ndim == 1:
         code = code[:, np.newaxis]
-    if gain_rate>0.:
+    if eta_homeo>0.:
         n_dictionary, n_samples = code.shape
         #print (gain.shape) # assert gain.shape == n_dictionary
-        gain = (1 - gain_rate)*gain + gain_rate * np.mean(code**2, axis=0)
+        gain = (1 - eta_homeo)*gain + eta_homeo * np.mean(code**2, axis=0)/np.sum(code**2)
     return gain
 
 
-def update_mod(mod, dictionary, X, gain_rate, verbose=False):
+def update_mod(mod, dictionary, X, eta_homeo, verbose=False):
     """Update the estimated modulation function in place.
 
     Parameters
@@ -580,7 +584,7 @@ def update_mod(mod, dictionary, X, gain_rate, verbose=False):
     X: array of shape (n_samples, n_features)
         Data matrix.
 
-    gain_rate: float
+    eta_homeo: float
         Gives the learning parameter for the mod.
 
     verbose:
@@ -592,10 +596,10 @@ def update_mod(mod, dictionary, X, gain_rate, verbose=False):
         Updated value of the modulation function.
 
     """
-    if gain_rate>0.:
+    if eta_homeo>0.:
         coef = np.dot(dictionary, X.T).T
         mod_ = -np.sort(-np.abs(coef), axis=0)
-        mod = (1 - gain_rate)*mod + gain_rate * mod_
+        mod = (1 - eta_homeo)*mod + eta_homeo * mod_
     return mod
 
 def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
