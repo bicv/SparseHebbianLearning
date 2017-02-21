@@ -2,7 +2,7 @@ Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 
-.. image:: assc.png
+.. image:: probe/assc.png
    :scale: 100%
    :alt: Set of RFs after aSSC learning.
  
