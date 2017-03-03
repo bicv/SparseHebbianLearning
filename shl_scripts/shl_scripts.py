@@ -33,6 +33,7 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
 
 import time
 import sys
+import os
 
 toolbar_width = 40
 
@@ -51,8 +52,8 @@ import numpy as np
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
 
-### Modification temporaire pour faire fonctionner la fonction extract_patches_2d
-#from bricolage import extract_patches_2d
+def touch(fname):
+    open(fname, 'w').close()
 
 class SHL(object):
     """
@@ -102,7 +103,18 @@ class SHL(object):
         self.alpha_homeo = alpha_homeo
 
         self.verbose = verbose
+        # assigning and create a folder for caching data
         self.data_cache = './data_cache'
+        if not self.data_cache is None:
+            try:
+                os.mkdir(self.data_cache)
+            except:
+                pass
+
+        # creating a tag related to this process
+        PID, HOST = os.getpid(), os.uname()[1]
+        self.LOCK = '_lock' + '_pid-' + str(PID) + '_host-' + HOST
+
 
         # Load natural images and extract patches
         self.slip = Image({'N_X':height, 'N_Y':width,
@@ -156,23 +168,49 @@ class SHL(object):
         return data
 
 
-    def learn_dico(self, data=None, name_database='serre07_distractors', **kwargs):
-        if data is None: data = self.get_data(name_database)
-        # Learn the dictionary from reference patches
-        if self.verbose: print('Learning the dictionary...', end=' ')
-        t0 = time.time()
-        dico = SparseHebbianLearning(eta=self.eta,
-                                     n_dictionary=self.n_dictionary, n_iter=self.n_iter,
-                                     eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
-                                     l0_sparseness=self.l0_sparseness,
-                                     batch_size=self.batch_size, verbose=self.verbose,
-                                     fit_tol=self.alpha, **kwargs)
-        if self.verbose: print('Training on %d patches' % len(data), end='... ')
-        dico.fit(data)
-        if self.verbose:
-            dt = time.time() - t0
-            print('done in %.2fs.' % dt)
-        return dico
+    def learn_dico(self, data=None, name_database='serre07_distractors', matname=None, **kwargs):
+
+        if matname is None:
+            if data is None: data = self.get_data(name_database)
+            # Learn the dictionary from reference patches
+            if self.verbose: print('Learning the dictionary...', end=' ')
+            t0 = time.time()
+            dico = SparseHebbianLearning(eta=self.eta,
+                                         n_dictionary=self.n_dictionary, n_iter=self.n_iter,
+                                         eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
+                                         l0_sparseness=self.l0_sparseness,
+                                         batch_size=self.batch_size, verbose=self.verbose,
+                                         fit_tol=self.alpha, **kwargs)
+            if self.verbose: print('Training on %d patches' % len(data), end='... ')
+            dico.fit(data)
+            if self.verbose:
+                dt = time.time() - t0
+                print('done in %.2fs.' % dt)
+            return dico
+
+        else:
+            import pickle
+            fmatname = os.path.join(self.data_cache, matname)
+            if not(os.path.isfile(fmatname)):
+                time.sleep(np.random.rand()*0.1)
+                if not(os.path.isfile(fmatname + '_lock')):
+                    touch(fmatname + '_lock')
+                    touch(fmatname + self.LOCK)
+                    dico = self.learn_dico(data=data, name_database=name_database, matname=None, **kwargs)
+                    with open(fmatname, 'wb') as fp:
+                        pickle.dump(dico, fp)
+                    try:
+                        os.remove(fmatname + self.LOCK)
+                        os.remove(fmatname + '_lock')
+                    except:
+                        print('Coud not remove ', fmatname + LOCK)
+                else:
+                    print('the computation is locked')
+            else:
+                with open(fmatname, 'rb') as fp:
+                    dico = pickle.load(fp)
+                return dico
+
 
     def code(self, data, dico, coding_algorithm='mp', **kwargs):
         if self.verbose:
@@ -517,20 +555,20 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
         # Update and apply gain
-<<<<<<< HEAD
-        if gain_rate>0.:
-            gain_ = update_gain(gain_, sparse_code, gain_rate, verbose=verbose)
-            gain_ /= gain_.mean()
-            gain = gain_**alpha_homeo
-            #gain /= gain.mean()
-            #print(gain_, gain)
-=======
+# <<<<<<< HEAD
+#         if gain_rate>0.:
+#             gain_ = update_gain(gain_, sparse_code, gain_rate, verbose=verbose)
+#             gain_ /= gain_.mean()
+#             gain = gain_**alpha_homeo
+#             #gain /= gain.mean()
+#             #print(gain_, gain)
+# =======
         if eta_homeo>0.:
             mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
             gain = mean_var**alpha_homeo
             gain /= gain.mean()
             # print(np.mean(sparse_code**2, axis=0), gain, gain.mean())
->>>>>>> origin/master
+# >>>>>>> origin/master
             dictionary /= gain[:, np.newaxis]
 
     if verbose > 1:
