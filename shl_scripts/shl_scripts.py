@@ -44,10 +44,15 @@ import numpy as np
 
 # see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
 from SLIP import Image
+
 import numpy as np
+
 
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
+
+### Modification temporaire pour faire fonctionner la fonction extract_patches_2d
+#from bricolage import extract_patches_2d
 
 class SHL(object):
     """
@@ -125,6 +130,9 @@ class SHL(object):
             image, filename_, croparea_ = self.slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, , seed=seed)
             image = self.slip.whitening(image)
             # Extract all reference patches and ravel them
+
+            ### Modification temporaire pour faire fonctionner la fonction extract_patches_2d
+            #data_ = extract_patches_2d(self.height,self.width,image, self.patch_size, N_patches=int(self.max_patches))
             data_ = self.slip.extract_patches_2d(image, self.patch_size, N_patches=int(self.max_patches))#, seed=seed)
             data_ = data_.reshape(data_.shape[0], -1)
             data_ -= np.mean(data_, axis=0)
@@ -148,8 +156,8 @@ class SHL(object):
         return data
 
 
-    def learn_dico(self, name_database='serre07_distractors', **kwargs):
-        data = self.get_data(name_database)
+    def learn_dico(self, data=None, name_database='serre07_distractors', **kwargs):
+        if data is None: data = self.get_data(name_database)
         # Learn the dictionary from reference patches
         if self.verbose: print('Learning the dictionary...', end=' ')
         t0 = time.time()
@@ -179,7 +187,8 @@ class SHL(object):
             print('done in %.2fs.' % dt)
         return patches
 
-    def show_dico(self, dico, title=None, fname=None):
+    def show_dico(self, dico, title=None, fname=None, **kwargs):
+
         subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
         fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
         for i, component in enumerate(dico.dictionary):
@@ -195,8 +204,9 @@ class SHL(object):
         if not fname is None: fig.savefig(fname, dpi=200)
         return fig, ax
 
-    def plot_variance(self, dico, name_database='serre07_distractors', fname=None):
-        data = self.get_data(name_database)
+    def plot_variance(self, dico, data=None, name_database='serre07_distractors', fname=None, **kwargs):
+        if data is None: data = self.get_data(name_database)
+        #data = self.get_data(name_database)
         sparse_code = dico.transform(data)
         # code = self.code(data, dico)
         Z = np.mean(sparse_code**2)
@@ -210,11 +220,12 @@ class SHL(object):
         if not fname is None: fig.savefig(fname, dpi=200)
         return fig, ax
 
-    def plot_variance_histogram(self, dico, name_database='serre07_distractors', fname=None):
+    def plot_variance_histogram(self, dico, data=None, name_database='serre07_distractors', fname=None):
         from scipy.stats import gamma
         import pandas as pd
         import seaborn as sns
-        data = self.get_data(name_database)
+        if data is None: data = self.get_data(name_database)
+        #data = self.get_data(name_database)
         sparse_code = dico.transform(data)
         Z = np.mean(sparse_code**2)
         df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
@@ -506,11 +517,20 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
         # Update and apply gain
+<<<<<<< HEAD
+        if gain_rate>0.:
+            gain_ = update_gain(gain_, sparse_code, gain_rate, verbose=verbose)
+            gain_ /= gain_.mean()
+            gain = gain_**alpha_homeo
+            #gain /= gain.mean()
+            #print(gain_, gain)
+=======
         if eta_homeo>0.:
             mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
             gain = mean_var**alpha_homeo
             gain /= gain.mean()
             # print(np.mean(sparse_code**2, axis=0), gain, gain.mean())
+>>>>>>> origin/master
             dictionary /= gain[:, np.newaxis]
 
     if verbose > 1:
