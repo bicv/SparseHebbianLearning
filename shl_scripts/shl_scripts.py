@@ -77,6 +77,7 @@ class SHL(object):
                  n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
+                 data_cache = './data_cache',
                  ):
         self.height = height
         self.width = width
@@ -96,6 +97,8 @@ class SHL(object):
         self.alpha_homeo = alpha_homeo
 
         self.verbose = verbose
+        self.data_cache = './data_cache'
+
         # Load natural images and extract patches
         self.slip = Image({'N_X':height, 'N_Y':width,
                                         'white_n_learning' : 0,
