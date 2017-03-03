@@ -204,6 +204,7 @@ class SHL(object):
                     except:
                         print('Coud not remove ', fmatname + LOCK)
                 else:
+
                     print('the computation is locked')
             else:
                 with open(fmatname, 'rb') as fp:
