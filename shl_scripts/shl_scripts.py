@@ -186,7 +186,6 @@ class SHL(object):
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
-            return dico
 
         else:
             import pickle
@@ -209,7 +208,7 @@ class SHL(object):
             else:
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
-                return dico
+        return dico
 
 
     def code(self, data, dico, coding_algorithm='mp', **kwargs):
