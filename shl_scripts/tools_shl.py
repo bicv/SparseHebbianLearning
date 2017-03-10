@@ -7,8 +7,23 @@ import encode_shl
 import math
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+from scipy.stats import gamma
 
 toolbar_width = 40
+
+'''doing a range of non integer number to make histogramm more beautiful'''
+def bins_step(mini,maxi,nb_step):
+    step=(maxi-mini)/10
+    out=list()
+    a=mini
+    for i in range(nb_step+1):
+        out.append(a)
+        a=a+step
+    return out
+
+
 ''' Extract database
 Extract from a given database composed of image of size (height,width) a series a random patch
 '''
@@ -135,7 +150,7 @@ def show_dico(dico,data, title=None, fname=None, **kwargs):
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
     dim_patch=int(np.sqrt(data.shape[1]))
-    
+
     for i, component in enumerate(dico.dictionary):
         ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
         cmax = np.max(np.abs(component))
@@ -146,4 +161,107 @@ def show_dico(dico,data, title=None, fname=None, **kwargs):
     if title is not None:
         fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
     if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax
+
+'''Plot the coeff distribution of a given dictionary'''
+def plot_coeff_distribution(dico,data,algorithm=None,fname=None):
+    nb_dico=dico.dictionary.shape[0]
+    nb_of_patch=data.shape[0]
+    if algorithm is not None :
+        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    else :
+        sparse_code= dico.transform(data)
+    res=0
+    i=0
+    res_lst=list()
+
+    for j in range(nb_dico):
+        res=0
+        while i<nb_of_patch:
+            if sparse_code[i,j]!=0 : res+=1
+            i+=1
+        res_lst.append(res)
+        i=0
+
+    df=pd.DataFrame(res_lst, columns=['Coeff'])
+    fig = plt.figure(figsize=(6, 4))
+    ax = fig.add_subplot(111)
+    with sns.axes_style("white"):
+        ax = sns.distplot(df['Coeff'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
+    ax.set_title('distribution of coefficients')
+    ax.set_ylabel('pdf')
+    ax.set_xlim(0)
+    if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax
+
+
+'''plot the coefficient distribution of the filter which is selected the more, and the one which is selected the less'''
+def plot_dist_max_min(dico,data,algorithm=None,fname=None):
+    if algorithm is not None :
+        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    else :
+        sparse_code= dico.transform(data)
+    nb_dico=dico.dictionary.shape[0]
+    nb_of_patch=data.shape[0]
+    res=0
+    i=0
+    res_lst=list()
+    for j in range(nb_dico):
+        res=0
+        while i<nb_of_patch:
+            if sparse_code[i,j]!=0 : res+=1
+            i+=1
+        res_lst.append(res)
+        i=0
+    a=np.asarray(res_lst)
+    index_max=np.argmax(a)
+    index_min=np.argmin(a)
+    coeff_max = np.abs(sparse_code[:,index_max])
+    coeff_min = np.abs(sparse_code[:,index_min])
+    bins_max = bins_step(0.0001,np.max(coeff_max),20)
+    bins_min = bins_step(0.0001,np.max(coeff_min),20)
+    fig = plt.figure(figsize=(6, 8))
+    with sns.axes_style("white"):
+        ax = plt.subplot(2,1,1)
+        ax = sns.distplot(coeff_max,bins=bins_max, kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
+        ax1=plt.subplot(2,1,2)
+        ax1= sns.distplot(coeff_min,bins=bins_min, kde=False)
+    ax.set_title('distribution of max')
+    ax.set_ylabel('Probability')
+    ax.set_xlim(0)
+    ax1.set_title('distribution of min')
+    ax1.set_ylabel('Probability')
+    ax1.set_xlim(0)
+    if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax
+
+'''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
+def plot_variance_and_proxy(dico, data,algorithm=None, fname=None):
+    if algorithm is not None :
+        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    else :
+        sparse_code= dico.transform(data)
+    Z = np.mean(sparse_code**2)
+    P_norm=np.mean(sparse_code**2, axis=0)/Z
+    df = pd.DataFrame(P_norm, columns=['P'])
+    mom1= np.mean(P_norm)
+    mom2 = (1/(dico.dictionary.shape[0]-1))*np.sum((P_norm-mom1)**2)
+    Q=np.random.normal(mom1,mom2,dico.dictionary.shape[0])
+    df1=pd.DataFrame(Q, columns=['Q'])
+    #code = self.code(data, dico)
+    fig = plt.figure(figsize=(6, 4))
+    ax = fig.add_subplot(111)
+    #bins=[0, 10, 20, 30, 40, 50, 100]
+    mini=min(np.min(P_norm),np.min(Q))
+    maxi=max(np.max(P_norm),np.max(Q))
+    bins=bins_step(mini,maxi,20)
+    with sns.axes_style("white"):
+        ax = sns.distplot(df['P'],bins=bins,kde=False)
+        ax = sns.distplot(df1['Q'],bins=bins, kde=False)
+        #ax = sns.distplot(df['P'], bins=frange(0.0,4.0,0.2),kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
+        #ax = sns.distplot(df1['Q'],bins=frange(0.0,4.0,0.2), kde=False)
+    ax.set_title('distribution of the mean variance of coefficients')
+    ax.set_ylabel('pdf')
+    if not fname is None: fig.savefig(fname, dpi=200)
+    #print(mom1,mom2)
     return fig, ax
