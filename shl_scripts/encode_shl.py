@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
                           mod=None, l0_sparseness=10, verbose=0):
     """Generic sparse coding
