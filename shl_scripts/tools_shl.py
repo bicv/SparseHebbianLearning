@@ -5,6 +5,8 @@ import time
 import numpy as np
 import encode_shl
 import math
+import matplotlib
+import matplotlib.pyplot as plt
 
 toolbar_width = 40
 ''' Extract database
@@ -62,6 +64,7 @@ def get_data(height=256,width=256,n_image=200,patch_size=(12,12),
         sys.stdout.flush()
     return data
 
+''' Compute the Root Mean Square Error between the image and it's encoded representation'''
 def compute_RMSE(data, dico, algorithm=None):
     if algorithm is not None :
         a=encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
@@ -72,16 +75,75 @@ def compute_RMSE(data, dico, algorithm=None):
     rmse=math.sqrt(np.mean(b))
     return rmse
 
+'''Compute the Kullback Leibler ratio to compare a distribution to its gaussian equivalent.
+    if the KL is close to 1, the studied distribution is closed to a gaussian'''
 def compute_KL(data, dico, algorithm=None):
     if algorithm is not None :
         sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
     N=dico.dictionary.shape[0]
-    #Z = np.mean(sparse_code**2)
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
     mom1 = np.sum(P_norm)/dico.dictionary.shape[0]
     mom2 = np.sum((P_norm-mom1)**2)/(dico.dictionary.shape[0]-1)
-    #Q = np.random.normal(mom1,mom2,dico.dictionary.shape[0])
     KL = 1/N * np.sum( (P_norm-mom1)**2 / mom2**2 )
     return KL
+
+'''Display a the dictionary of filter in order of probability of selection.
+    Filter which are selected more often than others are located at the end'''
+def show_dico_in_order(dico,data,algorithm=None,title=None, fname=None):
+    subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
+    fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
+    if algorithm is not None :
+        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    else :
+        sparse_code= dico.transform(data)
+    dim_graph=dico.dictionary.shape[0]
+    nb_of_patch=data.shape[0]
+    res=0
+    i=0
+    res_lst=list()
+    for j in range(dim_graph):
+        res=0
+        while i<nb_of_patch:
+            if sparse_code[i,j]!=0 : res+=1
+            i+=1
+        res_lst.append(res)
+        i=0
+
+    a=np.asarray(res_lst).argsort()
+    dim_graph=dico.dictionary.shape[0]
+    dim_patch=int(np.sqrt(data.shape[1]))
+
+    for i in range(dim_graph):
+        ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
+        index_to_consider=a[i]
+        dico_to_display=dico.dictionary[index_to_consider]
+        cmax = np.max(np.abs(dico_to_display))
+        ax.imshow(dico_to_display.reshape((dim_patch,dim_patch)), cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
+                interpolation='nearest')
+        ax.set_xticks(())
+        ax.set_yticks(())
+    if title is not None:
+        fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
+    if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax
+
+'''display the dictionary in a random order '''
+def show_dico(dico,data, title=None, fname=None, **kwargs):
+    dim_graph=dico.dictionary.shape[0]
+    subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
+    fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
+    dim_patch=int(np.sqrt(data.shape[1]))
+    
+    for i, component in enumerate(dico.dictionary):
+        ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
+        cmax = np.max(np.abs(component))
+        ax.imshow(component.reshape((dim_patch,dim_patch)), cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
+                interpolation='nearest')
+        ax.set_xticks(())
+        ax.set_yticks(())
+    if title is not None:
+        fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
+    if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax
