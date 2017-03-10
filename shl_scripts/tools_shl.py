@@ -3,6 +3,8 @@ from SLIP import Image
 import sys
 import time
 import numpy as np
+import encode_shl
+import math
 
 toolbar_width = 40
 ''' Extract database
@@ -59,3 +61,23 @@ def get_data(height=256,width=256,n_image=200,patch_size=(12,12),
         sys.stdout.write(' - done in %.2fs.' % dt)
         sys.stdout.flush()
     return data
+
+def compute_RMSE(data, dico, algorithm='mp'):
+    a=encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    residual=data - a@dico.dictionary
+    b=np.sum(residual**2,axis=1)/np.sqrt(np.sum(data**2,axis=1))
+    rmse=math.sqrt(np.mean(b))
+    return rmse
+
+def compute_KL(data, dico, algorithm='mp'):
+    #sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    sparse_code=encode_shl.sparse_encode(data,dico.dictionary)
+
+    N=dico.dictionary.shape[0]
+    #Z = np.mean(sparse_code**2)
+    P_norm = np.mean(sparse_code**2, axis=0)#/Z
+    mom1 = np.sum(P_norm)/dico.dictionary.shape[0]
+    mom2 = np.sum((P_norm-mom1)**2)/(dico.dictionary.shape[0]-1)
+    #Q = np.random.normal(mom1,mom2,dico.dictionary.shape[0])
+    KL = 1/N * np.sum( (P_norm-mom1)**2 / mom2**2 )
+    return KL
