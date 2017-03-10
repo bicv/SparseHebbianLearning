@@ -548,7 +548,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         residual /= n_dictionary # divide by the number of features
         dictionary += eta * sparse_code.T @ residual
 
-        # Update mod
+        # Update
         if method=='comp': mod = update_mod(mod, dictionary.T, X.T, eta_homeo, verbose=verbose)
 
         # homeostasis
@@ -563,12 +563,19 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
 #             #gain /= gain.mean()
 #             #print(gain_, gain)
 # =======
+#<<<<<<< HEAD
+        #if eta_homeo>0.:
+        #    gain_ = update_gain(gain_, sparse_code, eta_homeo, verbose=verbose)
+        #    gain_ /= gain_.mean()
+        #    gain = gain_**alpha_homeo
+            #gain /= gain.mean()
+            #print(gain_, gain)
+
         if eta_homeo>0.:
             mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
             gain = mean_var**alpha_homeo
             gain /= gain.mean()
             # print(np.mean(sparse_code**2, axis=0), gain, gain.mean())
-# >>>>>>> origin/master
             dictionary /= gain[:, np.newaxis]
 
     if verbose > 1:
@@ -625,7 +632,7 @@ def update_gain(gain, code, eta_homeo, verbose=False):
     if eta_homeo>0.:
         n_dictionary, n_samples = code.shape
         #print (gain.shape) # assert gain.shape == n_dictionary
-        gain = (1 - eta_homeo)*gain + eta_homeo * np.mean(code**2, axis=0)/np.sum(code**2)
+        gain = (1 - eta_homeo)*gain + eta_homeo * np.mean(code**2, axis=0)/np.mean(code**2)
     return gain
 
 
