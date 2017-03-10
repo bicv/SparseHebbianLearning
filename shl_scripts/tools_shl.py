@@ -62,17 +62,21 @@ def get_data(height=256,width=256,n_image=200,patch_size=(12,12),
         sys.stdout.flush()
     return data
 
-def compute_RMSE(data, dico, algorithm='mp'):
-    a=encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+def compute_RMSE(data, dico, algorithm=None):
+    if algorithm is not None :
+        a=encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    else :
+        a=dico.transform(data)
     residual=data - a@dico.dictionary
     b=np.sum(residual**2,axis=1)/np.sqrt(np.sum(data**2,axis=1))
     rmse=math.sqrt(np.mean(b))
     return rmse
 
-def compute_KL(data, dico, algorithm='mp'):
-    #sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
-    sparse_code=encode_shl.sparse_encode(data,dico.dictionary)
-
+def compute_KL(data, dico, algorithm=None):
+    if algorithm is not None :
+        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    else :
+        sparse_code= dico.transform(data)
     N=dico.dictionary.shape[0]
     #Z = np.mean(sparse_code**2)
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
