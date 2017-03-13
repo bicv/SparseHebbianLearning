@@ -176,11 +176,13 @@ class SHL(object):
             if self.verbose: print('Learning the dictionary...', end=' ')
             t0 = time.time()
             dico = SparseHebbianLearning(eta=self.eta,
+                                        fit_algorithm=self.learning_algorithm,
                                          n_dictionary=self.n_dictionary, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
-                                         fit_tol=self.alpha, **kwargs)
+                                         fit_tol=self.alpha,
+                                          **kwargs)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
             if self.verbose:
