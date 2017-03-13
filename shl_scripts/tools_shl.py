@@ -51,12 +51,10 @@ def get_data(height=256,width=256,n_image=200,patch_size=(12,12),
     imagelist = slip.make_imagelist(name_database=name_database)#, seed=seed)
     for filename, croparea in imagelist:
         # whitening
-        image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, , seed=seed)
+        image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, seed=seed)
         image = slip.whitening(image)
         # Extract all reference patches and ravel them
 
-        ### Modification temporaire pour faire fonctionner la fonction extract_patches_2d
-        #data_ = extract_patches_2d(self.height,self.width,image, self.patch_size, N_patches=int(self.max_patches))
         data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))#, seed=seed)
         data_ = data_.reshape(data_.shape[0], -1)
         data_ -= np.mean(data_, axis=0)
