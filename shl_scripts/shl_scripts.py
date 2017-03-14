@@ -130,9 +130,9 @@ class SHL(object):
                                         'N_image': n_image})
 
     def dev_get_data(self,name_database,seed=None,patch_norm=True):
-        return tools_shl.get_data(height=self.height,width=self.width,n_image=self.n_image,
-                    patch_size=self.patch_size,datapath=self.database,name_database=name_database,
-                    max_patches=self.max_patches,seed=None,patch_norm=True,
+        return tools_shl.get_data(height=self.height, width=self.width, n_image=self.n_image,
+                    patch_size=self.patch_size, datapath=self.database, name_database=name_database,
+                    max_patches=self.max_patches, seed=None, patch_norm=True,
                     verbose=self.verbose)
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
