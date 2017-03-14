@@ -42,7 +42,7 @@ import time
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import tools_shl
 # see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
 from SLIP import Image
 
@@ -129,52 +129,20 @@ class SHL(object):
                                         'do_mask':True,
                                         'N_image': n_image})
 
-    def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True):
-        if self.verbose:
-            # setup toolbar
-            sys.stdout.write('Extracting data...')
-            sys.stdout.flush()
-            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
-            t0 = time.time()
-        imagelist = self.slip.make_imagelist(name_database=name_database)#, seed=seed)
-        for filename, croparea in imagelist:
-            # whitening
-            image, filename_, croparea_ = self.slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, , seed=seed)
-            image = self.slip.whitening(image)
-            # Extract all reference patches and ravel them
-
-            ### Modification temporaire pour faire fonctionner la fonction extract_patches_2d
-            #data_ = extract_patches_2d(self.height,self.width,image, self.patch_size, N_patches=int(self.max_patches))
-            data_ = self.slip.extract_patches_2d(image, self.patch_size, N_patches=int(self.max_patches))#, seed=seed)
-            data_ = data_.reshape(data_.shape[0], -1)
-            data_ -= np.mean(data_, axis=0)
-            if patch_norm:
-                data_ /= np.std(data_, axis=0)
-            # collect everything as a matrix
-            try:
-                data = np.vstack((data, data_))
-            except Exception:
-                data = data_.copy()
-            if self.verbose:
-                # update the bar
-                sys.stdout.write(filename + ", ")
-                sys.stdout.flush()
-        if self.verbose:
-            dt = time.time() - t0
-            sys.stdout.write("\n")
-            sys.stdout.write("Data is of shape : "+ str(data.shape))
-            sys.stdout.write(' - done in %.2fs.' % dt)
-            sys.stdout.flush()
+    def dev_get_data(self,name_database,seed=None,patch_norm=True):
+        data=tools_shl(height=self.height,width=self.width,n_image=self.n_image,
+                    patch_size=self.patch_size,datapath=self.database,name_database=name_database,
+                    max_patches=self.max_patches,seed=None,patch_norm=True,
+                    verbose=self.verbose)
         return data
-
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, record_each=0, **kwargs):
 
         if matname is None:
-            if data is None: data = self.get_data(name_database)
+            if data is None: data = self.dev_get_data(name_database)
             # Learn the dictionary from reference patches
-            if self.verbose: print('Learning the dictionary...', end=' ')
+            if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
             dico = SparseHebbianLearning(eta=self.eta,
                                         fit_algorithm=self.learning_algorithm,
@@ -229,22 +197,6 @@ class SHL(object):
             print('done in %.2fs.' % dt)
         return patches
 
-    def show_dico(self, dico, title=None, fname=None, **kwargs):
-
-        subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
-        fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
-        for i, component in enumerate(dico.dictionary):
-            ax = fig.add_subplot(np.sqrt(self.n_dictionary), np.sqrt(self.n_dictionary), i + 1)
-            cmax = np.max(np.abs(component))
-            ax.imshow(component.reshape(self.patch_size), cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
-                    interpolation='nearest')
-            ax.set_xticks(())
-            ax.set_yticks(())
-        if title is not None:
-            fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
-        #fig.tight_layout(rect=[0, 0, .9, 1])
-        if not fname is None: fig.savefig(fname, dpi=200)
-        return fig, ax
 
     def plot_variance(self, dico, data=None, name_database='serre07_distractors', fname=None, **kwargs):
         if data is None: data = self.get_data(name_database)
