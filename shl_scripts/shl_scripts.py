@@ -338,7 +338,7 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, algorithm=algorithm,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
-    def time_plot(self, fname=None, N_nosample=0):
+    def time_plot(self, fname=None, N_nosample=1):
         return tools_shl.time_plot(self, fname=fname, N_nosample=N_nosample)
 
 
