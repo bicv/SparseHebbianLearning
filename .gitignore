@@ -1,3 +1,4 @@
+probe/data_cache/
 .ipynb_checkpoints
 index_files
 shl_scripts/SHL_scripts.egg-info

@@ -168,7 +168,8 @@ class SHL(object):
         return data
 
 
-    def learn_dico(self, data=None, name_database='serre07_distractors', matname=None, **kwargs):
+    def learn_dico(self, data=None, name_database='serre07_distractors',
+                   matname=None, record_each=0, **kwargs):
 
         if matname is None:
             if data is None: data = self.get_data(name_database)
@@ -182,6 +183,7 @@ class SHL(object):
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.alpha,
+                                         record_each=record_each,
                                           **kwargs)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
@@ -362,7 +364,7 @@ class SparseHebbianLearning:
                  eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None,
-                 verbose=False, random_state=None):
+                 record_each=0, verbose=False, random_state=None):
         self.eta = eta
         self.n_dictionary = n_dictionary
         self.n_iter = n_iter
@@ -373,6 +375,7 @@ class SparseHebbianLearning:
         self.dict_init = dict_init
         self.l0_sparseness = l0_sparseness
         self.fit_tol = fit_tol
+        self.record_each = 0
         self.verbose = verbose
         self.random_state = random_state
 
@@ -391,11 +394,17 @@ class SparseHebbianLearning:
             Returns the instance itself.
         """
 
-        self.dictionary = dict_learning(
+        return_fn = dict_learning(
             X, self.eta, self.n_dictionary, self.l0_sparseness,
             n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
             method=self.fit_algorithm, dict_init=self.dict_init,
-            batch_size=self.batch_size, verbose=self.verbose, random_state=self.random_state)
+            batch_size=self.batch_size, record_each=self.record_each,
+            verbose=self.verbose, random_state=self.random_state)
+
+        if self.record_each==0:
+            self.dictionary = return_fn
+        else:
+            self.dictionary, self.record = return_fn
 
         return self
 
@@ -422,7 +431,7 @@ class SparseHebbianLearning:
 
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
-                       batch_size=100, verbose=False,
+                       batch_size=100, record_each=0, verbose=False,
                        method='mp', random_state=None):
     """
     Solves a dictionary learning matrix factorization problem online.
@@ -495,6 +504,10 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         parameter: the value of the reconstruction error targeted. In this case,
         it overrides `l0_sparseness`.
 
+    record_each :
+        if set to 0, it does nothing. Else it records every record_each step the
+        statistics during the learning phase (variance and kurtosis of coefficients).
+
     verbose :
         degree of verbosity of the printed output
 
@@ -505,6 +518,10 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         the solutions to the dictionary learning problem
 
     """
+
+    if record_each>0:
+        record = 'does nothing for the moment'
+
     if n_dictionary is None:
         n_dictionary = X.shape[1]
 
@@ -589,8 +606,10 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         dt = (time.time() - t0)
         print('done (total time: % 3is, % 4.1fmn)' % (dt, dt / 60))
 
-    return dictionary
-
+    if record_each==0:
+        return dictionary
+    else:
+        return dictionary, record
 
 def update_gain(gain, code, eta_homeo, verbose=False):
     """Update the estimated variance of coefficients in place.
