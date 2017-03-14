@@ -1,5 +1,6 @@
 
 from SLIP import Image
+from scipy.stats import kurtosis
 import sys
 import time
 import numpy as np
@@ -78,11 +79,8 @@ def get_data(height=256,width=256,n_image=200,patch_size=(12,12),
     return data
 
 ''' Compute the Root Mean Square Error between the image and it's encoded representation'''
-def compute_RMSE(data, dico, algorithm=None):
-    if algorithm is not None :
-        a=encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
-    else :
-        a=dico.transform(data)
+def compute_RMSE(data, dico):
+    a=dico.transform(data)
     residual=data - a@dico.dictionary
     b=np.sum(residual**2,axis=1)/np.sqrt(np.sum(data**2,axis=1))
     rmse=math.sqrt(np.mean(b))
@@ -90,17 +88,21 @@ def compute_RMSE(data, dico, algorithm=None):
 
 '''Compute the Kullback Leibler ratio to compare a distribution to its gaussian equivalent.
     if the KL is close to 1, the studied distribution is closed to a gaussian'''
-def compute_KL(data, dico, algorithm=None):
-    if algorithm is not None :
-        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
-    else :
-        sparse_code= dico.transform(data)
+def compute_KL(data, dico):
+    sparse_code= dico.transform(data)
     N=dico.dictionary.shape[0]
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
     mom1 = np.sum(P_norm)/dico.dictionary.shape[0]
     mom2 = np.sum((P_norm-mom1)**2)/(dico.dictionary.shape[0]-1)
     KL = 1/N * np.sum( (P_norm-mom1)**2 / mom2**2 )
     return KL
+
+'''Compute the kurtosis'''
+def Compute_kurto(data,dico):
+    sparse_code= dico.transform(data)
+    P_norm = np.mean(sparse_code**2, axis=0)#/Z
+    kurto=kurtosis(P_norm,axis=0)
+    return kurto
 
 '''Display a the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end'''
