@@ -416,7 +416,7 @@ class SparseHebbianLearning:
         if algorithm is None:  algorithm = self.fit_algorithm
         if l0_sparseness is None:  l0_sparseness = self.l0_sparseness
         if fit_tol is None:  fit_tol = self.fit_tol
-
+        #print("coding with algorithm : {0}".format(algorithm))
         return sparse_encode(X, self.dictionary, algorithm=algorithm,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
