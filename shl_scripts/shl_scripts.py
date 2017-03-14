@@ -144,7 +144,7 @@ class SHL(object):
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
             dico = SparseHebbianLearning(eta=self.eta,
-                                        fit_algorithm=self.learning_algorithm,
+                                         fit_algorithm=self.learning_algorithm,
                                          n_dictionary=self.n_dictionary, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          l0_sparseness=self.l0_sparseness,
@@ -166,7 +166,8 @@ class SHL(object):
                 if not(os.path.isfile(fmatname + '_lock')):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
-                    dico = self.learn_dico(data=data, name_database=name_database, matname=None, **kwargs)
+                    dico = self.learn_dico(data=data, name_database=name_database,
+                                           record_each=record_each, matname=None, **kwargs)
                     with open(fmatname, 'wb') as fp:
                         pickle.dump(dico, fp)
                     try:
@@ -324,7 +325,7 @@ class SparseHebbianLearning:
         self.dict_init = dict_init
         self.l0_sparseness = l0_sparseness
         self.fit_tol = fit_tol
-        self.record_each = 0
+        self.record_each = record_each
         self.verbose = verbose
         self.random_state = random_state
 
