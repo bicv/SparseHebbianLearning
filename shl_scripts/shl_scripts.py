@@ -130,11 +130,10 @@ class SHL(object):
                                         'N_image': n_image})
 
     def dev_get_data(self,name_database,seed=None,patch_norm=True):
-        data=tools_shl(height=self.height,width=self.width,n_image=self.n_image,
+        return tools_shl.get_data(height=self.height,width=self.width,n_image=self.n_image,
                     patch_size=self.patch_size,datapath=self.database,name_database=name_database,
                     max_patches=self.max_patches,seed=None,patch_norm=True,
                     verbose=self.verbose)
-        return data
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, record_each=0, **kwargs):
@@ -182,7 +181,6 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
         return dico
-
 
     def code(self, data, dico, coding_algorithm='mp', **kwargs):
         if self.verbose:
@@ -236,7 +234,6 @@ class SHL(object):
 
 
 # SparseHebbianLearning
-
 class SparseHebbianLearning:
     """Sparse Hebbian learning
 
@@ -357,8 +354,6 @@ class SparseHebbianLearning:
             self.dictionary = return_fn
         else:
             self.dictionary, self.record = return_fn
-
-        return self
 
     def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None):
         """Fit the model from data in X.
@@ -526,21 +521,11 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
         # Update and apply gain
-# <<<<<<< HEAD
-#         if gain_rate>0.:
-#             gain_ = update_gain(gain_, sparse_code, gain_rate, verbose=verbose)
-#             gain_ /= gain_.mean()
-#             gain = gain_**alpha_homeo
-#             #gain /= gain.mean()
-#             #print(gain_, gain)
-# =======
-#<<<<<<< HEAD
+
         #if eta_homeo>0.:
         #    gain_ = update_gain(gain_, sparse_code, eta_homeo, verbose=verbose)
         #    gain_ /= gain_.mean()
         #    gain = gain_**alpha_homeo
-            #gain /= gain.mean()
-            #print(gain_, gain)
 
         if eta_homeo>0.:
             mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
