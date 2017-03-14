@@ -194,45 +194,6 @@ class SHL(object):
             dt = time.time() - t0
             print('done in %.2fs.' % dt)
         return patches
-
-
-    def plot_variance(self, dico, data=None, name_database='serre07_distractors', fname=None, **kwargs):
-        if data is None: data = self.get_data(name_database)
-        #data = self.get_data(name_database)
-        sparse_code = dico.transform(data)
-        # code = self.code(data, dico)
-        Z = np.mean(sparse_code**2)
-        fig = plt.figure(figsize=(12, 4))
-        ax = fig.add_subplot(111)
-        ax.bar(np.arange(self.n_dictionary), np.mean(sparse_code**2, axis=0)/Z)#, yerr=np.std(code**2/Z, axis=0))
-        ax.set_title('Variance of coefficients')
-        ax.set_ylabel('Variance')
-        ax.set_xlabel('#')
-        ax.set_xlim(0, self.n_dictionary)
-        if not fname is None: fig.savefig(fname, dpi=200)
-        return fig, ax
-
-    def plot_variance_histogram(self, dico, data=None, name_database='serre07_distractors', fname=None):
-        from scipy.stats import gamma
-        import pandas as pd
-        import seaborn as sns
-        if data is None: data = self.get_data(name_database)
-        #data = self.get_data(name_database)
-        sparse_code = dico.transform(data)
-        Z = np.mean(sparse_code**2)
-        df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
-        #code = self.code(data, dico)
-        fig = plt.figure(figsize=(6, 4))
-        ax = fig.add_subplot(111)
-        with sns.axes_style("white"):
-            ax = sns.distplot(df['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
-        ax.set_title('distribution of the mean variance of coefficients')
-        ax.set_ylabel('pdf')
-        ax.set_xlim(0)
-        if not fname is None: fig.savefig(fname, dpi=200)
-        return fig, ax
-
-
 # SparseHebbianLearning
 
 class SparseHebbianLearning:
