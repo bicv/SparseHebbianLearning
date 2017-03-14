@@ -98,10 +98,10 @@ def compute_KL(data, dico):
     return KL
 
 '''Compute the kurtosis'''
-def Compute_kurto(data,dico):
+def Compute_kurto(data, dico):
     sparse_code= dico.transform(data)
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
-    kurto=kurtosis(P_norm,axis=0)
+    kurto = kurtosis(P_norm, axis=0)
     return kurto
 
 '''Display a the dictionary of filter in order of probability of selection.
@@ -300,5 +300,24 @@ def plot_variance_histogram(dico, data, algorithm=None,fname=None):
     ax.set_title('distribution of the mean variance of coefficients')
     ax.set_ylabel('pdf')
     ax.set_xlim(0)
+    if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax
+
+
+def time_plot(dico, fname=None, N_nosample=0):
+    
+    df_kurt = dico.record['kurt']
+    learning_time = df_kurt.index #np.arange(0, dico.n_iter, dico.record_each)
+    A = np.zeros((len(df_kurt.index), dico.n_dictionary))
+    for ii, ind in enumerate(df_kurt.index):
+        print(ind)
+        A[ii, :] = df_kurt[ind]
+
+    fig = plt.figure(figsize=(12, 4))
+    ax = fig.add_subplot(111)
+    ax.plot(learning_time, A[:, :-N_nosample], lw=1)
+    ax.set_ylabel('Kurtosis')
+    ax.set_xlabel('Learning step')
+    ax.set_xlim(0, dico.n_iter)
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
