@@ -130,13 +130,13 @@ class SHL(object):
                                         'N_image': n_image})
 
     def dev_get_data(self,name_database,seed=None,patch_norm=True):
-        data=tools_shl(height=self.height,width=self.width,n_image=self.n_image,
+        return tools_shl.get_data(height=self.height,width=self.width,n_image=self.n_image,
                     patch_size=self.patch_size,datapath=self.database,name_database=name_database,
                     max_patches=self.max_patches,seed=None,patch_norm=True,
                     verbose=self.verbose)
-        return data
 
-    def learn_dico(self, data=None, name_database='serre07_distractors', matname=None, **kwargs):
+    def learn_dico(self, data=None, name_database='serre07_distractors',
+                   matname=None, record_each=0, **kwargs):
 
         if matname is None:
             if data is None: data = self.dev_get_data(name_database)
@@ -144,12 +144,13 @@ class SHL(object):
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
             dico = SparseHebbianLearning(eta=self.eta,
-                                        fit_algorithm=self.learning_algorithm,
+                                         fit_algorithm=self.learning_algorithm,
                                          n_dictionary=self.n_dictionary, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.alpha,
+                                         record_each=record_each,
                                           **kwargs)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
@@ -165,7 +166,8 @@ class SHL(object):
                 if not(os.path.isfile(fmatname + '_lock')):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
-                    dico = self.learn_dico(data=data, name_database=name_database, matname=None, **kwargs)
+                    dico = self.learn_dico(data=data, name_database=name_database,
+                                           record_each=record_each, matname=None, **kwargs)
                     with open(fmatname, 'wb') as fp:
                         pickle.dump(dico, fp)
                     try:
@@ -181,7 +183,6 @@ class SHL(object):
                     dico = pickle.load(fp)
         return dico
 
-
     def code(self, data, dico, coding_algorithm='mp', **kwargs):
         if self.verbose:
             print('Coding data with algorithm ', coding_algorithm,  end=' ')
@@ -195,7 +196,6 @@ class SHL(object):
             print('done in %.2fs.' % dt)
         return patches
 # SparseHebbianLearning
-
 class SparseHebbianLearning:
     """Sparse Hebbian learning
 
@@ -275,7 +275,7 @@ class SparseHebbianLearning:
                  eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None,
-                 verbose=False, random_state=None):
+                 record_each=0, verbose=False, random_state=None):
         self.eta = eta
         self.n_dictionary = n_dictionary
         self.n_iter = n_iter
@@ -286,6 +286,7 @@ class SparseHebbianLearning:
         self.dict_init = dict_init
         self.l0_sparseness = l0_sparseness
         self.fit_tol = fit_tol
+        self.record_each = record_each
         self.verbose = verbose
         self.random_state = random_state
 
@@ -304,13 +305,17 @@ class SparseHebbianLearning:
             Returns the instance itself.
         """
 
-        self.dictionary = dict_learning(
+        return_fn = dict_learning(
             X, self.eta, self.n_dictionary, self.l0_sparseness,
             n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
             method=self.fit_algorithm, dict_init=self.dict_init,
-            batch_size=self.batch_size, verbose=self.verbose, random_state=self.random_state)
+            batch_size=self.batch_size, record_each=self.record_each,
+            verbose=self.verbose, random_state=self.random_state)
 
-        return self
+        if self.record_each==0:
+            self.dictionary = return_fn
+        else:
+            self.dictionary, self.record = return_fn
 
     def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None):
         """Fit the model from data in X.
@@ -335,7 +340,7 @@ class SparseHebbianLearning:
 
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
-                       batch_size=100, verbose=False,
+                       batch_size=100, record_each=0, verbose=False,
                        method='mp', random_state=None):
     """
     Solves a dictionary learning matrix factorization problem online.
@@ -408,6 +413,10 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         parameter: the value of the reconstruction error targeted. In this case,
         it overrides `l0_sparseness`.
 
+    record_each :
+        if set to 0, it does nothing. Else it records every record_each step the
+        statistics during the learning phase (variance and kurtosis of coefficients).
+
     verbose :
         degree of verbosity of the printed output
 
@@ -418,6 +427,10 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         the solutions to the dictionary learning problem
 
     """
+
+    if record_each>0:
+        record = 'does nothing for the moment'
+
     if n_dictionary is None:
         n_dictionary = X.shape[1]
 
@@ -470,21 +483,11 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
         # Update and apply gain
-# <<<<<<< HEAD
-#         if gain_rate>0.:
-#             gain_ = update_gain(gain_, sparse_code, gain_rate, verbose=verbose)
-#             gain_ /= gain_.mean()
-#             gain = gain_**alpha_homeo
-#             #gain /= gain.mean()
-#             #print(gain_, gain)
-# =======
-#<<<<<<< HEAD
+
         #if eta_homeo>0.:
         #    gain_ = update_gain(gain_, sparse_code, eta_homeo, verbose=verbose)
         #    gain_ /= gain_.mean()
         #    gain = gain_**alpha_homeo
-            #gain /= gain.mean()
-            #print(gain_, gain)
 
         if eta_homeo>0.:
             mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
@@ -502,8 +505,10 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         dt = (time.time() - t0)
         print('done (total time: % 3is, % 4.1fmn)' % (dt, dt / 60))
 
-    return dictionary
-
+    if record_each==0:
+        return dictionary
+    else:
+        return dictionary, record
 
 def update_gain(gain, code, eta_homeo, verbose=False):
     """Update the estimated variance of coefficients in place.
