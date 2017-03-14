@@ -265,3 +265,40 @@ def plot_variance_and_proxy(dico, data,algorithm=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     #print(mom1,mom2)
     return fig, ax
+
+def plot_variance(dico, data, algorithm=None,fname=None):
+    if algorithm is not None :
+        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    else :
+        sparse_code= dico.transform(data)
+    n_dictionary=dico.dictionary.shape[0]
+    # code = self.code(data, dico)
+    Z = np.mean(sparse_code**2)
+    fig = plt.figure(figsize=(12, 4))
+    ax = fig.add_subplot(111)
+    ax.bar(np.arange(n_dictionary), np.mean(sparse_code**2, axis=0)/Z)#, yerr=np.std(code**2/Z, axis=0))
+    ax.set_title('Variance of coefficients')
+    ax.set_ylabel('Variance')
+    ax.set_xlabel('#')
+    ax.set_xlim(0, n_dictionary)
+    if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax
+
+def plot_variance_histogram(dico, data, algorithm=None,fname=None):
+    from scipy.stats import gamma
+    if algorithm is not None :
+        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+    else :
+        sparse_code= dico.transform(data)
+    Z = np.mean(sparse_code**2)
+    df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
+    #code = self.code(data, dico)
+    fig = plt.figure(figsize=(6, 4))
+    ax = fig.add_subplot(111)
+    with sns.axes_style("white"):
+        ax = sns.distplot(df['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
+    ax.set_title('distribution of the mean variance of coefficients')
+    ax.set_ylabel('pdf')
+    ax.set_xlim(0)
+    if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax
