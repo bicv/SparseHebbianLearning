@@ -339,7 +339,7 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, algorithm=algorithm,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
-    def time_plot(self, fname=None, N_nosample=0):
+    def time_plot(self, fname=None, N_nosample=1):
         return tools_shl.time_plot(self, fname=fname, N_nosample=N_nosample)
 
 
@@ -503,11 +503,12 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
             dictionary /= gain[:, np.newaxis]
 
         if record_each>0:
-            from scipy.stats import kurtosis
-            record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code, axis=0),
-                                        'var':np.mean(sparse_code**2, axis=0)}],
-                                        index=[ii])
-            record = pd.concat([record, record_one])
+            if ii % int(record_each) == 0:
+                from scipy.stats import kurtosis
+                record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code, axis=0),
+                                            'var':np.mean(sparse_code**2, axis=0)}],
+                                            index=[ii])
+                record = pd.concat([record, record_one])
 
 
     if verbose > 1:
