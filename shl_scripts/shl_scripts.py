@@ -275,7 +275,7 @@ class SparseHebbianLearning:
                  eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None,
-                 record_each=0, verbose=False, random_state=None):
+                 record_each=200, verbose=False, random_state=None):
         self.eta = eta
         self.n_dictionary = n_dictionary
         self.n_iter = n_iter
