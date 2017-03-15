@@ -154,12 +154,12 @@ def show_dico_in_order(dico,data,algorithm=None,title=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def show_dico(dico, data, title=None, fname=None, **kwargs):
+def show_dico(dico, title=None, fname=None, **kwargs):
     '''display the dictionary in a random order '''
     dim_graph = dico.dictionary.shape[0]
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
-    dim_patch = int(np.sqrt(data.shape[1]))
+    dim_patch = int(np.sqrt(dico.dictionary.shape[1]))
 
     for i, component in enumerate(dico.dictionary):
         ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
@@ -173,7 +173,7 @@ def show_dico(dico, data, title=None, fname=None, **kwargs):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def plot_coeff_distribution(dico,data,title,algorithm=None,fname=None):
+def plot_coeff_distribution(dico, data, title, algorithm=None, fname=None):
     '''
     Plot the coeff distribution of a given dictionary
     '''

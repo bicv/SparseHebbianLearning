@@ -130,7 +130,7 @@ class SHL(object):
                                         'do_mask':True,
                                         'N_image': n_image})
 
-    def dev_get_data(self,name_database,seed=None,patch_norm=True):
+    def get_data(self, name_database, seed=None, patch_norm=True):
         return tools_shl.get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
                     max_patches=self.max_patches, seed=None, patch_norm=True,
@@ -140,7 +140,7 @@ class SHL(object):
                    matname=None, record_each=0, **kwargs):
 
         if matname is None:
-            if data is None: data = self.dev_get_data(name_database)
+            if data is None: data = self.get_data(name_database)
             # Learn the dictionary from reference patches
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
@@ -196,6 +196,7 @@ class SHL(object):
             dt = time.time() - t0
             print('done in %.2fs.' % dt)
         return patches
+
 # SparseHebbianLearning
 class SparseHebbianLearning:
     """Sparse Hebbian learning
@@ -341,6 +342,9 @@ class SparseHebbianLearning:
 
     def time_plot(self, fname=None, N_nosample=1):
         return tools_shl.time_plot(self, fname=fname, N_nosample=N_nosample)
+
+    def show_dico(self, title=None, fname=None, **kwargs):
+        return tools_shl.show_dico(self, title=title, fname=fname, **kwargs)
 
 
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
