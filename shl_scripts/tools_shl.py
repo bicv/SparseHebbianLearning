@@ -310,19 +310,18 @@ def plot_variance_histogram(dico, data, algorithm=None,fname=None):
     return fig, ax
 
 
-def time_plot(dico, fname=None, N_nosample=1):
-
+def time_plot(dico, fname=None, N_nosample=0):
 
     df_kurt = dico.record['kurt']
-    learning_time = np.array(df_kurt.index) #np.arange(0, dico.n_iter, dico.record_each)
+    learning_time = df_kurt.index #np.arange(0, dico.n_iter, dico.record_each)
     A = np.zeros((len(df_kurt.index), dico.n_dictionary))
     for ii, ind in enumerate(df_kurt.index):
+        print(ind)
         A[ii, :] = df_kurt[ind]
 
-    #print(learning_time, A[:, :-N_nosample].shape)
     fig = plt.figure(figsize=(12, 4))
     ax = fig.add_subplot(111)
-    ax.plot(learning_time, A[:, :-N_nosample], '.', lw=1)
+    ax.plot(learning_time, A[:, :-N_nosample], lw=1)
     ax.set_ylabel('Kurtosis')
     ax.set_xlabel('Learning step')
     ax.set_xlim(0, dico.n_iter)
