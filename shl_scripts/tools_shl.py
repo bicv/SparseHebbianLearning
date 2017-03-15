@@ -164,7 +164,7 @@ def show_dico(dico,data, title=None, fname=None, **kwargs):
     return fig, ax
 
 '''Plot the coeff distribution of a given dictionary'''
-def plot_coeff_distribution(dico,data,algorithm=None,fname=None):
+def plot_coeff_distribution(dico,data,title,algorithm=None,fname=None):
     nb_dico=dico.dictionary.shape[0]
     nb_of_patch=data.shape[0]
     if algorithm is not None :
@@ -188,7 +188,10 @@ def plot_coeff_distribution(dico,data,algorithm=None,fname=None):
     ax = fig.add_subplot(111)
     with sns.axes_style("white"):
         ax = sns.distplot(df['Coeff'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
-    ax.set_title('distribution of coefficients')
+    if title is not None:
+        ax.set_title('distribution of coefficients, ' + title)
+    else:
+        ax.set_title('distribution of coefficients')
     ax.set_ylabel('pdf')
     ax.set_xlim(0)
     if not fname is None: fig.savefig(fname, dpi=200)
@@ -236,7 +239,7 @@ def plot_dist_max_min(dico,data,algorithm=None,fname=None):
     return fig, ax
 
 '''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
-def plot_variance_and_proxy(dico, data,algorithm=None, fname=None):
+def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     if algorithm is not None :
         sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
@@ -260,7 +263,10 @@ def plot_variance_and_proxy(dico, data,algorithm=None, fname=None):
         ax = sns.distplot(df1['Q'],bins=bins, kde=False)
         #ax = sns.distplot(df['P'], bins=frange(0.0,4.0,0.2),kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
         #ax = sns.distplot(df1['Q'],bins=frange(0.0,4.0,0.2), kde=False)
-    ax.set_title('distribution of the mean variance of coefficients')
+    if title is not None :
+        ax.set_title('distribution of the mean variance of coefficients, ' + title)
+    else :
+        ax.set_title('distribution of the mean variance of coefficients ')
     ax.set_ylabel('pdf')
     if not fname is None: fig.savefig(fname, dpi=200)
     #print(mom1,mom2)
@@ -305,7 +311,7 @@ def plot_variance_histogram(dico, data, algorithm=None,fname=None):
 
 
 def time_plot(dico, fname=None, N_nosample=0):
-    
+
     df_kurt = dico.record['kurt']
     learning_time = df_kurt.index #np.arange(0, dico.n_iter, dico.record_each)
     A = np.zeros((len(df_kurt.index), dico.n_dictionary))
