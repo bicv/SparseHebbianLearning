@@ -130,7 +130,7 @@ class SHL(object):
                                         'do_mask':True,
                                         'N_image': n_image})
 
-    def get_data(self, name_database, seed=None, patch_norm=True):
+    def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True):
         return tools_shl.get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
                     max_patches=self.max_patches, seed=None, patch_norm=True,
@@ -340,8 +340,8 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, algorithm=algorithm,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
-    def time_plot(self, fname=None, N_nosample=1):
-        return tools_shl.time_plot(self, fname=fname, N_nosample=N_nosample)
+    def time_plot(self, variable='kurt', fname=None, N_nosample=1):
+        return tools_shl.time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
 
     def show_dico(self, title=None, fname=None, **kwargs):
         return tools_shl.show_dico(self, title=title, fname=fname, **kwargs)
@@ -509,7 +509,10 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         if record_each>0:
             if ii % int(record_each) == 0:
                 from scipy.stats import kurtosis
+                sparse_code = sparse_encode(X_train, dictionary, algorithm=method, fit_tol=fit_tol,
+                                          mod=mod, l0_sparseness=l0_sparseness)
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code, axis=0),
+                                            'prob_active':np.mean(np.abs(sparse_code)>0, axis=0),
                                             'var':np.mean(sparse_code**2, axis=0)}],
                                             index=[ii])
                 record = pd.concat([record, record_one])
