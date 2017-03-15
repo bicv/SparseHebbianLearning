@@ -310,11 +310,8 @@ def plot_variance_histogram(dico, data, algorithm=None,fname=None):
     return fig, ax
 
 
-<<<<<<< HEAD
-def time_plot(dico, fname=None, N_nosample=0):
-=======
 def time_plot(dico, fname=None, N_nosample=1):
->>>>>>> 1a198a0159099fbf9892feb6e9b4e60103934285
+
 
     df_kurt = dico.record['kurt']
     learning_time = np.array(df_kurt.index) #np.arange(0, dico.n_iter, dico.record_each)
