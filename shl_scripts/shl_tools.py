@@ -14,8 +14,8 @@ from scipy.stats import gamma
 
 toolbar_width = 40
 
-'''doing a range of non integer number to make histogramm more beautiful'''
 def bins_step(mini,maxi,nb_step):
+    '''doing a range of non integer number to make histogramm more beautiful'''
     step=(maxi-mini)/10
     out=list()
     a=mini
@@ -25,12 +25,12 @@ def bins_step(mini,maxi,nb_step):
     return out
 
 
-''' Extract database
-Extract from a given database composed of image of size (height,width) a series a random patch
-'''
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='serre07_distractors',
             max_patches=1024, seed=None, patch_norm=True, verbose=0):
+    ''' Extract database
+    Extract from a given database composed of image of size (height,width) a series a random patch
+    '''
     slip = Image({'N_X':height, 'N_Y':width,
                 'white_n_learning' : 0,
                 'seed': None,
@@ -78,17 +78,17 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
         sys.stdout.flush()
     return data
 
-''' Compute the Root Mean Square Error between the image and it's encoded representation'''
 def compute_RMSE(data, dico):
+    ''' Compute the Root Mean Square Error between the image and it's encoded representation'''
     a=dico.transform(data)
     residual=data - a@dico.dictionary
     b=np.sum(residual**2,axis=1)/np.sqrt(np.sum(data**2,axis=1))
     rmse=math.sqrt(np.mean(b))
     return rmse
 
-'''Compute the Kullback Leibler ratio to compare a distribution to its gaussian equivalent.
-    if the KL is close to 1, the studied distribution is closed to a gaussian'''
 def compute_KL(data, dico):
+    '''Compute the Kullback Leibler ratio to compare a distribution to its gaussian equivalent.
+    if the KL is close to 1, the studied distribution is closed to a gaussian'''
     sparse_code= dico.transform(data)
     N=dico.dictionary.shape[0]
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
@@ -97,16 +97,16 @@ def compute_KL(data, dico):
     KL = 1/N * np.sum( (P_norm-mom1)**2 / mom2**2 )
     return KL
 
-'''Compute the kurtosis'''
 def Compute_kurto(data, dico):
+    '''Compute the kurtosis'''
     sparse_code= dico.transform(data)
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
     kurto = kurtosis(P_norm, axis=0)
     return kurto
 
-'''Display a the dictionary of filter in order of probability of selection.
-    Filter which are selected more often than others are located at the end'''
 def show_dico_in_order(dico,data,algorithm=None,title=None, fname=None):
+    '''Display a the dictionary of filter in order of probability of selection.
+    Filter which are selected more often than others are located at the end'''
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
     if algorithm is not None :
@@ -144,12 +144,14 @@ def show_dico_in_order(dico,data,algorithm=None,title=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-'''display the dictionary in a random order '''
-def show_dico(dico,data, title=None, fname=None, **kwargs):
-    dim_graph=dico.dictionary.shape[0]
+def show_dico(dico, title=None, fname=None, **kwargs):
+    '''
+    display the dictionary in a random order
+    '''
+    dim_graph = dico.dictionary.shape[0]
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
-    dim_patch=int(np.sqrt(data.shape[1]))
+    dim_patch = int(np.sqrt(dico.dictionary.shape[1]))
 
     for i, component in enumerate(dico.dictionary):
         ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
@@ -163,8 +165,8 @@ def show_dico(dico,data, title=None, fname=None, **kwargs):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-'''Plot the coeff distribution of a given dictionary'''
 def plot_coeff_distribution(dico,data,title,algorithm=None,fname=None):
+    '''Plot the coeff distribution of a given dictionary'''
     nb_dico=dico.dictionary.shape[0]
     nb_of_patch=data.shape[0]
     if algorithm is not None :
@@ -198,8 +200,8 @@ def plot_coeff_distribution(dico,data,title,algorithm=None,fname=None):
     return fig, ax
 
 
-'''plot the coefficient distribution of the filter which is selected the more, and the one which is selected the less'''
 def plot_dist_max_min(dico,data,algorithm=None,fname=None):
+    '''plot the coefficient distribution of the filter which is selected the more, and the one which is selected the less'''
     if algorithm is not None :
         sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
@@ -238,8 +240,8 @@ def plot_dist_max_min(dico,data,algorithm=None,fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-'''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
 def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
+    '''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
     if algorithm is not None :
         sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
