@@ -66,7 +66,7 @@ class SHL(object):
                  database = 'database/',
                  n_dictionary=14**2,
                  learning_algorithm='mp',
-                 alpha=None,
+                 fit_tol=None,
                  l0_sparseness=10,
                  n_iter=2**14,
                  eta=.01,
@@ -90,7 +90,7 @@ class SHL(object):
         self.n_image = int(n_image/DEBUG_DOWNSCALE)
         self.batch_size = batch_size
         self.learning_algorithm = learning_algorithm
-        self.alpha=alpha
+        self.fit_tol = fit_tol
 
         self.l0_sparseness = l0_sparseness
         self.eta = eta
@@ -140,17 +140,22 @@ class SHL(object):
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
             from shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(eta=self.eta,
-                                         fit_algorithm=self.learning_algorithm,
-                                         n_dictionary=self.n_dictionary, n_iter=self.n_iter,
+            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm,
+                                         n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
-                                         l0_sparseness=self.l0_sparseness,
+                                         dict_init=None, l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
-                                         fit_tol=self.alpha,
-                                         record_each=self.record_each,
-                                          )
+                                         fit_tol=self.fit_tol,
+                                         record_each=self.record_each)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
+
+            self, fit_algorithm, n_dictionary=None, eta=0.02, n_iter=40000,
+                         eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
+                         batch_size=100,
+                         l0_sparseness=None, fit_tol=None,
+                         record_each=200, verbose=False, random_state=None
+
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
