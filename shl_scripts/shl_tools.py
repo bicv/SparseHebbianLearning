@@ -309,7 +309,7 @@ def plot_variance_histogram(dico, data, algorithm=None,fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def time_plot(dico, variable='kurt', fname=None, N_nosample=1):
+def time_plot(dico, variable='kurt', fname=None, N_nosample=1, alpha=.3):
 
     df_variable = dico.record[variable]
     learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
@@ -320,7 +320,7 @@ def time_plot(dico, variable='kurt', fname=None, N_nosample=1):
     #print(learning_time, A[:, :-N_nosample].shape)
     fig = plt.figure(figsize=(12, 4))
     ax = fig.add_subplot(111)
-    ax.plot(learning_time, A[:, :-N_nosample], '-', lw=1)
+    ax.plot(learning_time, A[:, :-N_nosample], '-', lw=1, alpha=alpha)
     ax.set_ylabel(variable)
     ax.set_xlabel('Learning step')
     ax.set_xlim(0, dico.n_iter)
