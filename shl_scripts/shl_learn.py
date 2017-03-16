@@ -164,7 +164,7 @@ class SparseHebbianLearning:
 
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
-                       batch_size=100, record_each=0, verbose=False,
+                       batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', random_state=None):
     """
     Solves a dictionary learning matrix factorization problem online.
@@ -240,6 +240,9 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
     record_each :
         if set to 0, it does nothing. Else it records every record_each step the
         statistics during the learning phase (variance and kurtosis of coefficients).
+
+    record_num_batches :
+        number of batches used to make statistics (if -1, uses the whole training set)
 
     verbose :
         degree of verbosity of the printed output
@@ -324,7 +327,8 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         if record_each>0:
             if ii % int(record_each) == 0:
                 from scipy.stats import kurtosis
-                sparse_code = sparse_encode(X_train, dictionary, algorithm=method, fit_tol=fit_tol,
+                indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
+                sparse_code = sparse_encode(X_train[indx, :], dictionary, algorithm=method, fit_tol=fit_tol,
                                           mod=mod, l0_sparseness=l0_sparseness)
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code)>0, axis=0),

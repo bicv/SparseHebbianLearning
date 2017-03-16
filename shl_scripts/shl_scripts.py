@@ -74,6 +74,7 @@ class SHL(object):
                  alpha_homeo=.2,
                  max_patches=1024,
                  batch_size=256,
+                 record_each=200,
                  n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
@@ -96,6 +97,7 @@ class SHL(object):
         self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
 
+        self.record_each = int(record_each/DEBUG_DOWNSCALE)
         self.verbose = verbose
         # assigning and create a folder for caching data
         self.data_cache = './data_cache'
@@ -130,7 +132,7 @@ class SHL(object):
                     verbose=self.verbose)
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
-                   matname=None, record_each=0, **kwargs):
+                   matname=None, **kwargs):
 
         if matname is None:
             if data is None: data = self.get_data(name_database)
@@ -145,7 +147,7 @@ class SHL(object):
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.alpha,
-                                         record_each=record_each,
+                                         record_each=self.record_each,
                                           **kwargs)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
@@ -162,7 +164,7 @@ class SHL(object):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
                     dico = self.learn_dico(data=data, name_database=name_database,
-                                           record_each=record_each, matname=None, **kwargs)
+                                           record_each=self.record_each, matname=None, **kwargs)
                     with open(fmatname, 'wb') as fp:
                         pickle.dump(dico, fp)
                     try:
