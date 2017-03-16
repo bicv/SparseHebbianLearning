@@ -150,12 +150,6 @@ class SHL(object):
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
-            self, fit_algorithm, n_dictionary=None, eta=0.02, n_iter=40000,
-                         eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
-                         batch_size=100,
-                         l0_sparseness=None, fit_tol=None,
-                         record_each=200, verbose=False, random_state=None
-
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
