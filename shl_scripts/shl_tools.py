@@ -104,7 +104,7 @@ def Compute_kurto(data, dico):
     kurto = kurtosis(P_norm, axis=0)
     return kurto
 
-def show_dico_in_order(dico,data,algorithm=None,title=None, fname=None):
+def show_dico_in_order(dico, data, algorithm=None,title=None, fname=None):
     '''Display a the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end'''
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
@@ -165,7 +165,7 @@ def show_dico(dico, title=None, fname=None, **kwargs):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def plot_coeff_distribution(dico,data,title,algorithm=None,fname=None):
+def plot_coeff_distribution(dico, data, title,algorithm=None,fname=None):
     '''Plot the coeff distribution of a given dictionary'''
     nb_dico=dico.dictionary.shape[0]
     nb_of_patch=data.shape[0]
@@ -200,7 +200,7 @@ def plot_coeff_distribution(dico,data,title,algorithm=None,fname=None):
     return fig, ax
 
 
-def plot_dist_max_min(dico,data,algorithm=None,fname=None):
+def plot_dist_max_min(dico, data, algorithm=None,fname=None):
     '''plot the coefficient distribution of the filter which is selected the more, and the one which is selected the less'''
     if algorithm is not None :
         sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
@@ -274,7 +274,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     #print(mom1,mom2)
     return fig, ax
 
-def plot_variance(dico, data, algorithm=None,fname=None):
+def plot_variance(dico, data, algorithm=None, fname=None):
     if algorithm is not None :
         sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
@@ -292,7 +292,7 @@ def plot_variance(dico, data, algorithm=None,fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def plot_variance_histogram(dico, data, algorithm=None,fname=None):
+def plot_variance_histogram(dico, data, algorithm=None, fname=None):
     from scipy.stats import gamma
     if algorithm is not None :
         sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
