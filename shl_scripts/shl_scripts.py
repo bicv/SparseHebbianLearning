@@ -148,7 +148,7 @@ class SHL(object):
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.alpha,
                                          record_each=self.record_each,
-                                          **kwargs)
+                                          )
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
             if self.verbose:

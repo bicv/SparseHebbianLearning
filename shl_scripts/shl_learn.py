@@ -158,8 +158,8 @@ class SparseHebbianLearning:
     def time_plot(self, variable='kurt', fname=None, N_nosample=1):
         return shl_tools.time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
 
-    def show_dico(self, title=None, fname=None, **kwargs):
-        return shl_tools.show_dico(self, title=title, fname=fname, **kwargs)
+    def show_dico(self, title=None, fname=None):
+        return shl_tools.show_dico(self, title=title, fname=fname)
 
 
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
