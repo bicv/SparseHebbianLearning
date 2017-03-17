@@ -114,21 +114,10 @@ def show_dico_in_order(dico, data, algorithm=None,title=None, fname=None):
         sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
-    dim_graph=dico.dictionary.shape[0]
-    nb_of_patch=data.shape[0]
-    res=0
-    i=0
-    res_lst=list()
-    for j in range(dim_graph):
-        res=0
-        while i<nb_of_patch:
-            if sparse_code[i,j]!=0 : res+=1
-            i+=1
-        res_lst.append(res)
-        i=0
 
-    a=np.asarray(res_lst).argsort()
     dim_graph=dico.dictionary.shape[0]
+    res_lst=np.count_nonzero(sparse_code,axis=0)
+    a=res_lst.argsort()
     dim_patch=int(np.sqrt(data.shape[1]))
 
     for i in range(dim_graph):
