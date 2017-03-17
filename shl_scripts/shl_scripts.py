@@ -133,7 +133,6 @@ class SHL(object):
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, list_figures=[], **kwargs):
-
         if matname is None:
             if data is None: data = self.get_data(name_database)
             # Learn the dictionary from reference patches
@@ -172,30 +171,31 @@ class SHL(object):
                     except:
                         print('Coud not remove ', fmatname + LOCK)
                 else:
-
-                    print('the computation is locked')
+                    dico = 'lock'
+                    print('the computation is locked', fmatname + LOCK)
             else:
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
-
-        if 'show_dico' in list_figures:
-            fig, ax = dico.show_dico(title=matname)
-            fig.show()
-        if 'plot_variance' in list_figures:
-            fig, ax = dico.plot_variance(data=data)
-            fig.show()
-        if 'plot_variance_histogram' in list_figures:
-            fig, ax = dico.plot_variance_histogram(data=data)
-            fig.show()
-        if 'time_plot_var' in list_figures:
-            fig, ax = dico.time_plot(variable='var');
-            fig.show()
-        if 'time_plot_kurt' in list_figures:
-            fig, ax = dico.time_plot(variable='kurt');
-            fig.show()
-        if 'time_plot_prob' in list_figures:
-            fig, ax = dico.time_plot(variable='prob_active');
-            fig.show()
+                    
+        if not dico == 'lock':
+            if 'show_dico' in list_figures:
+                fig, ax = dico.show_dico(title=matname)
+                fig.show()
+            if 'plot_variance' in list_figures:
+                fig, ax = dico.plot_variance(data=data)
+                fig.show()
+            if 'plot_variance_histogram' in list_figures:
+                fig, ax = dico.plot_variance_histogram(data=data)
+                fig.show()
+            if 'time_plot_var' in list_figures:
+                fig, ax = dico.time_plot(variable='var');
+                fig.show()
+            if 'time_plot_kurt' in list_figures:
+                fig, ax = dico.time_plot(variable='kurt');
+                fig.show()
+            if 'time_plot_prob' in list_figures:
+                fig, ax = dico.time_plot(variable='prob_active');
+                fig.show()
 
         return dico
 
