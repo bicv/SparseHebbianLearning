@@ -16,12 +16,13 @@ toolbar_width = 40
 
 def bins_step(mini,maxi,nb_step):
     '''doing a range of non integer number to make histogramm more beautiful'''
-    step=(maxi-mini)/10
+    step=(maxi-mini)/nb_step
     out=list()
     a=mini
     for i in range(nb_step+1):
         out.append(a)
         a=a+step
+    out.append(a)
     return out
 
 
@@ -206,37 +207,25 @@ def plot_dist_max_min(dico, data, algorithm=None,fname=None):
         sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
-    nb_dico=dico.dictionary.shape[0]
-    nb_of_patch=data.shape[0]
-    res=0
-    i=0
-    res_lst=list()
-    for j in range(nb_dico):
-        res=0
-        while i<nb_of_patch:
-            if sparse_code[i,j]!=0 : res+=1
-            i+=1
-        res_lst.append(res)
-        i=0
-    a=np.asarray(res_lst)
-    index_max=np.argmax(a)
-    index_min=np.argmin(a)
+    color,label=['r', 'b'], ['most selected filter','less selected filter']
+    nb_filter_selection=np.count_nonzero(sparse_code,axis=0)
+    index_max=np.argmax(nb_filter_selection)
+    index_min=np.argmin(nb_filter_selection)
     coeff_max = np.abs(sparse_code[:,index_max])
     coeff_min = np.abs(sparse_code[:,index_min])
     bins_max = bins_step(0.0001,np.max(coeff_max),20)
     bins_min = bins_step(0.0001,np.max(coeff_min),20)
-    fig = plt.figure(figsize=(6, 8))
+    fig = plt.figure(figsize=(6, 10))
+    ax = plt.subplot(2,1,1)
     with sns.axes_style("white"):
-        ax = plt.subplot(2,1,1)
-        ax = sns.distplot(coeff_max,bins=bins_max, kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
-        ax1=plt.subplot(2,1,2)
-        ax1= sns.distplot(coeff_min,bins=bins_min, kde=False)
-    ax.set_title('distribution of max')
-    ax.set_ylabel('Probability')
-    ax.set_xlim(0)
-    ax1.set_title('distribution of min')
-    ax1.set_ylabel('Probability')
-    ax1.set_xlim(0)
+        n_max,bins1=np.histogram(coeff_max,bins_max)
+        n_min,bins2=np.histogram(coeff_min,bins_min)
+        ax.semilogy(bins1[:-1],n_max,label=label[0],color=color[0])
+        ax.semilogy(bins2[:-1],n_min,label=label[1],color=color[1])
+    ax.set_title('distribution of coeff in the most & less selected filters')
+    ax.set_ylabel('number of selection')
+    ax.set_xlabel('coefficient')
+    plt.legend()
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
