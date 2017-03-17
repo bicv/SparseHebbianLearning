@@ -312,19 +312,29 @@ def plot_variance_histogram(dico, data, algorithm=None, fname=None):
     return fig, ax
 
 def time_plot(dico, variable='kurt', fname=None, N_nosample=1, alpha=.3):
+    try:
+        df_variable = dico.record[variable]
+        learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
+        A = np.zeros((len(df_variable.index), dico.n_dictionary))
+        for ii, ind in enumerate(df_variable.index):
+            A[ii, :] = df_variable[ind]
 
-    df_variable = dico.record[variable]
-    learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
-    A = np.zeros((len(df_variable.index), dico.n_dictionary))
-    for ii, ind in enumerate(df_variable.index):
-        A[ii, :] = df_variable[ind]
+        #print(learning_time, A[:, :-N_nosample].shape)
+        fig = plt.figure(figsize=(12, 4))
+        ax = fig.add_subplot(111)
+        ax.plot(learning_time, A[:, :-N_nosample], '-', lw=1, alpha=alpha)
+        ax.set_ylabel(variable)
+        ax.set_xlabel('Learning step')
+        ax.set_xlim(0, dico.n_iter)
+        if not fname is None: fig.savefig(fname, dpi=200)
+        return fig, ax
 
-    #print(learning_time, A[:, :-N_nosample].shape)
-    fig = plt.figure(figsize=(12, 4))
-    ax = fig.add_subplot(111)
-    ax.plot(learning_time, A[:, :-N_nosample], '-', lw=1, alpha=alpha)
-    ax.set_ylabel(variable)
-    ax.set_xlabel('Learning step')
-    ax.set_xlim(0, dico.n_iter)
-    if not fname is None: fig.savefig(fname, dpi=200)
-    return fig, ax
+    except AttributeError:
+        fig = plt.figure(figsize=(12, 1))
+        ax = fig.add_subplot(111)
+        ax.set_title('record not available')
+        ax.set_ylabel(variable)
+        ax.set_xlabel('Learning step')
+        ax.set_xlim(0, dico.n_iter)
+        if not fname is None: fig.savefig(fname, dpi=200)
+        return fig, ax
