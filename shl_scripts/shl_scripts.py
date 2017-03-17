@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
+import shl_encode
 """
 ========================================================
 Learning filters from natural images using sparse coding
@@ -126,6 +127,7 @@ class SHL(object):
                                         'N_image': n_image})
 
     def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True):
+        self.coding=np.ones(((self.max_patches * self.n_image),self.n_dictionary))
         return shl_tools.get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
                     max_patches=self.max_patches, seed=None, patch_norm=True,
@@ -176,7 +178,7 @@ class SHL(object):
             else:
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
-                    
+
         if not dico == 'lock':
             if 'show_dico' in list_figures:
                 fig, ax = dico.show_dico(title=matname)
@@ -196,7 +198,8 @@ class SHL(object):
             if 'time_plot_prob' in list_figures:
                 fig, ax = dico.time_plot(variable='prob_active');
                 fig.show()
-
+        self.coding=shl_encode.sparse_encode(data,dico.dictionary,algorithm=self.learning_algorithm,l0_sparseness=self.l0_sparseness,
+                                           fit_tol=None,mod=None,verbose=0)
         return dico
 
     def code(self, data, dico, coding_algorithm='mp', **kwargs):

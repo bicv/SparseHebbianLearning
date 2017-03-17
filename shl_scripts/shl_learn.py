@@ -328,11 +328,11 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
             if ii % int(record_each) == 0:
                 from scipy.stats import kurtosis
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
-                sparse_code = sparse_encode(X_train[indx, :], dictionary, algorithm=method, fit_tol=fit_tol,
+                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, algorithm=method, fit_tol=fit_tol,
                                           mod=mod, l0_sparseness=l0_sparseness)
-                record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code, axis=0),
-                                            'prob_active':np.mean(np.abs(sparse_code)>0, axis=0),
-                                            'var':np.mean(sparse_code**2, axis=0)}],
+                record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
+                                            'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
+                                            'var':np.mean(sparse_code_rec**2, axis=0)}],
                                             index=[ii])
                 record = pd.concat([record, record_one])
 
@@ -426,7 +426,7 @@ def update_mod(mod, dictionary, X, eta_homeo, verbose=False):
 
     """
     if eta_homeo>0.:
-        coef = np.dot(dictionary, X.T).T 
+        coef = np.dot(dictionary, X.T).T
         mod_ = -np.sort(-np.abs(coef), axis=0)
         mod = (1 - eta_homeo)*mod + eta_homeo * mod_
     return mod
