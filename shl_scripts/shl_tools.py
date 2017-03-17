@@ -4,7 +4,7 @@ from scipy.stats import kurtosis
 import sys
 import time
 import numpy as np
-import encode_shl
+import shl_encode
 import math
 import matplotlib
 import matplotlib.pyplot as plt
@@ -110,7 +110,7 @@ def show_dico_in_order(dico, data, algorithm=None,title=None, fname=None):
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
     if algorithm is not None :
-        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
     dim_graph=dico.dictionary.shape[0]
@@ -170,7 +170,7 @@ def plot_coeff_distribution(dico, data, title,algorithm=None,fname=None):
     nb_dico=dico.dictionary.shape[0]
     nb_of_patch=data.shape[0]
     if algorithm is not None :
-        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
     res=0
@@ -203,7 +203,7 @@ def plot_coeff_distribution(dico, data, title,algorithm=None,fname=None):
 def plot_dist_max_min(dico, data, algorithm=None,fname=None):
     '''plot the coefficient distribution of the filter which is selected the more, and the one which is selected the less'''
     if algorithm is not None :
-        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
     nb_dico=dico.dictionary.shape[0]
@@ -243,7 +243,7 @@ def plot_dist_max_min(dico, data, algorithm=None,fname=None):
 def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     '''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
     if algorithm is not None :
-        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
     Z = np.mean(sparse_code**2)
@@ -276,7 +276,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
 
 def plot_variance(dico, data, algorithm=None, fname=None):
     if algorithm is not None :
-        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
     n_dictionary=dico.dictionary.shape[0]
@@ -295,7 +295,7 @@ def plot_variance(dico, data, algorithm=None, fname=None):
 def plot_variance_histogram(dico, data, algorithm=None, fname=None):
     from scipy.stats import gamma
     if algorithm is not None :
-        sparse_code = encode_shl.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
     Z = np.mean(sparse_code**2)
