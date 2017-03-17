@@ -166,26 +166,14 @@ def show_dico(dico, title=None, fname=None, **kwargs):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def plot_coeff_distribution(dico, data, title,algorithm=None,fname=None):
+def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):
     '''Plot the coeff distribution of a given dictionary'''
-    nb_dico=dico.dictionary.shape[0]
-    nb_of_patch=data.shape[0]
+
     if algorithm is not None :
         sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
         sparse_code= dico.transform(data)
-    res=0
-    i=0
-    res_lst=list()
-
-    for j in range(nb_dico):
-        res=0
-        while i<nb_of_patch:
-            if sparse_code[i,j]!=0 : res+=1
-            i+=1
-        res_lst.append(res)
-        i=0
-
+    res_lst=np.count_nonzero(sparse_code,axis=0)
     df=pd.DataFrame(res_lst, columns=['Coeff'])
     fig = plt.figure(figsize=(6, 4))
     ax = fig.add_subplot(111)
