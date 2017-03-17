@@ -426,7 +426,7 @@ def update_mod(mod, dictionary, X, eta_homeo, verbose=False):
 
     """
     if eta_homeo>0.:
-        coef = np.dot(dictionary, X.T).T
+        coef = np.dot(dictionary, X.T).T 
         mod_ = -np.sort(-np.abs(coef), axis=0)
         mod = (1 - eta_homeo)*mod + eta_homeo * mod_
     return mod

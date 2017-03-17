@@ -155,8 +155,8 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, verbose=0):
         c = corr[i_sample, :].copy()
         for i_l0 in range(int(l0_sparseness)):
             ind  = np.argmax(np.abs(c))
-            a_i = c[ind] / Xcorr[ind, ind]
-            sparse_code[i_sample, ind] += a_i
-            c -= a_i * Xcorr[ind, :]
+            c_ind = c[ind] / Xcorr[ind, ind]
+            sparse_code[i_sample, ind] += c_ind
+            c -= c_ind * Xcorr[ind, :]
 
     return sparse_code
