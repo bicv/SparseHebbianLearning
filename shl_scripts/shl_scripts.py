@@ -133,6 +133,23 @@ class SHL(object):
                     max_patches=self.max_patches, seed=None, patch_norm=True,
                     verbose=self.verbose)
 
+
+    def code(self, data, dico, coding_algorithm='mp', **kwargs):
+        if self.verbose:
+            print('Coding data with algorithm ', coding_algorithm,  end=' ')
+            t0 = time.time()
+
+        #sparse_code = dico.transform(data, algorithm=coding_algorithm)
+        #patches = np.dot(sparse_code, dico.dictionary)
+        self.coding = shl_encode.sparse_encode(data, dico.dictionary,
+                                                algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
+                                               fit_tol=None, mod=None, verbose=0)
+
+        if self.verbose:
+            dt = time.time() - t0
+            print('done in %.2fs.' % dt)
+        #return patches
+
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, list_figures=[], **kwargs):
         if matname is None:
@@ -179,41 +196,48 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
 
+
+        # self.coding = shl_encode.sparse_encode(data, dico.dictionary,
+        #                                         algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
+        #                                        fit_tol=None, mod=None, verbose=0)
+        #
+        self.code(data,dico)
+
         if not dico == 'lock':
             if 'show_dico' in list_figures:
-                fig, ax = dico.show_dico(title=matname)
+                fig, ax = self.show_dico(title=matname)
                 fig.show()
             if 'plot_variance' in list_figures:
-                fig, ax = dico.plot_variance(data=data)
+                fig, ax = self.plot_variance(data=data)
                 fig.show()
             if 'plot_variance_histogram' in list_figures:
-                fig, ax = dico.plot_variance_histogram(data=data)
+                fig, ax = self.plot_variance_histogram(data=data)
                 fig.show()
             if 'time_plot_var' in list_figures:
-                fig, ax = dico.time_plot(variable='var');
+                fig, ax = self.time_plot(variable='var');
                 fig.show()
             if 'time_plot_kurt' in list_figures:
-                fig, ax = dico.time_plot(variable='kurt');
+                fig, ax = self.time_plot(variable='kurt');
                 fig.show()
             if 'time_plot_prob' in list_figures:
-                fig, ax = dico.time_plot(variable='prob_active');
+                fig, ax = self.time_plot(variable='prob_active');
                 fig.show()
-        self.coding=shl_encode.sparse_encode(data,dico.dictionary,algorithm=self.learning_algorithm,l0_sparseness=self.l0_sparseness,
-                                           fit_tol=None,mod=None,verbose=0)
-        return dico
 
-    def code(self, data, dico, coding_algorithm='mp', **kwargs):
-        if self.verbose:
-            print('Coding data with algorithm ', coding_algorithm,  end=' ')
-            t0 = time.time()
+        self.dico_exp=dico
 
-        sparse_code = dico.transform(data, algorithm=coding_algorithm)
-        patches = np.dot(sparse_code, dico.dictionary)
+        return self.dico_exp
 
-        if self.verbose:
-            dt = time.time() - t0
-            print('done in %.2fs.' % dt)
-        return patches
+    def plot_variance(self, data=None, algorithm=None, fname=None):
+        return shl_tools.plot_variance(self, data=data, fname=fname, algorithm=algorithm)
+
+    def plot_variance_histogram(self, data=None, algorithm=None, fname=None):
+        return shl_tools.plot_variance_histogram(self, data=data, fname=fname, algorithm=algorithm)
+
+    def time_plot(self, variable='kurt', fname=None, N_nosample=1):
+        return shl_tools.time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
+
+    def show_dico(self, title=None, fname=None):
+        return shl_tools.show_dico(self, title=title, fname=fname)
 
 if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
