@@ -105,6 +105,7 @@ def Compute_kurto(data, dico):
     kurto = kurtosis(P_norm, axis=0)
     return kurto
 
+# To adapt with shl_exp
 def show_dico_in_order(dico, data, algorithm=None,title=None, fname=None):
     '''Display a the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end'''
@@ -134,10 +135,11 @@ def show_dico_in_order(dico, data, algorithm=None,title=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def show_dico(dico, title=None, fname=None, **kwargs):
+def show_dico(shl_exp, title=None, fname=None, **kwargs):
     '''
     display the dictionary in a random order
     '''
+    dico=shl_exp.dico_exp
     dim_graph = dico.dictionary.shape[0]
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
@@ -201,11 +203,12 @@ def plot_dist_max_min(dico, data, algorithm=None,fname=None):
         ax.semilogy(bins2[:-1],n_min,label=label[1],color=color[1])
     ax.set_title('distribution of coeff in the most & less selected filters')
     ax.set_ylabel('number of selection')
-    ax.set_xlabel('coefficient')
+    ax.set_xlabel('value of coefficient')
     plt.legend()
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
+## To adapt with shl_exp
 def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     '''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
     if algorithm is not None :
@@ -240,13 +243,13 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     #print(mom1,mom2)
     return fig, ax
 
-def plot_variance(dico, data, algorithm=None, fname=None):
-    if algorithm is not None :
+def plot_variance(shl_exp, data=None, algorithm=None, fname=None):
+    dico=shl_exp.dico_exp
+    if (algorithm is not None) and (data is not None)  :
         sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
-        sparse_code= dico.transform(data)
+        sparse_code=shl_exp.coding
     n_dictionary=dico.dictionary.shape[0]
-    # code = self.code(data, dico)
     Z = np.mean(sparse_code**2)
     fig = plt.figure(figsize=(12, 4))
     ax = fig.add_subplot(111)
@@ -258,15 +261,15 @@ def plot_variance(dico, data, algorithm=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def plot_variance_histogram(dico, data, algorithm=None, fname=None):
+def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
     from scipy.stats import gamma
-    if algorithm is not None :
+    dico=shl_exp.dico_exp
+    if (algorithm is not None) and (data is not None) :
         sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
-        sparse_code= dico.transform(data)
+        sparse_code= shl_exp.coding
     Z = np.mean(sparse_code**2)
     df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
-    #code = self.code(data, dico)
     fig = plt.figure(figsize=(6, 4))
     ax = fig.add_subplot(111)
     with sns.axes_style("white"):
@@ -277,7 +280,8 @@ def plot_variance_histogram(dico, data, algorithm=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def time_plot(dico, variable='kurt', fname=None, N_nosample=1, alpha=.3):
+def time_plot(shl_exp, variable='kurt', fname=None, N_nosample=1, alpha=.3):
+    dico=shl_exp.dico_exp
     try:
         df_variable = dico.record[variable]
         learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
