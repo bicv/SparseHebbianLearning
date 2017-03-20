@@ -149,17 +149,17 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, algorithm=algorithm,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
-    def plot_variance(self, data=None, algorithm=None, fname=None):
-        return shl_tools.plot_variance(self, data=data, fname=fname, algorithm=algorithm)
-
-    def plot_variance_histogram(self, data, algorithm=None, fname=None):
-        return shl_tools.plot_variance_histogram(self, data=data, fname=fname, algorithm=algorithm)
-
-    def time_plot(self, variable='kurt', fname=None, N_nosample=1):
-        return shl_tools.time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
-
-    def show_dico(self, title=None, fname=None):
-        return shl_tools.show_dico(self, title=title, fname=fname)
+    # def plot_variance(self, data=None, algorithm=None, fname=None):
+    #     return shl_tools.plot_variance(self, data=data, fname=fname, algorithm=algorithm)
+    #
+    # def plot_variance_histogram(self, data, algorithm=None, fname=None):
+    #     return shl_tools.plot_variance_histogram(self, data=data, fname=fname, algorithm=algorithm)
+    #
+    # def time_plot(self, variable='kurt', fname=None, N_nosample=1):
+    #     return shl_tools.time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
+    #
+    # def show_dico(self, title=None, fname=None):
+    #     return shl_tools.show_dico(self, title=title, fname=fname)
 
 
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
