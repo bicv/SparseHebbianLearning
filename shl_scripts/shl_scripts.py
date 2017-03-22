@@ -207,6 +207,9 @@ class SHL(object):
             if 'show_dico' in list_figures:
                 fig, ax = self.show_dico(title=matname)
                 fig.show()
+            if 'show_dico_in_order' in list_figures:
+                fig,ax=self.show_dico_in_order(title=matname)
+                fig.show()
             if 'plot_variance' in list_figures:
                 fig, ax = self.plot_variance(data=data)
                 fig.show()
