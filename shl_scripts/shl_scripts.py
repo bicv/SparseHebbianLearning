@@ -239,6 +239,9 @@ class SHL(object):
     def show_dico(self, title=None, fname=None):
         return shl_tools.show_dico(self, title=title, fname=fname)
 
+    def show_dico_in_order(self,data=None,title=None,fname=None):
+        return shl_tools.show_dico_in_order(self,title=title,fname=fname)
+
 if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 0
