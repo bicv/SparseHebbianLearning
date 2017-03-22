@@ -106,20 +106,22 @@ def Compute_kurto(data, dico):
     return kurto
 
 # To adapt with shl_exp
-def show_dico_in_order(dico, data, algorithm=None,title=None, fname=None):
+def show_dico_in_order(shl_exp, data=None, algorithm=None,title=None, fname=None):
     '''Display a the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end'''
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
-    if algorithm is not None :
+
+    dico=shl_exp.dico_exp
+    if (algorithm is not None) and (data is not None)  :
         sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
-        sparse_code= dico.transform(data)
+        sparse_code=shl_exp.coding
 
     dim_graph=dico.dictionary.shape[0]
     res_lst=np.count_nonzero(sparse_code,axis=0)
     a=res_lst.argsort()
-    dim_patch=int(np.sqrt(data.shape[1]))
+    dim_patch=int(shl_exp.patch_size[0])
 
     for i in range(dim_graph):
         ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
