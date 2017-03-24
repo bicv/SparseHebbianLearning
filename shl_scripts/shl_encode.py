@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 
 def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
                           mod=None, l0_sparseness=10, verbose=0):
@@ -142,6 +142,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, verbose=0):
     #         for k in range(n_components):
     #             z[k] = np.interp(-np.abs(alpha[k]), -mod[:, k], np.linspace(0, 1., n_samples, endpoint=True))
     #         lam = np.argmax(z)
+    t0=time.time()
     if X.ndim == 1:
         X = X[:, np.newaxis]
     n_samples, n_pixels = X.shape
@@ -158,5 +159,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, verbose=0):
             c_ind = c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
-
+    if verbose!=0:
+        duration=time.time()-t0
+        print('coding duration : {0}'.format(duration))
     return sparse_code
