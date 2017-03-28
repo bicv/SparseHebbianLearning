@@ -201,7 +201,7 @@ class SHL(object):
         #                                         algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
         #                                        fit_tol=None, mod=None, verbose=0)
         #
-        self.code(data,dico)
+        self.code(data, dico)
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
@@ -226,7 +226,7 @@ class SHL(object):
                 fig, ax = self.time_plot(variable='prob_active');
                 fig.show()
 
-        self.dico_exp=dico
+        self.dico_exp = dico
 
         return self.dico_exp
 
