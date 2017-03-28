@@ -182,16 +182,18 @@ def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):
     return fig, ax
 
 
-def plot_dist_max_min(dico, data, algorithm=None,fname=None):
+def plot_dist_max_min(shl_exp, data=None, algorithm=None,fname=None):
     '''plot the coefficient distribution of the filter which is selected the more, and the one which is selected the less'''
-    if algorithm is not None :
+    dico=shl_exp.dico_exp
+    if (algorithm is not None) and (data is not None)  :
         sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
     else :
-        sparse_code= dico.transform(data)
-    color,label=['r', 'b'], ['most selected filter','less selected filter']
+        sparse_code=shl_exp.coding
     nb_filter_selection=np.count_nonzero(sparse_code,axis=0)
+
     index_max=np.argmax(nb_filter_selection)
     index_min=np.argmin(nb_filter_selection)
+    color,label=['r', 'b'], ['most selected filter : {0}'.format(index_max),'less selected filter : {0}'.format(index_min)]
     coeff_max = np.abs(sparse_code[:,index_max])
     coeff_min = np.abs(sparse_code[:,index_min])
     bins_max = bins_step(0.0001,np.max(coeff_max),20)
