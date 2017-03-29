@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
 from shl_scripts.shl_tools import get_data
+from shl_scripts.shl_encode import sparse_encode
+from shl_scripts import shl_tools
 
 """
 
@@ -142,7 +144,7 @@ class SHL(object):
 
         #sparse_code = dico.transform(data, algorithm=coding_algorithm)
         #patches = np.dot(sparse_code, dico.dictionary)
-        self.coding = shl_encode.sparse_encode(data, dico.dictionary,
+        self.coding = sparse_encode(data, dico.dictionary,
                                                 algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
                                                fit_tol=None, mod=None, verbose=0)
 
@@ -158,7 +160,7 @@ class SHL(object):
             # Learn the dictionary from reference patches
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
-            from shl_learn import SparseHebbianLearning
+            from shl_scripts.shl_learn import SparseHebbianLearning
             dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm,
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
