@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
-<<<<<<< HEAD
 from shl_scripts.shl_tools import get_data
 from shl_scripts.shl_encode import sparse_encode
 from shl_scripts import shl_tools
-=======
->>>>>>> 39ce7f96bee02a9bb7d94fb6a38c965794768fb9
 
 """
 
