@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
-import shl_encode
+#import shl_encode
 """
 ========================================================
 Learning filters from natural images using sparse coding
@@ -40,7 +40,6 @@ toolbar_width = 40
 # import matplotlib
 
 import numpy as np
-import shl_tools
 # see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
 from SLIP import Image
 

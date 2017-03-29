@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
-from shl_encode import sparse_encode
+#from shl_encode import sparse_encode
 import time
-import shl_tools
+# import shl_tools
 import numpy as np
 
 # SparseHebbianLearning
