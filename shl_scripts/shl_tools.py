@@ -34,7 +34,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
     '''
     slip = Image({'N_X':height, 'N_Y':width,
                 'white_n_learning' : 0,
-                'seed': None,
+                'seed': seed,
                 'white_N' : .07,
                 'white_N_0' : .0, # olshausen = 0.
                 'white_f_0' : .4, # olshausen = 0.2
@@ -56,7 +56,6 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
         image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, seed=seed)
         image = slip.whitening(image)
         # Extract all reference patches and ravel them
-
         data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))#, seed=seed)
         data_ = data_.reshape(data_.shape[0], -1)
         data_ -= np.mean(data_, axis=0)

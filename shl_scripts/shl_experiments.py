@@ -131,7 +131,7 @@ class SHL(object):
         self.coding=np.ones(((self.max_patches * self.n_image),self.n_dictionary))
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
-                    max_patches=self.max_patches, seed=None, patch_norm=True,
+                    max_patches=self.max_patches, seed=seed, patch_norm=patch_norm,
                     verbose=self.verbose)
 
 
