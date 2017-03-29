@@ -9,6 +9,9 @@ VERSION = shl_scripts.__version__ # << to change in __init__.py
 setup(
     name=NAME,
     version=VERSION,
+    # package source directory
+    package_dir={'shl_scripts': NAME},
+    packages=find_packages(exclude=['contrib', 'docs', 'probe']),
     author='Laurent PERRINET, Institut de Neurosciences de la Timone (CNRS/Aix-Marseille Université)',
     description=' This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the [SparseNet algorithm from Bruno Olshausen](http://redwood.berkeley.edu/bruno/sparsenet/).',
     long_description=open('README.rst').read(),
@@ -25,7 +28,7 @@ setup(
                'Programming Language :: Python :: 2',
                'Programming Language :: Python :: 2.7',
                'Programming Language :: Python :: 3',
-               'Programming Language :: Python :: 3.4',
+               'Programming Language :: Python :: 3.6',
               ],
     extras_require={
                 'html' : [
@@ -33,7 +36,4 @@ setup(
                          'matplotlib'
                          'jupyter>=1.0']
     },
-    # package source directory
-    package_dir={'': NAME},
-    packages=find_packages(NAME, exclude='docs')
 )

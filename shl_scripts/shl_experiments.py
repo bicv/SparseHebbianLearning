@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
-#import shl_encode
+from shl_scripts.shl_tools import get_data
+
 """
+
 ========================================================
 Learning filters from natural images using sparse coding
 ========================================================
@@ -127,7 +129,7 @@ class SHL(object):
 
     def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True):
         self.coding=np.ones(((self.max_patches * self.n_image),self.n_dictionary))
-        return shl_tools.get_data(height=self.height, width=self.width, n_image=self.n_image,
+        return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
                     max_patches=self.max_patches, seed=None, patch_norm=True,
                     verbose=self.verbose)
