@@ -145,6 +145,9 @@ class SHL(object):
 
         #sparse_code = dico.transform(data, algorithm=coding_algorithm)
         #patches = np.dot(sparse_code, dico.dictionary)
+        # from shl_scripts.shl_tools import get_data
+        from shl_scripts.shl_encode import sparse_encode
+        # from shl_scripts import shl_tools
 
         self.coding = sparse_encode(data, dico.dictionary,
                                                 algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
@@ -263,5 +266,5 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     fig, ax = dico.show_dico()
-    plt.savefig('assc.png')
+    plt.savefig('../probe/assc.png')
     plt.show()
