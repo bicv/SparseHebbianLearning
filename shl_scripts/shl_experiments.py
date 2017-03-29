@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
+<<<<<<< HEAD
 from shl_scripts.shl_tools import get_data
 from shl_scripts.shl_encode import sparse_encode
 from shl_scripts import shl_tools
+=======
+>>>>>>> 39ce7f96bee02a9bb7d94fb6a38c965794768fb9
 
 """
 
@@ -130,6 +133,7 @@ class SHL(object):
                                         'N_image': n_image})
 
     def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True):
+        from shl_scripts.shl_tools import get_data
         self.coding=np.ones(((self.max_patches * self.n_image),self.n_dictionary))
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
@@ -144,6 +148,7 @@ class SHL(object):
 
         #sparse_code = dico.transform(data, algorithm=coding_algorithm)
         #patches = np.dot(sparse_code, dico.dictionary)
+
         self.coding = sparse_encode(data, dico.dictionary,
                                                 algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
                                                fit_tol=None, mod=None, verbose=0)
@@ -234,19 +239,24 @@ class SHL(object):
         return self.dico_exp
 
     def plot_variance(self, data=None, algorithm=None, fname=None):
-        return shl_tools.plot_variance(self, data=data, fname=fname, algorithm=algorithm)
+        from shl_scripts.shl_tools import plot_variance
+        return plot_variance(self, data=data, fname=fname, algorithm=algorithm)
 
     def plot_variance_histogram(self, data=None, algorithm=None, fname=None):
-        return shl_tools.plot_variance_histogram(self, data=data, fname=fname, algorithm=algorithm)
+        from shl_scripts.shl_tools import plot_variance_histogram
+        return plot_variance_histogram(self, data=data, fname=fname, algorithm=algorithm)
 
     def time_plot(self, variable='kurt', fname=None, N_nosample=1):
-        return shl_tools.time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
+        from shl_scripts.shl_tools import time_plot
+        return time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
 
     def show_dico(self, title=None, fname=None):
-        return shl_tools.show_dico(self, title=title, fname=fname)
+        from shl_scripts.shl_tools import show_dico
+        return show_dico(self, title=title, fname=fname)
 
     def show_dico_in_order(self,data=None,title=None,fname=None):
-        return shl_tools.show_dico_in_order(self,title=title,fname=fname)
+        from shl_scripts.shl_tools import show_dico_in_order
+        return show_dico_in_order(self,title=title,fname=fname)
 
 if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
