@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
-                          mod=None, l0_sparseness=10, verbose=0):
+                          P_cum=None, l0_sparseness=10, verbose=0):
     """Generic sparse coding
 
     Each column of the result is the solution to a sparse coding problem.
@@ -104,14 +104,17 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
             copy_Xy=False).T
 
     elif algorithm == 'mp':
-        sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit_tol=fit_tol)
+        sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit_tol=fit_tol, P_cum=P_cum, verbose=verbose)
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
                          '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'
                          % algorithm)
     return sparse_code
 
-def mp(X, dictionary, l0_sparseness=10, fit_tol=None, verbose=0):
+def z_score(Pcum, p_c, stick):
+    return Pcum.ravel()[(p_c*Pcum.shape[1]).astype(np.int) + stick]
+
+def mp(X, dictionary, l0_sparseness=10, fit_tol=None, P_cum=None, verbose=0):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -142,12 +145,18 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, verbose=0):
     #         for k in range(n_components):
     #             z[k] = np.interp(-np.abs(alpha[k]), -mod[:, k], np.linspace(0, 1., n_samples, endpoint=True))
     #         lam = np.argmax(z)
-    t0=time.time()
+    if verbose>0:
+        t0=time.time()
     if X.ndim == 1:
         X = X[:, np.newaxis]
     n_samples, n_pixels = X.shape
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
+    if not P_cum is None:
+        nb_quant = n_dictionary
+        stick = np.arange(n_dictionary)*nb_quant
+        from shl_scripts.shl_learn import prior
+
 
     corr = (X @ dictionary.T)
     Xcorr = (dictionary @ dictionary.T)
@@ -155,11 +164,15 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, verbose=0):
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
         for i_l0 in range(int(l0_sparseness)):
-            ind  = np.argmax(np.abs(c))
+            if P_cum is None:
+                ind  = np.argmax(np.abs(c))
+            else:
+                ind  = np.argmax(z_score(P_cum, prior(c), stick))
+
             c_ind = c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
-    if verbose!=0:
+    if verbose>0:
         duration=time.time()-t0
         print('coding duration : {0}'.format(duration))
     return sparse_code

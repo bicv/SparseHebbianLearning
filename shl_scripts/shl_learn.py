@@ -128,7 +128,7 @@ class SparseHebbianLearning:
         else:
             self.dictionary, self.record = return_fn
 
-    def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None):
+    def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None, P_cum=None):
         """Fit the model from data in X.
 
         Parameters
@@ -146,7 +146,7 @@ class SparseHebbianLearning:
         if l0_sparseness is None:  l0_sparseness = self.l0_sparseness
         if fit_tol is None:  fit_tol = self.fit_tol
         #print("coding with algorithm : {0}".format(algorithm))
-        return sparse_encode(X, self.dictionary, algorithm=algorithm,
+        return sparse_encode(X, self.dictionary, algorithm=algorithm, P_cum=P_cum,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
     # def plot_variance(self, data=None, algorithm=None, fname=None):
@@ -213,6 +213,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         Gives the smoothing exponent  for the homeostatic gain
         If equal to 1 the homeostatic learning rule learns a linear relation to
         variance.
+        If equal to zero, we use COMP
 
     dict_init : array of shape (n_dictionary, n_pixels),
         initial value of the dictionary for warm restart scenarios
@@ -274,10 +275,11 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         print('[dict_learning]', end=' ')
     gain = np.ones(n_dictionary)
     mean_var = np.ones(n_dictionary)
-    if method=='comp':
-        mod = np.dot(np.linspace(1., 0, n_components, endpoint=True).T, np.ones((n_samples, 1)))
+    if alpha_homeo==0:
+        nb_quant = n_dictionary
+        P_cum = np.linspace(0, 1, nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
     else:
-        mod = None
+        P_cum = None
 
     # splits the whole dataset into batches
     n_batches = n_samples // batch_size
@@ -297,39 +299,34 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
 
         # Sparse cooding
         sparse_code = sparse_encode(this_X, dictionary, algorithm=method, fit_tol=fit_tol,
-                                  mod=mod, l0_sparseness=l0_sparseness)
+                                  P_cum=P_cum, l0_sparseness=l0_sparseness)
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
         residual /= n_dictionary # divide by the number of features
         dictionary += eta * sparse_code.T @ residual
 
-        # Update
-        if method=='comp': mod = update_mod(mod, dictionary.T, X.T, eta_homeo, verbose=verbose)
-
         # homeostasis
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
-        # Update and apply gain
-
-        #if eta_homeo>0.:
-        #    gain_ = update_gain(gain_, sparse_code, eta_homeo, verbose=verbose)
-        #    gain_ /= gain_.mean()
-        #    gain = gain_**alpha_homeo
 
         if eta_homeo>0.:
-            mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
-            gain = mean_var**alpha_homeo
-            gain /= gain.mean()
-            # print(np.mean(sparse_code**2, axis=0), gain, gain.mean())
-            dictionary /= gain[:, np.newaxis]
+            if P_cum is None:
+                # Update and apply gain
+                mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
+                gain = mean_var**alpha_homeo
+                gain /= gain.mean()
+                # print(np.mean(sparse_code**2, axis=0), gain, gain.mean())
+                dictionary /= gain[:, np.newaxis]
+            else:
+                P_cum = update_P_cum(P_cum, sparse_code, eta_homeo, nb_quant=nb_quant, verbose=verbose)
 
         if record_each>0:
             if ii % int(record_each) == 0:
                 from scipy.stats import kurtosis
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, algorithm=method, fit_tol=fit_tol,
-                                          mod=mod, l0_sparseness=l0_sparseness)
+                                          P_cum=P_cum, l0_sparseness=l0_sparseness)
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
                                             'var':np.mean(sparse_code_rec**2, axis=0)}],
@@ -396,8 +393,10 @@ def update_gain(gain, code, eta_homeo, verbose=False):
         gain = (1 - eta_homeo)*gain + eta_homeo * np.mean(code**2, axis=0)/np.mean(code**2)
     return gain
 
+def prior(code, C=4.):
+    return 1-np.exp(-np.abs(code)/C)
 
-def update_mod(mod, dictionary, X, eta_homeo, verbose=False):
+def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, verbose=False):
     """Update the estimated modulation function in place.
 
     Parameters
@@ -426,7 +425,15 @@ def update_mod(mod, dictionary, X, eta_homeo, verbose=False):
 
     """
     if eta_homeo>0.:
-        coef = np.dot(dictionary, X.T).T
-        mod_ = -np.sort(-np.abs(coef), axis=0)
-        mod = (1 - eta_homeo)*mod + eta_homeo * mod_
-    return mod
+        P_cum_ = get_P_cum(code, nb_quant=nb_quant)
+        P_cum = (1 - eta_homeo)*P_cum + eta_homeo * P_cum_
+    return P_cum
+
+def get_P_cum(code, nb_quant=100):
+    n_samples, nb_filter = code.shape
+    P_cum = np.zeros((nb_filter, nb_quant))
+    for i in range(nb_filter):
+        p, bins = np.histogram(prior(code[:, i]), bins=np.linspace(0., 1, nb_quant+1, endpoint=True), density=True)
+        p /= p.sum()
+        P_cum[i, :] = np.cumsum(p)
+    return P_cum

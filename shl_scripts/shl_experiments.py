@@ -75,7 +75,7 @@ class SHL(object):
                  n_iter=2**14,
                  eta=.01,
                  eta_homeo=.05,
-                 alpha_homeo=.2,
+                 alpha_homeo=0.,
                  max_patches=1024,
                  batch_size=256,
                  record_each=200,
@@ -151,7 +151,7 @@ class SHL(object):
 
         self.coding = sparse_encode(data, dico.dictionary,
                                                 algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
-                                               fit_tol=None, mod=None, verbose=0)
+                                               fit_tol=None, P_cum=None, verbose=0)
 
         if self.verbose:
             dt = time.time() - t0
@@ -196,10 +196,10 @@ class SHL(object):
                         os.remove(fmatname + self.LOCK)
                         os.remove(fmatname + '_lock')
                     except:
-                        print('Coud not remove ', fmatname + LOCK)
+                        print('Coud not remove ', fmatname + self.LOCK)
                 else:
                     dico = 'lock'
-                    print('the computation is locked', fmatname + LOCK)
+                    print('the computation is locked', fmatname + self.LOCK)
             else:
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
