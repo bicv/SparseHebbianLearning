@@ -75,7 +75,7 @@ class SHL(object):
                  n_iter=2**14,
                  eta=.01,
                  eta_homeo=.05,
-                 alpha_homeo=0.,
+                 alpha_homeo=0,
                  max_patches=1024,
                  batch_size=256,
                  record_each=200,
@@ -140,14 +140,10 @@ class SHL(object):
 
     def code(self, data, dico, coding_algorithm='mp', **kwargs):
         if self.verbose:
-            print('Coding data with algorithm ', coding_algorithm,  end=' ')
+            print('Coding data with algorithm (learn)', coding_algorithm,  end=' ')
             t0 = time.time()
 
-        #sparse_code = dico.transform(data, algorithm=coding_algorithm)
-        #patches = np.dot(sparse_code, dico.dictionary)
-        # from shl_scripts.shl_tools import get_data
         from shl_scripts.shl_encode import sparse_encode
-        # from shl_scripts import shl_tools
 
         self.coding = sparse_encode(data, dico.dictionary,
                                                 algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
@@ -160,8 +156,8 @@ class SHL(object):
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, list_figures=[], **kwargs):
+        if data is None: data = self.get_data(name_database)
         if matname is None:
-            if data is None: data = self.get_data(name_database)
             # Learn the dictionary from reference patches
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
@@ -176,10 +172,12 @@ class SHL(object):
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
+            self.code(data, dico)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
 
+        ## Problem : cette partie est apppelée 2 fois
         else:
             import pickle
             fmatname = os.path.join(self.data_cache, matname)
@@ -204,12 +202,8 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
 
+            self.code(data, dico)
 
-        # self.coding = shl_encode.sparse_encode(data, dico.dictionary,
-        #                                         algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
-        #                                        fit_tol=None, mod=None, verbose=0)
-        #
-        self.code(data, dico)
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
