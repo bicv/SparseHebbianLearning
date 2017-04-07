@@ -140,7 +140,7 @@ class SHL(object):
 
     def code(self, data, dico, coding_algorithm='mp', **kwargs):
         if self.verbose:
-            print('Coding data with algorithm (learn)', coding_algorithm,  end=' ')
+            print('Coding data with algorithm ', coding_algorithm,  end=' ')
             t0 = time.time()
 
         from shl_scripts.shl_encode import sparse_encode
@@ -155,7 +155,7 @@ class SHL(object):
         #return patches
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
-                   matname=None, list_figures=[], **kwargs):
+                   matname=None, folder_exp=None, list_figures=[], **kwargs):
         if data is None: data = self.get_data(name_database)
         if matname is None:
             # Learn the dictionary from reference patches
@@ -172,11 +172,10 @@ class SHL(object):
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
-            self.code(data, dico)
+
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
-
         ## Problem : cette partie est apppelée 2 fois
         else:
             import pickle
@@ -202,8 +201,8 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
 
-            self.code(data, dico)
-
+        self.code(data, dico)
+        self.dico_exp = dico
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
@@ -228,7 +227,7 @@ class SHL(object):
                 fig, ax = self.time_plot(variable='prob_active');
                 fig.show()
 
-        self.dico_exp = dico
+
 
         return self.dico_exp
 
