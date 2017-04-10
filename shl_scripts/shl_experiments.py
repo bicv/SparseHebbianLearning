@@ -104,7 +104,7 @@ class SHL(object):
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
         self.verbose = verbose
         # assigning and create a folder for caching data
-        self.data_cache = './data_cache'
+        self.data_cache = data_cache
         if not self.data_cache is None:
             try:
                 os.mkdir(self.data_cache)
