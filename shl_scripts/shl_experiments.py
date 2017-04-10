@@ -66,9 +66,9 @@ class SHL(object):
     def __init__(self,
                  height=256,
                  width=256,
-                 patch_size=(12, 12),
+                 patch_size=(16, 16),
                  database = 'database/',
-                 n_dictionary=14**2,
+                 n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  l0_sparseness=10,
@@ -155,7 +155,7 @@ class SHL(object):
         #return patches
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
-                   matname=None, folder_exp=None, list_figures=[], **kwargs):
+                   matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
         if data is None: data = self.get_data(name_database)
         if matname is None:
             # Learn the dictionary from reference patches
@@ -206,25 +206,25 @@ class SHL(object):
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
-                fig, ax = self.show_dico(title=matname)
+                fig, ax = self.show_dico(title=matname, fname=fname)
                 fig.show()
             if 'show_dico_in_order' in list_figures:
-                fig,ax=self.show_dico_in_order(title=matname)
+                fig,ax=self.show_dico_in_order(title=matname, fname=fname)
                 fig.show()
             if 'plot_variance' in list_figures:
-                fig, ax = self.plot_variance(data=data)
+                fig, ax = self.plot_variance(data=data, fname=fname)
                 fig.show()
             if 'plot_variance_histogram' in list_figures:
-                fig, ax = self.plot_variance_histogram(data=data)
+                fig, ax = self.plot_variance_histogram(data=data, fname=fname)
                 fig.show()
             if 'time_plot_var' in list_figures:
-                fig, ax = self.time_plot(variable='var');
+                fig, ax = self.time_plot(variable='var', fname=fname);
                 fig.show()
             if 'time_plot_kurt' in list_figures:
-                fig, ax = self.time_plot(variable='kurt');
+                fig, ax = self.time_plot(variable='kurt', fname=fname);
                 fig.show()
             if 'time_plot_prob' in list_figures:
-                fig, ax = self.time_plot(variable='prob_active');
+                fig, ax = self.time_plot(variable='prob_active', fname=fname);
                 fig.show()
 
 
@@ -247,7 +247,7 @@ class SHL(object):
         from shl_scripts.shl_tools import show_dico
         return show_dico(self, title=title, fname=fname)
 
-    def show_dico_in_order(self,data=None,title=None,fname=None):
+    def show_dico_in_order(self, data=None, title=None, fname=None):
         from shl_scripts.shl_tools import show_dico_in_order
         return show_dico_in_order(self,title=title,fname=fname)
 

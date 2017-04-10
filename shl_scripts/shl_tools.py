@@ -283,7 +283,7 @@ def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def time_plot(shl_exp, variable='kurt', fname=None, N_nosample=1, alpha=.3):
+def time_plot(shl_exp, variable='kurt', N_nosample=1, alpha=.3, fname=None):
     dico=shl_exp.dico_exp
     try:
         df_variable = dico.record[variable]
