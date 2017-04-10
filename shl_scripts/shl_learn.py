@@ -392,7 +392,7 @@ def update_gain(gain, code, eta_homeo, verbose=False):
         gain = (1 - eta_homeo)*gain + eta_homeo * np.mean(code**2, axis=0)/np.mean(code**2)
     return gain
 
-def prior(code, C=4.):
+def prior(code, C=5.):
     return 1-np.exp(-np.abs(code)/C)
 
 def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, verbose=False):
