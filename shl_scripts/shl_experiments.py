@@ -146,8 +146,9 @@ class SHL(object):
         from shl_scripts.shl_encode import sparse_encode
 
         self.coding = sparse_encode(data, dico.dictionary,
-                                                algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
-                                               fit_tol=None, P_cum=None, verbose=0)
+                                    algorithm=self.learning_algorithm,
+                                    l0_sparseness=self.l0_sparseness,
+                                    fit_tol=None, P_cum=None, verbose=0)
 
         if self.verbose:
             dt = time.time() - t0
@@ -219,8 +220,11 @@ class SHL(object):
                 fig, ax = self.time_plot(variable='kurt', fname=fname);
             if 'time_plot_prob' in list_figures:
                 fig, ax = self.time_plot(variable='prob_active', fname=fname);
-            if fname is None:
-                fig.show()
+            try:
+                if fname is None:
+                    fig.show()
+            except:
+                pass
 
 
 
