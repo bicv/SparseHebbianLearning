@@ -207,24 +207,19 @@ class SHL(object):
         if not dico == 'lock':
             if 'show_dico' in list_figures:
                 fig, ax = self.show_dico(title=matname, fname=fname)
-                fig.show()
             if 'show_dico_in_order' in list_figures:
                 fig,ax=self.show_dico_in_order(title=matname, fname=fname)
-                fig.show()
             if 'plot_variance' in list_figures:
                 fig, ax = self.plot_variance(data=data, fname=fname)
-                fig.show()
             if 'plot_variance_histogram' in list_figures:
                 fig, ax = self.plot_variance_histogram(data=data, fname=fname)
-                fig.show()
             if 'time_plot_var' in list_figures:
                 fig, ax = self.time_plot(variable='var', fname=fname);
-                fig.show()
             if 'time_plot_kurt' in list_figures:
                 fig, ax = self.time_plot(variable='kurt', fname=fname);
-                fig.show()
             if 'time_plot_prob' in list_figures:
                 fig, ax = self.time_plot(variable='prob_active', fname=fname);
+            if fname is None:
                 fig.show()
 
 
