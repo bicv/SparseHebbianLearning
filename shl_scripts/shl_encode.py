@@ -123,7 +123,7 @@ def z_score(Pcum, p_c, stick):
     #print((p_c*Pcum.shape[1]).astype(np.int) + stick)
     #print(Pcum.ravel().shape)
     #print("la shape de stick est : {0}".format(stick.shape))
-
+    # TODO : sometimes, the index could be greater and introduce an error?
     return Pcum.ravel()[(p_c*Pcum.shape[1]).astype(np.int) + stick]
 
 def mp(X, dictionary, l0_sparseness=10, fit_tol=None, P_cum=None, verbose=0):
