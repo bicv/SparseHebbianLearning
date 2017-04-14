@@ -74,7 +74,7 @@ class SHL(object):
                  l0_sparseness=10,
                  n_iter=2**14,
                  eta=.01,
-                 eta_homeo=.05,
+                 eta_homeo=.01,
                  alpha_homeo=0,
                  max_patches=1024,
                  batch_size=256,
@@ -225,8 +225,6 @@ class SHL(object):
                     fig.show()
             except:
                 pass
-
-
 
         return self.dico_exp
 
