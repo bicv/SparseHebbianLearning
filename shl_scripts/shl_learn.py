@@ -379,10 +379,8 @@ def update_gain(gain, code, eta_homeo, verbose=False):
         gain = (1 - eta_homeo)*gain + eta_homeo * np.mean(code**2, axis=0)/np.mean(code**2)
     return gain
 
-def prior(code, C=5.):
-    return 1-np.exp(-np.abs(code)/C)
 
-def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, verbose=False):
+def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., verbose=False):
     """Update the estimated modulation function in place.
 
     Parameters
@@ -411,15 +409,16 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, verbose=False):
 
     """
     if eta_homeo>0.:
-        P_cum_ = get_P_cum(code, nb_quant=nb_quant)
+        P_cum_ = get_P_cum(code, nb_quant=nb_quant, C=C)
         P_cum = (1 - eta_homeo)*P_cum + eta_homeo * P_cum_
     return P_cum
 
-def get_P_cum(code, nb_quant=100):
+def get_P_cum(code, nb_quant=100, C=5.):
+    from shl_scripts.shl_encode import prior
     n_samples, nb_filter = code.shape
     P_cum = np.zeros((nb_filter, nb_quant))
     for i in range(nb_filter):
-        p, bins = np.histogram(prior(code[:, i]), bins=np.linspace(0., 1, nb_quant+1, endpoint=True), density=True)
+        p, bins = np.histogram(prior(code[:, i], C=C), bins=np.linspace(0., 1, nb_quant+1, endpoint=True), density=True)
         p /= p.sum()
         P_cum[i, :] = np.cumsum(p)
     return P_cum
