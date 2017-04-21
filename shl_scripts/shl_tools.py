@@ -214,6 +214,23 @@ def plot_dist_max_min(shl_exp, data=None, algorithm=None,fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
+
+def plot_proba_histogram(coding):
+    n_dictionary=coding.shape[1]
+
+    p = np.count_nonzero(coding, axis=0)/coding.shape[1]
+    p /= p.sum()
+    print('Entropy / Entropy_max=', np.sum( -p * np.log(p)) / np.log(n_dictionary) )
+
+    fig = plt.figure(figsize=(16, 4))
+    ax = fig.add_subplot(111)
+    ax.bar(np.arange(n_dictionary), p*n_dictionary)
+    ax.set_title('distribution of the selection probability')
+    ax.set_ylabel('pdf')
+    ax.set_xlim(0)
+    ax.axis('tight')
+    return fig, ax
+
 ## To adapt with shl_exp
 def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     '''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
