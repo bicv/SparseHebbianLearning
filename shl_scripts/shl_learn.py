@@ -126,11 +126,11 @@ class SparseHebbianLearning:
             verbose=self.verbose, random_state=self.random_state)
 
         if self.record_each==0:
-            self.dictionary = return_fn
+            self.dictionary, self.P_cum = return_fn
         else:
-            self.dictionary, self.record = return_fn
+            self.dictionary, self.P_cum, self.record = return_fn
 
-    def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None, P_cum=None):
+    def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None):
         """Fit the model from data in X.
 
         Parameters
@@ -147,7 +147,7 @@ class SparseHebbianLearning:
         if algorithm is None:  algorithm = self.fit_algorithm
         if l0_sparseness is None:  l0_sparseness = self.l0_sparseness
         if fit_tol is None:  fit_tol = self.fit_tol
-        return sparse_encode(X, self.dictionary, algorithm=algorithm, P_cum=P_cum,
+        return sparse_encode(X, self.dictionary, algorithm=algorithm, P_cum=self.P_cum,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
@@ -332,9 +332,9 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         print('done (total time: % 3is, % 4.1fmn)' % (dt, dt / 60))
 
     if record_each==0:
-        return dictionary
+        return dictionary, P_cum
     else:
-        return dictionary, record
+        return dictionary, P_cum, record
 
 def update_gain(gain, code, eta_homeo, verbose=False):
     """Update the estimated variance of coefficients in place.

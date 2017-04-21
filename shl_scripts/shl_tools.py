@@ -275,7 +275,7 @@ def plot_variance(shl_exp, data=None, algorithm=None, fname=None):
         sparse_code=shl_exp.coding
     n_dictionary=dico.dictionary.shape[0]
     Z = np.mean(sparse_code**2)
-    fig = plt.figure(figsize=(12, 4))
+    fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
     ax.bar(np.arange(n_dictionary), np.mean(sparse_code**2, axis=0)/Z)#, yerr=np.std(code**2/Z, axis=0))
     ax.set_title('Variance of coefficients')
@@ -294,7 +294,7 @@ def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
         sparse_code= shl_exp.coding
     Z = np.mean(sparse_code**2)
     df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
-    fig = plt.figure(figsize=(6, 4))
+    fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
     with sns.axes_style("white"):
         ax = sns.distplot(df['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
@@ -303,6 +303,20 @@ def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
     ax.set_xlim(0)
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
+
+
+def plot_P_cum(P_cum, verbose=False):
+
+    fig = plt.figure(figsize=(16, 8))
+    ax = fig.add_subplot(111)
+    ax.plot(P_cum.T, alpha=.3)
+    ax.set_title(' non-linear functions ')
+    ax.set_xlabel(' prior(a) ')
+    ax.set_ylabel('P')
+    #ax.set_xlim(0)
+    ax.axis('tight')
+    return fig, ax
+
 
 def time_plot(shl_exp, variable='kurt', N_nosample=1, alpha=.3, fname=None):
     dico=shl_exp.dico_exp
