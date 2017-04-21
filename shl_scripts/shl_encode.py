@@ -120,7 +120,7 @@ def prior(code, C=5.):
     return 1.-np.exp(-np.abs(code)/C)
 
 def z_score(Pcum, p_c, stick):
-    return Pcum.ravel()[(p_c*Pcum.shape[1]).astype(np.int) + stick]
+    return Pcum.ravel()[(p_c*Pcum.shape[1] - (p_c==1)).astype(np.int) + stick]
 
 def mp(X, dictionary, l0_sparseness=10, fit_tol=None, P_cum=None, C=5., verbose=0):
     """
