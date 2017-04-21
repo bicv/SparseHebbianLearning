@@ -215,12 +215,14 @@ def plot_dist_max_min(shl_exp, data=None, algorithm=None,fname=None):
     return fig, ax
 
 
-def plot_proba_histogram(coding):
+def plot_proba_histogram(coding, verbose=False):
     n_dictionary=coding.shape[1]
 
     p = np.count_nonzero(coding, axis=0)/coding.shape[1]
     p /= p.sum()
-    print('Entropy / Entropy_max=', np.sum( -p * np.log(p)) / np.log(n_dictionary) )
+
+    rel_ent = np.sum( -p * np.log(p)) / np.log(n_dictionary)
+    if verbose: print('Entropy / Entropy_max=', rel_ent )
 
     fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
