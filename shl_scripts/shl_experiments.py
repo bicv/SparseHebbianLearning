@@ -74,7 +74,7 @@ class SHL(object):
                  l0_sparseness=10,
                  n_iter=2**14,
                  eta=.01,
-                 eta_homeo=.01,
+                 eta_homeo=.01, C=5., do_sym=True,
                  alpha_homeo=0,
                  max_patches=1024,
                  batch_size=256,
@@ -100,6 +100,8 @@ class SHL(object):
         self.eta = eta
         self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
+        self.C = C
+        self.do_sym = do_sym
 
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
         self.verbose = verbose
@@ -163,7 +165,7 @@ class SHL(object):
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm,
+            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, C=self.C, do_sym=self.do_sym, 
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          dict_init=None, l0_sparseness=self.l0_sparseness,

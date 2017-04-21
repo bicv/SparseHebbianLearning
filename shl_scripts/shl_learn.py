@@ -85,7 +85,7 @@ class SparseHebbianLearning:
     def __init__(self, fit_algorithm, n_dictionary=None, eta=0.02, n_iter=40000,
                  eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
                  batch_size=100,
-                 l0_sparseness=None, fit_tol=None,
+                 l0_sparseness=None, fit_tol=None, C=5., do_sym=True,
                  record_each=200, verbose=False, random_state=None):
         self.eta = eta
         self.n_dictionary = n_dictionary
@@ -93,6 +93,8 @@ class SparseHebbianLearning:
         self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
         self.fit_algorithm = fit_algorithm
+        self.C = C
+        self.do_sym = do_sym
         self.batch_size = batch_size
         self.dict_init = dict_init
         self.l0_sparseness = l0_sparseness
@@ -119,7 +121,7 @@ class SparseHebbianLearning:
         return_fn = dict_learning(
             X, self.eta, self.n_dictionary, self.l0_sparseness,
             n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
-            method=self.fit_algorithm, dict_init=self.dict_init,
+            method=self.fit_algorithm, C=self.C, do_sym=self.do_sym, dict_init=self.dict_init,
             batch_size=self.batch_size, record_each=self.record_each,
             verbose=self.verbose, random_state=self.random_state)
 
@@ -151,7 +153,7 @@ class SparseHebbianLearning:
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                       method='mp', random_state=None):
+                       method='mp', C=5, do_sym=True, random_state=None):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -285,7 +287,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
 
         # Sparse cooding
         sparse_code = sparse_encode(this_X, dictionary, algorithm=method, fit_tol=fit_tol,
-                                  P_cum=P_cum, l0_sparseness=l0_sparseness)
+                                  P_cum=P_cum, C=C, l0_sparseness=l0_sparseness)
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
@@ -305,7 +307,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 # print(np.mean(sparse_code**2, axis=0), gain, gain.mean())
                 dictionary /= gain[:, np.newaxis]
             else:
-                P_cum = update_P_cum(P_cum, sparse_code, eta_homeo, nb_quant=nb_quant, verbose=verbose)
+                P_cum = update_P_cum(P_cum, sparse_code, eta_homeo, nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         if record_each>0:
             if ii % int(record_each) == 0:
@@ -380,7 +382,7 @@ def update_gain(gain, code, eta_homeo, verbose=False):
     return gain
 
 
-def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., verbose=False):
+def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., do_sym=True, verbose=False):
     """Update the estimated modulation function in place.
 
     Parameters
@@ -409,16 +411,16 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., verbose=False):
 
     """
     if eta_homeo>0.:
-        P_cum_ = get_P_cum(code, nb_quant=nb_quant, C=C)
+        P_cum_ = get_P_cum(code, nb_quant=nb_quant, C=C, do_sym=do_sym)
         P_cum = (1 - eta_homeo)*P_cum + eta_homeo * P_cum_
     return P_cum
 
-def get_P_cum(code, nb_quant=100, C=5.):
+def get_P_cum(code, nb_quant=100, C=5., do_sym=True):
     from shl_scripts.shl_encode import prior
     n_samples, nb_filter = code.shape
     P_cum = np.zeros((nb_filter, nb_quant))
     for i in range(nb_filter):
-        p, bins = np.histogram(prior(code[:, i], C=C), bins=np.linspace(0., 1, nb_quant+1, endpoint=True), density=True)
+        p, bins = np.histogram(prior(code[:, i], C=C, do_sym=do_sym), bins=np.linspace(0., 1, nb_quant+1, endpoint=True), density=True)
         p /= p.sum()
         P_cum[i, :] = np.cumsum(p)
     return P_cum
