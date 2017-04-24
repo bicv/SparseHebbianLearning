@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
 from shl_scripts.shl_tools import get_data
@@ -66,15 +66,15 @@ class SHL(object):
     def __init__(self,
                  height=256,
                  width=256,
-                 patch_size=(12, 12),
+                 patch_size=(16, 16),
                  database = 'database/',
-                 n_dictionary=14**2,
+                 n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  l0_sparseness=10,
                  n_iter=2**14,
                  eta=.01,
-                 eta_homeo=.05,
+                 eta_homeo=.01, C=5., do_sym=True,
                  alpha_homeo=0,
                  max_patches=1024,
                  batch_size=256,
@@ -100,11 +100,13 @@ class SHL(object):
         self.eta = eta
         self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
+        self.C = C
+        self.do_sym = do_sym
 
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
         self.verbose = verbose
         # assigning and create a folder for caching data
-        self.data_cache = './data_cache'
+        self.data_cache = data_cache
         if not self.data_cache is None:
             try:
                 os.mkdir(self.data_cache)
@@ -146,8 +148,9 @@ class SHL(object):
         from shl_scripts.shl_encode import sparse_encode
 
         self.coding = sparse_encode(data, dico.dictionary,
-                                                algorithm=self.learning_algorithm, l0_sparseness=self.l0_sparseness,
-                                               fit_tol=None, P_cum=None, verbose=0)
+                                    algorithm=self.learning_algorithm,
+                                    l0_sparseness=self.l0_sparseness,
+                                    fit_tol=None, P_cum=None, verbose=0)
 
         if self.verbose:
             dt = time.time() - t0
@@ -155,14 +158,14 @@ class SHL(object):
         #return patches
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
-                   matname=None, folder_exp=None, list_figures=[], **kwargs):
+                   matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
         if data is None: data = self.get_data(name_database)
         if matname is None:
             # Learn the dictionary from reference patches
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm,
+            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, C=self.C, do_sym=self.do_sym, 
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          dict_init=None, l0_sparseness=self.l0_sparseness,
@@ -206,28 +209,24 @@ class SHL(object):
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
-                fig, ax = self.show_dico(title=matname)
-                fig.show()
+                fig, ax = self.show_dico(title=matname, fname=fname)
             if 'show_dico_in_order' in list_figures:
-                fig,ax=self.show_dico_in_order(title=matname)
-                fig.show()
+                fig,ax=self.show_dico_in_order(title=matname, fname=fname)
             if 'plot_variance' in list_figures:
-                fig, ax = self.plot_variance(data=data)
-                fig.show()
+                fig, ax = self.plot_variance(data=data, fname=fname)
             if 'plot_variance_histogram' in list_figures:
-                fig, ax = self.plot_variance_histogram(data=data)
-                fig.show()
+                fig, ax = self.plot_variance_histogram(data=data, fname=fname)
             if 'time_plot_var' in list_figures:
-                fig, ax = self.time_plot(variable='var');
-                fig.show()
+                fig, ax = self.time_plot(variable='var', fname=fname);
             if 'time_plot_kurt' in list_figures:
-                fig, ax = self.time_plot(variable='kurt');
-                fig.show()
+                fig, ax = self.time_plot(variable='kurt', fname=fname);
             if 'time_plot_prob' in list_figures:
-                fig, ax = self.time_plot(variable='prob_active');
-                fig.show()
-
-
+                fig, ax = self.time_plot(variable='prob_active', fname=fname);
+            try:
+                if fname is None:
+                    fig.show()
+            except:
+                pass
 
         return self.dico_exp
 
@@ -247,7 +246,7 @@ class SHL(object):
         from shl_scripts.shl_tools import show_dico
         return show_dico(self, title=title, fname=fname)
 
-    def show_dico_in_order(self,data=None,title=None,fname=None):
+    def show_dico_in_order(self, data=None, title=None, fname=None):
         from shl_scripts.shl_tools import show_dico_in_order
         return show_dico_in_order(self,title=title,fname=fname)
 

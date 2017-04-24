@@ -1,4 +1,7 @@
 
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*
+from __future__ import division, print_function, absolute_import
 from SLIP import Image
 from scipy.stats import kurtosis
 import sys
@@ -246,6 +249,24 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     #print(mom1,mom2)
     return fig, ax
 
+def plot_proba_histogram(coding, verbose=False):
+    n_dictionary=coding.shape[1]
+
+    p = np.count_nonzero(coding, axis=0)/coding.shape[1]
+    p /= p.sum()
+
+    rel_ent = np.sum( -p * np.log(p)) / np.log(n_dictionary)
+    if verbose: print('Entropy / Entropy_max=', rel_ent )
+
+    fig = plt.figure(figsize=(16, 4))
+    ax = fig.add_subplot(111)
+    ax.bar(np.arange(n_dictionary), p*n_dictionary)
+    ax.set_title('distribution of the selection probability')
+    ax.set_ylabel('pdf')
+    ax.set_xlim(0)
+    ax.axis('tight')
+    return fig, ax
+
 def plot_variance(shl_exp, data=None, algorithm=None, fname=None):
     dico=shl_exp.dico_exp
     if (algorithm is not None) and (data is not None)  :
@@ -254,7 +275,7 @@ def plot_variance(shl_exp, data=None, algorithm=None, fname=None):
         sparse_code=shl_exp.coding
     n_dictionary=dico.dictionary.shape[0]
     Z = np.mean(sparse_code**2)
-    fig = plt.figure(figsize=(12, 4))
+    fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
     ax.bar(np.arange(n_dictionary), np.mean(sparse_code**2, axis=0)/Z)#, yerr=np.std(code**2/Z, axis=0))
     ax.set_title('Variance of coefficients')
@@ -273,7 +294,7 @@ def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
         sparse_code= shl_exp.coding
     Z = np.mean(sparse_code**2)
     df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
-    fig = plt.figure(figsize=(6, 4))
+    fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
     with sns.axes_style("white"):
         ax = sns.distplot(df['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
@@ -283,7 +304,21 @@ def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def time_plot(shl_exp, variable='kurt', fname=None, N_nosample=1, alpha=.3):
+
+def plot_P_cum(P_cum, verbose=False):
+
+    fig = plt.figure(figsize=(16, 8))
+    ax = fig.add_subplot(111)
+    ax.plot(P_cum.T, alpha=.3)
+    ax.set_title(' non-linear functions ')
+    ax.set_xlabel(' prior(a) ')
+    ax.set_ylabel('P')
+    #ax.set_xlim(0)
+    ax.axis('tight')
+    return fig, ax
+
+
+def time_plot(shl_exp, variable='kurt', N_nosample=1, alpha=.3, fname=None):
     dico=shl_exp.dico_exp
     try:
         df_variable = dico.record[variable]

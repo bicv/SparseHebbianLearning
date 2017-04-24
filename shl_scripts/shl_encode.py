@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*
+from __future__ import division, print_function, absolute_import
 import numpy as np
 import time
 
 def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
-                          P_cum=None, l0_sparseness=10, verbose=0):
+                          P_cum=None, l0_sparseness=10, C=5., do_sym=True, verbose=0):
     """Generic sparse coding
 
     Each column of the result is the solution to a sparse coding problem.
@@ -104,11 +107,7 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
             copy_Xy=False).T
 
     elif algorithm == 'mp':
-        sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit_tol=fit_tol, P_cum=P_cum, verbose=verbose)
-    #elif algorithm == 'mp':
-    #    sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit=fit_tol, P_cum=None, verbose=verbose)
-    #elif algorithm == 'pcum':
-    #    sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit=fit_tol, P_cum=P_cum, verbose=verbose)
+        sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit_tol=fit_tol, P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose)
 
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
@@ -116,17 +115,17 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
                          % algorithm)
     return sparse_code
 
+
+def prior(code, C=5., do_sym=True):
+    if do_sym:
+        return 1.-np.exp(-np.abs(code)/C)
+    else:
+        return (1.-np.exp(-code/C))*(code>0)
+
 def z_score(Pcum, p_c, stick):
-    #print("la shape de stick est : {0}".format(stick.shape))
-    #print("la shape de l'autre est : {0}".format((p_c*Pcum.shape[1]).astype(np.int).shape))
-    #print((p_c*Pcum.shape[1]).astype(np.int) + stick)
-    #print((p_c*Pcum.shape[1]).astype(np.int) + stick)
-    #print(Pcum.ravel().shape)
-    #print("la shape de stick est : {0}".format(stick.shape))
+    return Pcum.ravel()[(p_c*Pcum.shape[1] - (p_c==1)).astype(np.int) + stick]
 
-    return Pcum.ravel()[(p_c*Pcum.shape[1]).astype(np.int) + stick]
-
-def mp(X, dictionary, l0_sparseness=10, fit_tol=None, P_cum=None, verbose=0):
+def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C=5., verbose=0):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -146,17 +145,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, P_cum=None, verbose=0):
         The sparse code
 
     """
-
-    # if mod is not None:
-    #     n_components, n_samples = mod.shape
-    #     z = np.empty(n_components)
-    # while True:
-    #     if mod is None:
-    #         lam = np.argmax(np.abs(alpha))
-    #     else:
-    #         for k in range(n_components):
-    #             z[k] = np.interp(-np.abs(alpha[k]), -mod[:, k], np.linspace(0, 1., n_samples, endpoint=True))
-    #         lam = np.argmax(z)
+    # initialization
     if verbose>0:
         t0=time.time()
     if X.ndim == 1:
@@ -167,9 +156,8 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, P_cum=None, verbose=0):
     if not P_cum is None:
         nb_quant = n_dictionary
         stick = np.arange(n_dictionary)*nb_quant
-        from shl_scripts.shl_learn import prior
 
-
+    # starting Matching Pursuit
     corr = (X @ dictionary.T)
     Xcorr = (dictionary @ dictionary.T)
     # TODO: vectorize?
@@ -177,11 +165,12 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, P_cum=None, verbose=0):
         c = corr[i_sample, :].copy()
         for i_l0 in range(int(l0_sparseness)):
             if P_cum is None:
-                #print("classical mp algo")
-                ind  = np.argmax(np.abs(c))
+                if do_sym:
+                    ind  = np.argmax(np.abs(c))
+                else:
+                    ind  = np.argmax(c)
             else:
-                #print("Pcum type of algo")
-                ind  = np.argmax(z_score(P_cum, prior(c), stick))
+                ind  = np.argmax(z_score(P_cum, prior(c, C=C, do_sym=do_sym), stick))
 
             c_ind = c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
