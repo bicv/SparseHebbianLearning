@@ -309,7 +309,7 @@ def plot_P_cum(P_cum, verbose=False):
 
     fig = plt.figure(figsize=(16, 8))
     ax = fig.add_subplot(111)
-    ax.plot(P_cum.T, alpha=.3)
+    ax.plot(P_cum.T, c='g', alpha=.05)
     ax.set_title(' non-linear functions ')
     ax.set_xlabel(' prior(a) ')
     ax.set_ylabel('P')

@@ -64,8 +64,8 @@ class SHL(object):
 
     """
     def __init__(self,
-                 height=256,
-                 width=256,
+                 height=256, # of image
+                 width=256, # of image
                  patch_size=(16, 16),
                  database = 'database/',
                  n_dictionary=18**2,
@@ -74,7 +74,7 @@ class SHL(object):
                  l0_sparseness=10,
                  n_iter=2**14,
                  eta=.01,
-                 eta_homeo=.01, C=5., do_sym=True,
+                 eta_homeo=.01, nb_quant=32, C=5., do_sym=False,
                  alpha_homeo=0,
                  max_patches=1024,
                  batch_size=256,
@@ -100,6 +100,7 @@ class SHL(object):
         self.eta = eta
         self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
+        self.nb_quant = nb_quant
         self.C = C
         self.do_sym = do_sym
 
@@ -165,7 +166,7 @@ class SHL(object):
             if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, C=self.C, do_sym=self.do_sym,
+            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          dict_init=None, l0_sparseness=self.l0_sparseness,
@@ -250,7 +251,7 @@ class SHL(object):
 
     def show_dico_in_order(self, data=None, title=None, fname=None):
         from shl_scripts.shl_tools import show_dico_in_order
-        return show_dico_in_order(self,title=title,fname=fname)
+        return show_dico_in_order(self, title=title,fname=fname)
 
 if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output

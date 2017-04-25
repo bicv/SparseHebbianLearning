@@ -84,7 +84,7 @@ class SparseHebbianLearning:
     def __init__(self, fit_algorithm, n_dictionary=None, eta=0.02, n_iter=40000,
                  eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
                  batch_size=100,
-                 l0_sparseness=None, fit_tol=None, C=5., do_sym=True,
+                 l0_sparseness=None, fit_tol=None, nb_quant=32, C=5., do_sym=True,
                  record_each=200, verbose=False, random_state=None):
         self.eta = eta
         self.n_dictionary = n_dictionary
@@ -92,6 +92,7 @@ class SparseHebbianLearning:
         self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
         self.fit_algorithm = fit_algorithm
+        self.nb_quant = nb_quant
         self.C = C
         self.do_sym = do_sym
         self.batch_size = batch_size
@@ -120,7 +121,7 @@ class SparseHebbianLearning:
         return_fn = dict_learning(
             X, self.eta, self.n_dictionary, self.l0_sparseness,
             n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
-            method=self.fit_algorithm, C=self.C, do_sym=self.do_sym, dict_init=self.dict_init,
+            method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym, dict_init=self.dict_init,
             batch_size=self.batch_size, record_each=self.record_each,
             verbose=self.verbose, random_state=self.random_state)
 
@@ -152,7 +153,7 @@ class SparseHebbianLearning:
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                       method='mp', C=5, do_sym=True, random_state=None):
+                       method='mp', nb_quant=100, C=5, do_sym=True, random_state=None):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -263,7 +264,6 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
     gain = np.ones(n_dictionary)
     mean_var = np.ones(n_dictionary)
     if alpha_homeo==0:
-        nb_quant = n_dictionary
         P_cum = np.linspace(0, 1, nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
     else:
         P_cum = None
@@ -386,7 +386,7 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., do_sym=True, verbos
 
     Parameters
     ----------
-    mod: array of shape (n_samples, n_components)
+    P_cum: array of shape (n_samples, n_components)
         Value of the modulation function at the previous iteration.
 
     dictionary: array of shape (n_components, n_features)
@@ -394,7 +394,7 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., do_sym=True, verbos
         the data. Some of the algorithms assume normalized rows for meaningful
         output.
 
-    X: array of shape (n_samples, n_features)
+    code: array of shape (n_samples, n_features)
         Data matrix.
 
     eta_homeo: float
@@ -405,7 +405,7 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., do_sym=True, verbos
 
     Returns
     -------
-    mod: array of shape (n_samples, n_components)
+    P_cum: array of shape (n_samples, n_components)
         Updated value of the modulation function.
 
     """
