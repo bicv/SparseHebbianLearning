@@ -181,7 +181,7 @@ class SHL(object):
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
-        ## Problem : cette partie est apppelée 2 fois
+
         else:
             import pickle
             fmatname = os.path.join(self.data_cache, matname)
