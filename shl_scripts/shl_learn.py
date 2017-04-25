@@ -3,7 +3,6 @@
 from __future__ import division, print_function, absolute_import
 from shl_scripts.shl_encode import sparse_encode
 import time
-# import shl_tools
 import numpy as np
 
 # SparseHebbianLearning
@@ -287,7 +286,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
 
         # Sparse cooding
         sparse_code = sparse_encode(this_X, dictionary, algorithm=method, fit_tol=fit_tol,
-                                  P_cum=P_cum, C=C, l0_sparseness=l0_sparseness)
+                                  P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness)
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
@@ -314,7 +313,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 from scipy.stats import kurtosis
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, algorithm=method, fit_tol=fit_tol,
-                                          P_cum=P_cum, l0_sparseness=l0_sparseness)
+                                          P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0_sparseness)
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
                                             'var':np.mean(sparse_code_rec**2, axis=0)}],
