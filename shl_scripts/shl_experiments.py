@@ -254,6 +254,7 @@ class SHL(object):
         return show_dico_in_order(self, title=title,fname=fname)
 
 if __name__ == '__main__':
+    
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 0
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', verbose=verbose)
