@@ -154,7 +154,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
     if not P_cum is None:
-        nb_quant = n_dictionary
+        nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
 
     # starting Matching Pursuit
