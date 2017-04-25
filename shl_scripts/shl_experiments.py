@@ -150,7 +150,7 @@ class SHL(object):
         self.coding = sparse_encode(data, dico.dictionary,
                                     algorithm=self.learning_algorithm,
                                     l0_sparseness=self.l0_sparseness,
-                                    fit_tol=None, P_cum=None, verbose=0)
+                                    fit_tol=None, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
 
         if self.verbose:
             dt = time.time() - t0
@@ -190,15 +190,17 @@ class SHL(object):
                 if not(os.path.isfile(fmatname + '_lock')):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
-                    dico = self.learn_dico(data=data, name_database=name_database,
-                                           record_each=self.record_each, matname=None, **kwargs)
-                    with open(fmatname, 'wb') as fp:
-                        pickle.dump(dico, fp)
                     try:
-                        os.remove(fmatname + self.LOCK)
-                        os.remove(fmatname + '_lock')
-                    except:
-                        print('Coud not remove ', fmatname + self.LOCK)
+                        dico = self.learn_dico(data=data, name_database=name_database,
+                                               record_each=self.record_each, matname=None, **kwargs)
+                        with open(fmatname, 'wb') as fp:
+                            pickle.dump(dico, fp)
+                    finally:
+                        try:
+                            os.remove(fmatname + self.LOCK)
+                            os.remove(fmatname + '_lock')
+                        except:
+                            print('Coud not remove ', fmatname + self.LOCK)
                 else:
                     dico = 'lock'
                     print('the computation is locked', fmatname + self.LOCK)
