@@ -161,9 +161,10 @@ class SHL(object):
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
         if data is None: data = self.get_data(name_database)
+
         if matname is None:
             # Learn the dictionary from reference patches
-            if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
+            if self.verbose: print('No found dictionary : Learning the dictionary with algo = {0} \n'.format(self.learning_algorithm), end=' ')
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
             dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
@@ -175,12 +176,13 @@ class SHL(object):
                                          record_each=self.record_each)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
+            self.code(data, dico)
 
 
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
-        ## Problem : cette partie est apppelée 2 fois
+
         else:
             import pickle
             fmatname = os.path.join(self.data_cache, matname)
@@ -204,10 +206,12 @@ class SHL(object):
                     dico = 'lock'
                     print('the computation is locked', fmatname + self.LOCK)
             else:
+                print("loading the dico called : {0}".format(matname))
+                # Une seule fois mp ici
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
+                self.code(data, dico)
 
-        self.code(data, dico)
         self.dico_exp = dico
 
         if not dico == 'lock':
