@@ -160,12 +160,13 @@ class SHL(object):
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
         if data is None: data = self.get_data(name_database)
+
         if matname is None:
             # Learn the dictionary from reference patches
-            if self.verbose: print('Learning the dictionary with algo = self.learning_algorithm', end=' ')
+            if self.verbose: print('No found dictionary : Learning the dictionary with algo = {0} \n'.format(self.learning_algorithm), end=' ')
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, C=self.C, do_sym=self.do_sym, 
+            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, C=self.C, do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          dict_init=None, l0_sparseness=self.l0_sparseness,
@@ -174,6 +175,7 @@ class SHL(object):
                                          record_each=self.record_each)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
+            self.code(data, dico)
 
 
             if self.verbose:
@@ -201,10 +203,12 @@ class SHL(object):
                     dico = 'lock'
                     print('the computation is locked', fmatname + self.LOCK)
             else:
+                print("loading the dico called : {0}".format(matname))
+                # Une seule fois mp ici
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
+                self.code(data, dico)
 
-        self.code(data, dico)
         self.dico_exp = dico
 
         if not dico == 'lock':
