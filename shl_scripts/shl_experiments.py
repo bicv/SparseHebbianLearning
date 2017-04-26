@@ -71,14 +71,14 @@ class SHL(object):
                  n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 l0_sparseness=10,
+                 l0_sparseness=15,
                  n_iter=2**14,
                  eta=.01,
                  eta_homeo=.01, nb_quant=32, C=5., do_sym=False,
                  alpha_homeo=0,
-                 max_patches=1024,
-                 batch_size=256,
-                 record_each=200,
+                 max_patches=4096,
+                 batch_size=512,
+                 record_each=128,
                  n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
@@ -164,7 +164,9 @@ class SHL(object):
 
         if matname is None:
             # Learn the dictionary from reference patches
-            if self.verbose: print('Dictionary not found : Learning the dictionary with algo = {0} \n'.format(self.learning_algorithm), end=' ')
+
+            if self.verbose: print('No cache found : Learning the dictionary with algo = {0} \n'.format(self.learning_algorithm), end=' ')
+
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
             dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
