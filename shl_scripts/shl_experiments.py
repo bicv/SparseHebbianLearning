@@ -164,7 +164,7 @@ class SHL(object):
 
         if matname is None:
             # Learn the dictionary from reference patches
-            if self.verbose: print('No found dictionary : Learning the dictionary with algo = {0} \n'.format(self.learning_algorithm), end=' ')
+            if self.verbose: print('Dictionary not found : Learning the dictionary with algo = {0} \n'.format(self.learning_algorithm), end=' ')
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
             dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
@@ -258,7 +258,7 @@ class SHL(object):
         return show_dico_in_order(self, title=title,fname=fname)
 
 if __name__ == '__main__':
-    
+
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 0
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', verbose=verbose)
