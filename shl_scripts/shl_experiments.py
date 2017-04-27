@@ -175,8 +175,6 @@ class SHL(object):
                                          record_each=self.record_each)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
-            self.code(data, dico)
-
 
             if self.verbose:
                 dt = time.time() - t0
@@ -202,15 +200,44 @@ class SHL(object):
                             os.remove(fmatname + self.LOCK)
                             os.remove(fmatname + '_lock')
                         except:
-                            print('Coud not remove ', fmatname + self.LOCK)
+                            if self.verbose: print('Coud not remove ', fmatname + self.LOCK)
                 else:
                     dico = 'lock'
-                    print('the computation is locked', fmatname + self.LOCK)
+                    if self.verbose: print('the computation is locked', fmatname + self.LOCK)
             else:
-                print("loading the dico called : {0}".format(matname))
+                if self.verbose: print("loading the dico called : {0}".format(matname))
                 # Une seule fois mp ici
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
+
+            if not(os.path.isfile(fmatname + '_coding')):
+                if not(os.path.isfile(fmatname + '_coding' + '_lock')):
+                    touch(fmatname + '_coding' + '_lock')
+                    touch(fmatname + '_coding' + self.LOCK)
+                    try:
+                        if self.verbose: print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname + '_coding', self.learning_algorithm), end=' ')
+
+                        self.code(data, dico)
+
+                        with open(fmatname + '_coding', 'wb') as fp:
+                            pickle.dump(self.coding, fp)
+                    finally:
+                        try:
+                            os.remove(fmatname + '_coding' + self.LOCK)
+                            os.remove(fmatname + '_coding' + '_lock')
+                        except:
+                            print('Coud not remove ', fmatname + '_coding' + self.LOCK)
+                else:
+                    self.coding = 'lock'
+                    print('the computation is locked', fmatname + '_coding' + self.LOCK)
+            else:
+                if self.verbose: print("loading the dico called : {0}".format(matname))
+                # Une seule fois mp ici
+                with open(fmatname + '_coding', 'rb') as fp:
+                    self.coding = pickle.load(fp)
+
+                self.coding
+
                 self.code(data, dico)
 
         self.dico_exp = dico
@@ -231,8 +258,8 @@ class SHL(object):
             if 'time_plot_prob' in list_figures:
                 fig, ax = self.time_plot(variable='prob_active', fname=fname);
             try:
-                if fname is None:
-                    fig.show()
+                #if fname is None:
+                fig.show()
             except:
                 pass
 
