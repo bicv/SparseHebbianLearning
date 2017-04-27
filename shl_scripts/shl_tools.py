@@ -317,6 +317,20 @@ def plot_P_cum(P_cum, verbose=False):
     ax.axis('tight')
     return fig, ax
 
+#import seaborn as sns
+#import pandas as pd
+def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code):
+
+    fig = plt.figure(figsize=(16, 16))
+    ax = fig.add_subplot(111)
+    ax.scatter(sparse_vector.ravel(), my_sparse_code.ravel(), alpha=.1)
+    ax.set_xlabel('True')
+    ax.set_ylabel('MP')
+    ax.set_xlim(0)
+    ax.set_ylim(0)
+    ax.axis('equal')
+    return fig, ax
+
 
 def time_plot(shl_exp, variable='kurt', N_nosample=1, alpha=.3, fname=None):
     dico=shl_exp.dico_exp
