@@ -257,6 +257,10 @@ class SHL(object):
                 fig, ax = self.time_plot(variable='kurt', fname=fname);
             if 'time_plot_prob' in list_figures:
                 fig, ax = self.time_plot(variable='prob_active', fname=fname);
+            if 'time_plot_error' in list_figures:
+                fig, ax = self.time_plot(variable='error', fname=fname)
+            if 'time_plot_entropy' in list_figures:
+                fig, ax = self.time_plot(variable='entropy', fname=fname)
             try:
                 #if fname is None:
                 fig.show()

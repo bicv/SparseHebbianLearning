@@ -108,7 +108,6 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
 
     elif algorithm == 'mp':
         sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit_tol=fit_tol, P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose)
-
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
                          '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'

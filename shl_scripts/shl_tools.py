@@ -348,7 +348,10 @@ def time_plot(shl_exp, variable='kurt', N_nosample=1, alpha=.3, fname=None):
         ax.set_ylabel(variable)
         ax.set_xlabel('Learning step')
         ax.set_xlim(0, dico.n_iter)
-        ax.set_ylim(0)
+        #if variable=='entropy' :
+        #    ax.set_ylim(0.95)
+        #else :
+        #    ax.set_ylim(0)
         if not fname is None: fig.savefig(fname, dpi=200)
         return fig, ax
 

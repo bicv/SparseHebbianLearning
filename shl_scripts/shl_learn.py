@@ -314,9 +314,16 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, algorithm=method, fit_tol=fit_tol,
                                           P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0_sparseness)
+                # calculation of relative entropy
+                p = np.count_nonzero(sparse_code_rec,axis=0)/ (sparse_code_rec.shape[1])
+                p /= p.sum()
+                rel_ent = np.sum(-p * np.log(p)) / np.log(sparse_code_rec.shape[1])
+
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
-                                            'var':np.mean(sparse_code_rec**2, axis=0)}],
+                                            'var':np.mean(sparse_code_rec**2, axis=0),
+                                            'error':np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary),
+                                            'entropy':rel_ent}],
                                             index=[ii])
                 record = pd.concat([record, record_one])
 
