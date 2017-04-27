@@ -164,7 +164,6 @@ class SHL(object):
 
         if matname is None:
             # Learn the dictionary from reference patches
-            if self.verbose: print('No cache found : Learning the dictionary with algo = {0} \n'.format(self.learning_algorithm), end=' ')
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
             dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
@@ -192,6 +191,8 @@ class SHL(object):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
                     try:
+                        if self.verbose: print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
+
                         dico = self.learn_dico(data=data, name_database=name_database,
                                                record_each=self.record_each, matname=None, **kwargs)
                         with open(fmatname, 'wb') as fp:
