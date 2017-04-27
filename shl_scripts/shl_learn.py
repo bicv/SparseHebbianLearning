@@ -318,11 +318,12 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 p = np.count_nonzero(sparse_code_rec,axis=0)/ (sparse_code_rec.shape[1])
                 p /= p.sum()
                 rel_ent = np.sum(-p * np.log(p)) / np.log(sparse_code_rec.shape[1])
+                error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
 
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
                                             'var':np.mean(sparse_code_rec**2, axis=0),
-                                            'error':np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary),
+                                            'error':error,
                                             'entropy':rel_ent}],
                                             index=[ii])
                 record = pd.concat([record, record_one])

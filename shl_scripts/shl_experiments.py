@@ -231,14 +231,10 @@ class SHL(object):
                     self.coding = 'lock'
                     print('the computation is locked', fmatname + '_coding' + self.LOCK)
             else:
-                if self.verbose: print("loading the dico called : {0}".format(matname))
+                if self.verbose: print("loading the dico called : {0}".format(fmatname + '_coding'))
                 # Une seule fois mp ici
                 with open(fmatname + '_coding', 'rb') as fp:
                     self.coding = pickle.load(fp)
-
-                self.coding
-
-                self.code(data, dico)
 
         self.dico_exp = dico
 
