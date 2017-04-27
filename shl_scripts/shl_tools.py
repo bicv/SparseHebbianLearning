@@ -81,6 +81,22 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
         sys.stdout.flush()
     return data
 
+def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
+                           K_boost=2., C_0=3., rho_coeff=.9, seed=420, do_sym=False):
+    np.random.seed(seed)
+    coeff = np.zeros((N_image, nb_dico))
+    rho = np.zeros((N_image, nb_dico))
+    for i in range(N_image):
+        ind = np.random.permutation(np.arange(nb_dico))[:l0_sparseness] # indices of non-zero coefficients
+        coeff[i, ind] = C_0 * rho_coeff**np.arange(l0_sparseness) # activities
+        coeff[i, :N_boost] *= K_boost  # perturbation
+        if do_sym:
+            coeff[i, ind] *= np.sign(np.random.randn(l0_sparseness))
+
+        rho[i, ind] = 1 - np.arange(l0_sparseness)/nb_dico # 1 - relative rank
+    return coeff, rho
+
+
 def compute_RMSE(data, dico):
     ''' Compute the Root Mean Square Error between the image and it's encoded representation'''
     a=dico.transform(data)
