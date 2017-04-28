@@ -2,10 +2,10 @@ Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 
-.. image:: probe/assc.png
+.. image:: probe/ssc_homeo.png
    :scale: 100%
    :alt: Set of RFs after aSSC learning.
- 
+
 
 Object
 ------
@@ -81,4 +81,3 @@ Changelog
  * dropped Matlab support
 
 * 1.0 - 2011-10-27 : initial release
-
