@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
@@ -82,7 +81,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
     return data
 
 def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
-                           K_boost=2., C_0=3., rho_coeff=.9, seed=420, do_sym=False):
+                           K_boost=2., C_0=3., rho_coeff=.85, seed=420, do_sym=False):
     np.random.seed(seed)
     coeff = np.zeros((N_image, nb_dico))
     rho = np.zeros((N_image, nb_dico))
@@ -335,11 +334,11 @@ def plot_P_cum(P_cum, verbose=False):
 
 #import seaborn as sns
 #import pandas as pd
-def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code):
+def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.05):
 
     fig = plt.figure(figsize=(16, 16))
     ax = fig.add_subplot(111)
-    ax.scatter(sparse_vector.ravel(), my_sparse_code.ravel(), alpha=.1)
+    ax.scatter(sparse_vector.ravel(), my_sparse_code.ravel(), alpha=alpha)
     ax.set_xlabel('True')
     ax.set_ylabel('MP')
     ax.set_xlim(0)
