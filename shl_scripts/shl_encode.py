@@ -138,6 +138,8 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
         The dictionary matrix against which to solve the sparse coding of
         the data.
 
+    fit_tol : criterium based on the residual error
+
     Returns
     -------
     sparse_code : array of shape (n_samples, n_dictionary)
@@ -155,14 +157,19 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     if not P_cum is None:
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
+    if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
     corr = (X @ dictionary.T)
     Xcorr = (dictionary @ dictionary.T)
+    SE_0 = np.sum(X*2, axis=1)
     # TODO: vectorize?
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
-        for i_l0 in range(int(l0_sparseness)):
+        c_0 = corr_0[i_sample]
+        i_l0, SE = 0, SE_0
+        for i_l0 in range(int(l0_sparseness)) :
+        #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
             if P_cum is None:
                 if do_sym:
                     ind  = np.argmax(np.abs(c))
@@ -174,6 +181,8 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
             c_ind = c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
+            SE -= c_ind**2 # pythagora
+            i_l0 += 1
     if verbose>0:
         duration=time.time()-t0
         print('coding duration : {0}'.format(duration))
