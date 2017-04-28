@@ -32,7 +32,7 @@ setup(
               ],
     extras_require={
                 'html' : [
-                         'vispy',
+                         'notebook',
                          'matplotlib'
                          'jupyter>=1.0']
     },
