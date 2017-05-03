@@ -166,7 +166,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     # TODO: vectorize?
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
-        c_0 = corr_0[i_sample]
+        #c_0 = corr_0[i_sample]
         i_l0, SE = 0, SE_0
         for i_l0 in range(int(l0_sparseness)) :
         #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
