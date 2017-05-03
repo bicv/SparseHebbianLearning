@@ -82,7 +82,8 @@ class SHL(object):
                  n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache = './data_cache',
+                 data_cache='./data_cache',
+                 cache_coding=False,
                  ):
         self.height = height
         self.width = width
@@ -113,6 +114,7 @@ class SHL(object):
                 os.mkdir(self.data_cache)
             except:
                 pass
+        self.cache_coding = cache_coding
 
         # creating a tag related to this process
         PID, HOST = os.getpid(), os.uname()[1]
@@ -211,31 +213,35 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
 
-            if not(os.path.isfile(fmatname + '_coding')):
-                if not(os.path.isfile(fmatname + '_coding' + '_lock')):
-                    touch(fmatname + '_coding' + '_lock')
-                    touch(fmatname + '_coding' + self.LOCK)
-                    try:
-                        if self.verbose: print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname + '_coding', self.learning_algorithm), end=' ')
-
-                        self.code(data, dico)
-
-                        with open(fmatname + '_coding', 'wb') as fp:
-                            pickle.dump(self.coding, fp)
-                    finally:
+            if self.cache_coding:
+                if not(os.path.isfile(fmatname + '_coding')):
+                    if not(os.path.isfile(fmatname + '_coding' + '_lock')):
+                        touch(fmatname + '_coding' + '_lock')
+                        touch(fmatname + '_coding' + self.LOCK)
                         try:
-                            os.remove(fmatname + '_coding' + self.LOCK)
-                            os.remove(fmatname + '_coding' + '_lock')
-                        except:
-                            print('Coud not remove ', fmatname + '_coding' + self.LOCK)
+                            if self.verbose: print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname + '_coding', self.learning_algorithm), end=' ')
+
+                            self.code(data, dico)
+
+                            with open(fmatname + '_coding', 'wb') as fp:
+                                pickle.dump(self.coding, fp)
+                        finally:
+                            try:
+                                os.remove(fmatname + '_coding' + self.LOCK)
+                                os.remove(fmatname + '_coding' + '_lock')
+                            except:
+                                print('Coud not remove ', fmatname + '_coding' + self.LOCK)
+                    else:
+                        self.coding = 'lock'
+                        print('the computation is locked', fmatname + '_coding' + self.LOCK)
                 else:
-                    self.coding = 'lock'
-                    print('the computation is locked', fmatname + '_coding' + self.LOCK)
+                    if self.verbose: print("loading the dico called : {0}".format(fmatname + '_coding'))
+                    # Une seule fois mp ici
+                    with open(fmatname + '_coding', 'rb') as fp:
+                        self.coding = pickle.load(fp)
             else:
-                if self.verbose: print("loading the dico called : {0}".format(fmatname + '_coding'))
-                # Une seule fois mp ici
-                with open(fmatname + '_coding', 'rb') as fp:
-                    self.coding = pickle.load(fp)
+                self.code(data, dico)
+
 
         self.dico_exp = dico
 
