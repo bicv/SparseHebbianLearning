@@ -143,17 +143,43 @@ class SHL(object):
                     verbose=self.verbose)
 
 
-    def code(self, data, dico, coding_algorithm='mp', **kwargs):
+    def code(self, data, dico, coding_algorithm='mp', fname=None, **kwargs):
         if self.verbose:
             print('Coding data with algorithm ', coding_algorithm,  end=' ')
             t0 = time.time()
 
-        from shl_scripts.shl_encode import sparse_encode
+        if fname is None:
+            from shl_scripts.shl_encode import sparse_encode
+            self.coding = sparse_encode(data, dico.dictionary,
+                                        algorithm=self.learning_algorithm,
+                                        l0_sparseness=self.l0_sparseness,
+                                        fit_tol=None, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
+        else:
+            if not(os.path.isfile(fmatname + '_coding')):
+                if not(os.path.isfile(fmatname + '_coding' + '_lock')):
+                    touch(fmatname + '_coding' + '_lock')
+                    touch(fmatname + '_coding' + self.LOCK)
+                    try:
+                        if self.verbose: print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname + '_coding', self.learning_algorithm), end=' ')
 
-        self.coding = sparse_encode(data, dico.dictionary,
-                                    algorithm=self.learning_algorithm,
-                                    l0_sparseness=self.l0_sparseness,
-                                    fit_tol=None, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
+                        self.code(data, dico, fname=None)
+
+                        with open(fmatname + '_coding', 'wb') as fp:
+                            pickle.dump(self.coding, fp)
+                    finally:
+                        try:
+                            os.remove(fmatname + '_coding' + self.LOCK)
+                            os.remove(fmatname + '_coding' + '_lock')
+                        except:
+                            print('Coud not remove ', fmatname + '_coding' + self.LOCK)
+                else:
+                    self.coding = 'lock'
+                    print('the computation is locked', fmatname + '_coding' + self.LOCK)
+            else:
+                if self.verbose: print("loading the dico called : {0}".format(fmatname + '_coding'))
+                # Une seule fois mp ici
+                with open(fmatname + '_coding', 'rb') as fp:
+                    self.coding = pickle.load(fp)
 
         if self.verbose:
             dt = time.time() - t0
@@ -214,33 +240,9 @@ class SHL(object):
                     dico = pickle.load(fp)
 
             if self.cache_coding:
-                if not(os.path.isfile(fmatname + '_coding')):
-                    if not(os.path.isfile(fmatname + '_coding' + '_lock')):
-                        touch(fmatname + '_coding' + '_lock')
-                        touch(fmatname + '_coding' + self.LOCK)
-                        try:
-                            if self.verbose: print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname + '_coding', self.learning_algorithm), end=' ')
-
-                            self.code(data, dico)
-
-                            with open(fmatname + '_coding', 'wb') as fp:
-                                pickle.dump(self.coding, fp)
-                        finally:
-                            try:
-                                os.remove(fmatname + '_coding' + self.LOCK)
-                                os.remove(fmatname + '_coding' + '_lock')
-                            except:
-                                print('Coud not remove ', fmatname + '_coding' + self.LOCK)
-                    else:
-                        self.coding = 'lock'
-                        print('the computation is locked', fmatname + '_coding' + self.LOCK)
-                else:
-                    if self.verbose: print("loading the dico called : {0}".format(fmatname + '_coding'))
-                    # Une seule fois mp ici
-                    with open(fmatname + '_coding', 'rb') as fp:
-                        self.coding = pickle.load(fp)
+                self.code(data, dico, fname=fname)
             else:
-                self.code(data, dico)
+                self.code(data, dico, fname=None)
 
 
         self.dico_exp = dico
