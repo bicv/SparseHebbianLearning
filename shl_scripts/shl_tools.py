@@ -321,13 +321,12 @@ def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
 
 
 def plot_P_cum(P_cum, verbose=False):
-
     fig = plt.figure(figsize=(16, 8))
     ax = fig.add_subplot(111)
     ax.plot(P_cum.T, c='g', alpha=.05)
     ax.set_title(' non-linear functions ')
-    ax.set_xlabel(' prior(a) ')
-    ax.set_ylabel('P')
+    ax.set_xlabel('coefficients')
+    ax.set_ylabel('z-score')
     #ax.set_xlim(0)
     ax.axis('tight')
     return fig, ax

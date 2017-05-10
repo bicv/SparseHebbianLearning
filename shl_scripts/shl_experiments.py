@@ -83,6 +83,7 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='./data_cache',
+                 coding=True,
                  cache_coding=False,
                  ):
         self.height = height
@@ -114,6 +115,7 @@ class SHL(object):
                 os.mkdir(self.data_cache)
             except:
                 pass
+        self.coding = coding
         self.cache_coding = cache_coding
 
         # creating a tag related to this process
@@ -188,7 +190,6 @@ class SHL(object):
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
-        if data is None: data = self.get_data(name_database)
 
         if matname is None:
             # Learn the dictionary from reference patches
@@ -201,6 +202,7 @@ class SHL(object):
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol,
                                          record_each=self.record_each)
+            if data is None: data = self.get_data(name_database)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
@@ -239,10 +241,11 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
 
-            if self.cache_coding:
-                self.code(data, dico, fname=fname)
-            else:
-                self.code(data, dico, fname=None)
+            if self.coding:
+                if self.cache_coding:
+                    self.code(data, dico, fname=fname)
+                else:
+                    self.code(data, dico, fname=None)
 
 
         self.dico_exp = dico
