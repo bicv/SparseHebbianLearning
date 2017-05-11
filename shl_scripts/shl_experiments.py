@@ -83,7 +83,7 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='./data_cache',
-                 coding=True,
+                 do_coding=True,
                  cache_coding=False,
                  ):
         self.height = height
@@ -115,7 +115,7 @@ class SHL(object):
                 os.mkdir(self.data_cache)
             except:
                 pass
-        self.coding = coding
+        self.do_coding = do_coding
         self.cache_coding = cache_coding
 
         # creating a tag related to this process
@@ -138,7 +138,7 @@ class SHL(object):
 
     def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True):
         from shl_scripts.shl_tools import get_data
-        self.coding=np.ones(((self.max_patches * self.n_image),self.n_dictionary))
+        # self.coding = np.ones(((self.max_patches * self.n_image),self.n_dictionary))
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
                     max_patches=self.max_patches, seed=seed, patch_norm=patch_norm,
@@ -241,7 +241,7 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
 
-            if self.coding:
+            if self.do_coding:
                 if self.cache_coding:
                     self.code(data, dico, fname=fname)
                 else:
