@@ -202,7 +202,7 @@ class SHL(object):
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol,
                                          record_each=self.record_each)
-            if data is None: data = self.get_data(name_database)
+            if data is None: data = self.get_data(name_database, **kwargs)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
@@ -242,6 +242,7 @@ class SHL(object):
                     dico = pickle.load(fp)
 
             if self.do_coding:
+                if data is None: data = self.get_data(name_database, **kwargs)
                 if self.cache_coding:
                     self.code(data, dico, fname=fname)
                 else:
