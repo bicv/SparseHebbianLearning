@@ -38,7 +38,6 @@ Installation
 
    pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
    pip3 install -U git+https://github.com/bicv/SLIP.git
-   pip3 install -U git+https://github.com/laurentperrinet/scikit-learn.git@sparsenet
 
 * Then, download the code @ https://github.com/bicv/shl_scripts/archive/master.zip. You may also grab it directly using the command-line::
 
