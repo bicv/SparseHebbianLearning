@@ -30,7 +30,7 @@ def bins_step(mini,maxi,nb_step):
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='serre07_distractors',
-            max_patches=1024, seed=None, patch_norm=True, verbose=0):
+            max_patches=1024, seed=None, patch_norm=True, verbose=0, **kwargs):
     ''' Extract database
     Extract from a given database composed of image of size (height,width) a series a random patch
     '''

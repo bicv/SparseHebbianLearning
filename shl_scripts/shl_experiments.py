@@ -136,7 +136,7 @@ class SHL(object):
                                         'do_mask':True,
                                         'N_image': n_image})
 
-    def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True):
+    def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True, **kwargs):
         from shl_scripts.shl_tools import get_data
         # self.coding = np.ones(((self.max_patches * self.n_image),self.n_dictionary))
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
@@ -255,7 +255,7 @@ class SHL(object):
             if 'show_dico' in list_figures:
                 fig, ax = self.show_dico(title=matname, fname=fname)
             if 'show_dico_in_order' in list_figures:
-                fig,ax=self.show_dico_in_order(title=matname, fname=fname)
+                fig,ax = self.show_dico_in_order(title=matname, fname=fname)
             if 'plot_variance' in list_figures:
                 fig, ax = self.plot_variance(data=data, fname=fname)
             if 'plot_variance_histogram' in list_figures:
