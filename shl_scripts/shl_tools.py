@@ -124,56 +124,46 @@ def compute_kurto(data, dico):
 
 # To adapt with shl_exp
 def show_dico_in_order(shl_exp, data=None, algorithm=None,title=None, fname=None):
-    '''Display a the dictionary of filter in order of probability of selection.
-    Filter which are selected more often than others are located at the end'''
-    subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
-    fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
+    """
+    Displays the dictionary of filter in order of probability of selection.
+    Filter which are selected more often than others are located at the end
 
-    dico=shl_exp.dico_exp
-    if (algorithm is not None) and (data is not None)  :
-        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
-    else :
-        sparse_code=shl_exp.coding
+    """
+    return show_dico(shl_exp, order=True, title=title, fname=fname, dpi=dpi, **kwargs)
 
-    dim_graph=dico.dictionary.shape[0]
-    res_lst=np.count_nonzero(sparse_code,axis=0)
-    a=res_lst.argsort()
-    dim_patch=int(shl_exp.patch_size[0])
-
-    for i in range(dim_graph):
-        ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
-        index_to_consider=a[i]
-        dico_to_display=dico.dictionary[index_to_consider]
-        cmax = np.max(np.abs(dico_to_display))
-        ax.imshow(dico_to_display.reshape((dim_patch,dim_patch)), cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
-                interpolation='nearest')
-        ax.set_xticks(())
-        ax.set_yticks(())
-    if title is not None:
-        fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
-    if not fname is None: fig.savefig(fname, dpi=200)
-    return fig, ax
-
-def show_dico(shl_exp, title=None, fname=None, **kwargs):
+def show_dico(shl_exp, order=False, title=None, fname=None, dpi=200, **kwargs):
     '''
     display the dictionary in a random order
     '''
-    dico=shl_exp.dico_exp
-    dim_graph = dico.dictionary.shape[0]
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
+
+    dico=shl_exp.dico_exp
+    dim_graph = dico.dictionary.shape[0]
+    if order:
+        if (algorithm is not None) and (data is not None)  :
+            sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        else :
+            sparse_code = shl_exp.coding
+        res_lst = np.count_nonzero(sparse_code, axis=0)
+        indices = res_lst.argsort()
+    else:
+        indices = range(dim_graph)
     dim_patch = int(np.sqrt(dico.dictionary.shape[1]))
 
     for i, component in enumerate(dico.dictionary):
+    for i in range(dim_graph):
         ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
-        cmax = np.max(np.abs(component))
-        ax.imshow(component.reshape((dim_patch,dim_patch)), cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
-                interpolation='nearest')
+        dico_to_display = dico.dictionary[indices[i]]
+        cmax = np.max(np.abs(dico_to_display))
+        ax.imshow(dico_to_display.reshape((dim_patch,dim_patch)),
+                     cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
+                     interpolation='nearest')
         ax.set_xticks(())
         ax.set_yticks(())
     if title is not None:
         fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
-    if not fname is None: fig.savefig(fname, dpi=200)
+    if not fname is None: fig.savefig(fname, dpi=dpi)
     return fig, ax
 
 def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):

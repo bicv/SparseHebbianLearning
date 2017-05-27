@@ -183,6 +183,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
             c -= c_ind * Xcorr[ind, :]
             SE -= c_ind**2 # pythagora
             i_l0 += 1
+            
     if verbose>0:
         duration=time.time()-t0
         print('coding duration : {0}'.format(duration))
