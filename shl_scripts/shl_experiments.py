@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
-from shl_scripts.shl_tools import get_data
+from shl_scripts.shl_tools import get_data, touch
 from shl_scripts.shl_encode import sparse_encode
 from shl_scripts import shl_tools
 
@@ -50,9 +50,6 @@ from SLIP import Image
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
 
-def touch(filename):
-    open(filename, 'w').close()
-
 class SHL(object):
     """
 
@@ -83,9 +80,6 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='/tmp/data_cache',
-                 do_coding=True,
-                 cache_coding=False,
-                 matname=None,
                  ):
         self.height = height
         self.width = width
@@ -116,9 +110,6 @@ class SHL(object):
                 os.mkdir(self.data_cache)
             except:
                 pass
-        self.do_coding = do_coding # TODO one of these is redundant?
-        self.cache_coding = cache_coding
-        self.matname = matname
 
         # creating a tag related to this process
         PID, HOST = os.getpid(), os.uname()[1]
@@ -138,17 +129,15 @@ class SHL(object):
                                         'do_mask':True,
                                         'N_image': n_image})
 
-    def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True, **kwargs):
+    def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True, matname=None, **kwargs):
         from shl_scripts.shl_tools import get_data
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
                     max_patches=self.max_patches, seed=seed, patch_norm=patch_norm,
-                    verbose=self.verbose, data_cache=self.data_cache, matname=self.matname)
+                    verbose=self.verbose, data_cache=self.data_cache, matname=matname)
 
 
     def code(self, data, dico, coding_algorithm='mp', matname=None, **kwargs):
-        if matname is None:
-            matname = self.matname
 
         if matname is None:
             if self.verbose:
@@ -187,9 +176,9 @@ class SHL(object):
         return sparse_code
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
-                   matname=None, folder_exp=None, list_figures=[], **kwargs):
-        if matname is None:
-            matname = self.matname
+                   matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
+
+        if data is None: data = self.get_data(name_database, matname=matname, **kwargs)
 
         if matname is None:
             # Learn the dictionary from reference patches
@@ -203,7 +192,6 @@ class SHL(object):
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol,
                                          record_each=self.record_each)
-            if data is None: data = self.get_data(name_database, **kwargs)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
@@ -244,61 +232,54 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
 
-            if self.do_coding:
-                if data is None: data = self.get_data(name_database, **kwargs)
-                if self.cache_coding:
-                    self.code(data, dico, matname=matname)
-                else:
-                    self.code(data, dico, matname=None)
-
-        self.dico_exp = dico
-
         if not dico == 'lock':
             if 'show_dico' in list_figures:
-                fig, ax = self.show_dico(title=matname, fname=fname)
+                fig, ax = self.show_dico(dico, title=matname, fname=fname)
             if 'show_dico_in_order' in list_figures:
-                fig,ax = self.show_dico_in_order(title=matname, fname=fname)
+                fig,ax = self.show_dico_in_order(dico, title=matname, fname=fname)
             if 'plot_variance' in list_figures:
-                fig, ax = self.plot_variance(data=data, fname=fname)
+                sparse_code = self.code(data, dico, matname=matname)
+                fig, ax = self.plot_variance(sparse_code, data=data, fname=fname)
             if 'plot_variance_histogram' in list_figures:
-                fig, ax = self.plot_variance_histogram(data=data, fname=fname)
+                sparse_code = self.code(data, dico, matname=matname)
+                fig, ax = self.plot_variance_histogram(sparse_code, data=data, fname=fname)
             if 'time_plot_var' in list_figures:
-                fig, ax = self.time_plot(variable='var', fname=fname);
+                fig, ax = self.time_plot(dico, variable='var', fname=fname);
             if 'time_plot_kurt' in list_figures:
-                fig, ax = self.time_plot(variable='kurt', fname=fname);
+                fig, ax = self.time_plot(dico, variable='kurt', fname=fname);
             if 'time_plot_prob' in list_figures:
-                fig, ax = self.time_plot(variable='prob_active', fname=fname);
+                fig, ax = self.time_plot(dico, variable='prob_active', fname=fname);
             if 'time_plot_error' in list_figures:
-                fig, ax = self.time_plot(variable='error', fname=fname)
+                fig, ax = self.time_plot(dico, variable='error', fname=fname)
             if 'time_plot_entropy' in list_figures:
-                fig, ax = self.time_plot(variable='entropy', fname=fname)
+                fig, ax = self.time_plot(dico, variable='entropy', fname=fname)
             try:
                 #if fname is None:
                 fig.show()
             except:
                 pass
 
-        return self.dico_exp
+        return dico
 
-    def plot_variance(self, data=None, algorithm=None, fname=None):
+    def plot_variance(self, sparse_code, data=None, algorithm=None, fname=None):
         from shl_scripts.shl_tools import plot_variance
         return plot_variance(self, data=data, fname=fname, algorithm=algorithm)
 
-    def plot_variance_histogram(self, data=None, algorithm=None, fname=None):
+    def plot_variance_histogram(self, sparse_code, data=None, algorithm=None, fname=None):
         from shl_scripts.shl_tools import plot_variance_histogram
         return plot_variance_histogram(self, data=data, fname=fname, algorithm=algorithm)
 
-    def time_plot(self, variable='kurt', fname=None, N_nosample=1):
+    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1):
         from shl_scripts.shl_tools import time_plot
         return time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
 
-    def show_dico(self, title=None, fname=None):
+    def show_dico(self, dico, title=None, fname=None):
         from shl_scripts.shl_tools import show_dico
-        return show_dico(self, title=title, fname=fname)
+        return show_dico(self, dico, title=title, fname=fname)
 
-    def show_dico_in_order(self, data=None, title=None, fname=None):
+    def show_dico_in_order(self, dico, data=None, title=None, fname=None):
         from shl_scripts.shl_tools import show_dico_in_order
-        return show_dico_in_order(self, title=title,fname=fname)
+        return show_dico_in_order(self, dico, title=title, fname=fname)
 
 if __name__ == '__main__':
 

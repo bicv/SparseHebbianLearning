@@ -9,16 +9,9 @@ import matplotlib.pyplot as plt
 
 toolbar_width = 40
 
-def bins_step(mini,maxi,nb_step):
-    '''doing a range of non integer number to make histogramm more beautiful'''
-    step=(maxi-mini)/nb_step
-    out=list()
-    a=mini
-    for i in range(nb_step+1):
-        out.append(a)
-        a=a+step
-    out.append(a)
-    return out
+
+def touch(filename):
+    open(filename, 'w').close()
 
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
@@ -159,14 +152,13 @@ def show_dico_in_order(shl_exp, data=None, algorithm=None,title=None, fname=None
     """
     return show_dico(shl_exp, order=True, title=title, fname=fname, dpi=dpi, **kwargs)
 
-def show_dico(shl_exp, order=False, title=None, fname=None, dpi=200, **kwargs):
+def show_dico(shl_exp, dico, order=False, title=None, fname=None, dpi=200, **kwargs):
     '''
     display the dictionary in a random order
     '''
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
 
-    dico=shl_exp.dico_exp
     dim_graph = dico.dictionary.shape[0]
     if order:
         if (algorithm is not None) and (data is not None)  :
@@ -218,14 +210,24 @@ def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):
     return fig, ax
 
 
-def plot_dist_max_min(shl_exp, data=None, algorithm=None,fname=None):
+def bins_step(mini,maxi,nb_step):
+    '''doing a range of non integer number to make histogramm more beautiful'''
+    step=(maxi-mini)/nb_step
+    out=list()
+    a=mini
+    for i in range(nb_step+1):
+        out.append(a)
+        a=a+step
+    out.append(a)
+    return out
+
+def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None):
     '''plot the coefficient distribution of the filter which is selected the more, and the one which is selected the less'''
-    dico=shl_exp.dico_exp
     if (algorithm is not None) and (data is not None)  :
-        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        sparse_code = shl_encode.sparse_encode(data, dico.dictionary,algorithm=algorithm)
     else :
-        sparse_code=shl_exp.coding
-    nb_filter_selection=np.count_nonzero(sparse_code,axis=0)
+        sparse_code = shl_exp.coding
+    nb_filter_selection=np.count_nonzero(sparse_code, axis=0)
 
     index_max=np.argmax(nb_filter_selection)
     index_min=np.argmin(nb_filter_selection)
@@ -303,13 +305,8 @@ def plot_proba_histogram(coding, verbose=False):
     ax.axis('tight')
     return fig, ax
 
-def plot_variance(shl_exp, data=None, algorithm=None, fname=None):
-    dico=shl_exp.dico_exp
-    if (algorithm is not None) and (data is not None)  :
-        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
-    else :
-        sparse_code=shl_exp.coding
-    n_dictionary=dico.dictionary.shape[0]
+def plot_variance(shl_exp, sparse_code, data=None, algorithm=None, fname=None):
+    n_dictionary = shl_exp.n_dictionary
     Z = np.mean(sparse_code**2)
     fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
@@ -321,13 +318,9 @@ def plot_variance(shl_exp, data=None, algorithm=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
+def plot_variance_histogram(shl_exp, sparse_code, data=None, algorithm=None, fname=None):
     from scipy.stats import gamma
-    dico=shl_exp.dico_exp
-    if (algorithm is not None) and (data is not None) :
-        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
-    else :
-        sparse_code= shl_exp.coding
+
     Z = np.mean(sparse_code**2)
     import pandas as pd
     import seaborn as sns
@@ -369,8 +362,7 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.05):
     return fig, ax
 
 
-def time_plot(shl_exp, variable='kurt', N_nosample=1, alpha=.3, fname=None):
-    dico=shl_exp.dico_exp
+def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, fname=None):
     try:
         df_variable = dico.record[variable]
         learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
