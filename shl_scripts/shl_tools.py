@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
 from SLIP import Image
-from scipy.stats import kurtosis
 import sys
 import time
 import numpy as np
@@ -30,7 +29,7 @@ def bins_step(mini,maxi,nb_step):
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='serre07_distractors',
-            max_patches=1024, seed=None, patch_norm=True, verbose=0, **kwargs):
+            max_patches=1024, seed=None, patch_norm=True, verbose=0):
     ''' Extract database
     Extract from a given database composed of image of size (height,width) a series a random patch
     '''
@@ -115,10 +114,11 @@ def compute_KL(data, dico):
     KL = 1/N * np.sum( (P_norm-mom1)**2 / mom2**2 )
     return KL
 
-def Compute_kurto(data, dico):
+def compute_kurto(data, dico):
     '''Compute the kurtosis'''
     sparse_code= dico.transform(data)
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
+    from scipy.stats import kurtosis
     kurto = kurtosis(P_norm, axis=0)
     return kurto
 
