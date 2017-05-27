@@ -50,8 +50,8 @@ from SLIP import Image
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
 
-def touch(fname):
-    open(fname, 'w').close()
+def touch(filename):
+    open(filename, 'w').close()
 
 class SHL(object):
     """
@@ -85,6 +85,7 @@ class SHL(object):
                  data_cache='/tmp/data_cache',
                  do_coding=True,
                  cache_coding=False,
+                 matname=None,
                  ):
         self.height = height
         self.width = width
@@ -115,8 +116,9 @@ class SHL(object):
                 os.mkdir(self.data_cache)
             except:
                 pass
-        self.do_coding = do_coding
+        self.do_coding = do_coding # TODO one of these is redundant?
         self.cache_coding = cache_coding
+        self.matname = matname
 
         # creating a tag related to this process
         PID, HOST = os.getpid(), os.uname()[1]
@@ -138,36 +140,38 @@ class SHL(object):
 
     def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True, **kwargs):
         from shl_scripts.shl_tools import get_data
-        # self.coding = np.ones(((self.max_patches * self.n_image),self.n_dictionary))
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.database, name_database=name_database,
                     max_patches=self.max_patches, seed=seed, patch_norm=patch_norm,
-                    verbose=self.verbose)
+                    verbose=self.verbose, data_cache=self.data_cache, matname=self.matname)
 
 
-    def code(self, data, dico, coding_algorithm='mp', fname=None, **kwargs):
-        if self.verbose:
-            print('Coding data with algorithm ', coding_algorithm,  end=' ')
-            t0 = time.time()
+    def code(self, data, dico, coding_algorithm='mp', matname=None, **kwargs):
+        if matname is None:
+            matname = self.matname
 
-        if fname is None:
+        if matname is None:
+            if self.verbose:
+                print('Coding data with algorithm ', coding_algorithm,  end=' ')
+                t0 = time.time()
             from shl_scripts.shl_encode import sparse_encode
-            self.coding = sparse_encode(data, dico.dictionary,
+            sparse_code = sparse_encode(data, dico.dictionary,
                                         algorithm=self.learning_algorithm,
                                         l0_sparseness=self.l0_sparseness,
                                         fit_tol=None, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
+            if self.verbose:
+                dt = time.time() - t0
+                print('done in %.2fs.' % dt)
         else:
-            if not(os.path.isfile(fmatname + '_coding')):
+            fmatname = os.path.join(self.data_cache, matname)
+            if not(os.path.isfile(fmatname + '_coding.npy')):
                 if not(os.path.isfile(fmatname + '_coding' + '_lock')):
                     touch(fmatname + '_coding' + '_lock')
                     touch(fmatname + '_coding' + self.LOCK)
                     try:
-                        if self.verbose: print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname + '_coding', self.learning_algorithm), end=' ')
-
-                        self.code(data, dico, fname=None)
-
-                        with open(fmatname + '_coding', 'wb') as fp:
-                            pickle.dump(self.coding, fp)
+                        if self.verbose: print('No cache found {}: Coding with algo = {} \n'.format(fmatname + '_coding.npy', self.learning_algorithm), end=' ')
+                        sparse_code = self.code(data, dico, matname=None)
+                        np.save(fmatname + '_coding.npy', sparse_code)
                     finally:
                         try:
                             os.remove(fmatname + '_coding' + self.LOCK)
@@ -175,27 +179,24 @@ class SHL(object):
                         except:
                             print('Coud not remove ', fmatname + '_coding' + self.LOCK)
                 else:
-                    self.coding = 'lock'
                     print('the computation is locked', fmatname + '_coding' + self.LOCK)
             else:
-                if self.verbose: print("loading the dico called : {0}".format(fmatname + '_coding'))
-                # Une seule fois mp ici
-                with open(fmatname + '_coding', 'rb') as fp:
-                    self.coding = pickle.load(fp)
+                if self.verbose: print("loading the dico called : {0}".format(fmatname + '_coding.npy'))
+                sparse_code = np.load(fmatname + '_coding.npy')
 
-        if self.verbose:
-            dt = time.time() - t0
-            print('done in %.2fs.' % dt)
-        #return patches
+        return sparse_code
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
-                   matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
+                   matname=None, folder_exp=None, list_figures=[], **kwargs):
+        if matname is None:
+            matname = self.matname
 
         if matname is None:
             # Learn the dictionary from reference patches
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
+            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm,
+                                         nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          dict_init=None, l0_sparseness=self.l0_sparseness,
@@ -246,10 +247,9 @@ class SHL(object):
             if self.do_coding:
                 if data is None: data = self.get_data(name_database, **kwargs)
                 if self.cache_coding:
-                    self.code(data, dico, fname=fname)
+                    self.code(data, dico, matname=matname)
                 else:
-                    self.code(data, dico, fname=None)
-
+                    self.code(data, dico, matname=None)
 
         self.dico_exp = dico
 

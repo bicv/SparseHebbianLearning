@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
-from SLIP import Image
-import sys
 import time
 import numpy as np
 from shl_scripts.shl_encode import sparse_encode
-import math
 import matplotlib
 import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
-from scipy.stats import gamma
 
 toolbar_width = 40
 
@@ -29,7 +23,8 @@ def bins_step(mini,maxi,nb_step):
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='serre07_distractors',
-            max_patches=1024, seed=None, patch_norm=True, verbose=0, fname=None):
+            max_patches=1024, seed=None, patch_norm=True, verbose=0,
+            data_cache='/tmp/data_cache', matname=None):
     """
     Extract data:
 
@@ -37,7 +32,9 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
     series a random patches.
 
     """
-    if fname is None:
+    if matname is None:
+        from SLIP import Image
+
         slip = Image({'N_X':height, 'N_Y':width,
                 'white_n_learning' : 0,
                 'seed': seed,
@@ -51,6 +48,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 'N_image': n_image})
 
         if verbose:
+            import sys
             # setup toolbar
             sys.stdout.write('Extracting data...')
             sys.stdout.flush()
@@ -83,28 +81,28 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             sys.stdout.write(' - done in %.2fs.' % dt)
             sys.stdout.flush()
     else:
+        import os
+        fmatname = os.path.join(data_cache, matname)
         if not(os.path.isfile(fmatname + '_data.npy')):
             if not(os.path.isfile(fmatname + '_data' + '_lock')):
                 touch(fmatname + '_data' + '_lock')
-                touch(fmatname + '_data' + self.LOCK)
                 try:
-                    if self.verbose: print('No cache found {}: Extracting data...'.format(fmatname + '_data'), end=' ')
+                    if verbose: print('No cache found {}: Extracting data...'.format(fmatname + '_data'), end=' ')
                     data = get_data(height=height, width=width, n_image=n_image,
                                     patch_size=patch_size, datapath=datapath,
                                     name_database=name_database, max_patches=max_patches,
                                     seed=seed, patch_norm=patch_norm, verbose=verbose,
-                                    fname=None)
+                                    matname=None)
                     np.save(fmatname + '_data.npy', data)
                 finally:
                     try:
-                        os.remove(fmatname + '_data' + self.LOCK)
                         os.remove(fmatname + '_data' + '_lock')
                     except:
-                        print('Coud not remove ', fmatname + '_data' + self.LOCK)
+                        print('Coud not remove ', fmatname + '_data')
             else:
-                print('the data extraction is locked', fmatname + '_data' + self.LOCK)
+                print('the data extraction is locked', fmatname + '_data')
         else:
-            if self.verbose: print("loading the dico called : {0}".format(fmatname + '_data'))
+            if verbose: print("loading the data called : {0}".format(fmatname + '_data'))
             # Une seule fois mp ici
             data = np.load(fmatname + '_data.npy')
     return data
@@ -127,17 +125,17 @@ def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
 
 def compute_RMSE(data, dico):
     ''' Compute the Root Mean Square Error between the image and it's encoded representation'''
-    a=dico.transform(data)
-    residual=data - a@dico.dictionary
-    b=np.sum(residual**2,axis=1)/np.sqrt(np.sum(data**2,axis=1))
-    rmse=math.sqrt(np.mean(b))
+    a = dico.transform(data)
+    residual = data - a @ dico.dictionary
+    mse = np.sum(residual**2, axis=1)/np.sqrt(np.sum(data**2, axis=1))
+    rmse = np.sqrt(np.mean(mse))
     return rmse
 
 def compute_KL(data, dico):
     '''Compute the Kullback Leibler ratio to compare a distribution to its gaussian equivalent.
     if the KL is close to 1, the studied distribution is closed to a gaussian'''
-    sparse_code= dico.transform(data)
-    N=dico.dictionary.shape[0]
+    sparse_code = dico.transform(data)
+    N = dico.dictionary.shape[0]
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
     mom1 = np.sum(P_norm)/dico.dictionary.shape[0]
     mom2 = np.sum((P_norm-mom1)**2)/(dico.dictionary.shape[0]-1)
@@ -203,7 +201,9 @@ def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):
     else :
         sparse_code= dico.transform(data)
     res_lst=np.count_nonzero(sparse_code,axis=0)
-    df=pd.DataFrame(res_lst, columns=['Coeff'])
+    import pandas as pd
+    import seaborn as sns
+    df = pd.DataFrame(res_lst, columns=['Coeff'])
     fig = plt.figure(figsize=(6, 4))
     ax = fig.add_subplot(111)
     with sns.axes_style("white"):
@@ -252,17 +252,19 @@ def plot_dist_max_min(shl_exp, data=None, algorithm=None,fname=None):
 def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     '''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
     if algorithm is not None :
-        sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
+        sparse_code = shl_encode.sparse_encode(data, dico.dictionary, algorithm=algorithm)
     else :
-        sparse_code= dico.transform(data)
+        sparse_code = shl_encode.code(data)
     Z = np.mean(sparse_code**2)
     P_norm=np.mean(sparse_code**2, axis=0)/Z
+    import pandas as pd
+    import seaborn as sns
     df = pd.DataFrame(P_norm, columns=['P'])
     mom1= np.mean(P_norm)
     mom2 = (1/(dico.dictionary.shape[0]-1))*np.sum((P_norm-mom1)**2)
     Q=np.random.normal(mom1,mom2,dico.dictionary.shape[0])
     df1=pd.DataFrame(Q, columns=['Q'])
-    #code = self.code(data, dico)
+
     fig = plt.figure(figsize=(6, 4))
     ax = fig.add_subplot(111)
     #bins=[0, 10, 20, 30, 40, 50, 100]
@@ -327,6 +329,8 @@ def plot_variance_histogram(shl_exp, data=None, algorithm=None, fname=None):
     else :
         sparse_code= shl_exp.coding
     Z = np.mean(sparse_code**2)
+    import pandas as pd
+    import seaborn as sns
     df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
     fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
