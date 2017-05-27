@@ -102,6 +102,7 @@ class SparseHebbianLearning:
         self.record_each = record_each
         self.verbose = verbose
         self.random_state = random_state
+        self.P_cum  = None
 
     def fit(self, X, y=None):
         """Fit the model from data in X.
