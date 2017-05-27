@@ -29,11 +29,16 @@ def bins_step(mini,maxi,nb_step):
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='serre07_distractors',
-            max_patches=1024, seed=None, patch_norm=True, verbose=0):
-    ''' Extract database
-    Extract from a given database composed of image of size (height,width) a series a random patch
-    '''
-    slip = Image({'N_X':height, 'N_Y':width,
+            max_patches=1024, seed=None, patch_norm=True, verbose=0, fname=None):
+    """
+    Extract data:
+
+    Extract from a given database composed of image of size (height, width) a
+    series a random patches.
+
+    """
+    if fname is None:
+        slip = Image({'N_X':height, 'N_Y':width,
                 'white_n_learning' : 0,
                 'seed': seed,
                 'white_N' : .07,
@@ -45,38 +50,63 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 'do_mask':True,
                 'N_image': n_image})
 
-    if verbose:
-        # setup toolbar
-        sys.stdout.write('Extracting data...')
-        sys.stdout.flush()
-        sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
-        t0 = time.time()
-    imagelist = slip.make_imagelist(name_database=name_database)#, seed=seed)
-    for filename, croparea in imagelist:
-        # whitening
-        image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, seed=seed)
-        image = slip.whitening(image)
-        # Extract all reference patches and ravel them
-        data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))#, seed=seed)
-        data_ = data_.reshape(data_.shape[0], -1)
-        data_ -= np.mean(data_, axis=0)
-        if patch_norm:
-            data_ /= np.std(data_, axis=0)
-        # collect everything as a matrix
-        try:
-            data = np.vstack((data, data_))
-        except Exception:
-            data = data_.copy()
         if verbose:
-            # update the bar
-            sys.stdout.write(filename + ", ")
+            # setup toolbar
+            sys.stdout.write('Extracting data...')
             sys.stdout.flush()
-    if verbose:
-        dt = time.time() - t0
-        sys.stdout.write("\n")
-        sys.stdout.write("Data is of shape : "+ str(data.shape))
-        sys.stdout.write(' - done in %.2fs.' % dt)
-        sys.stdout.flush()
+            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
+            t0 = time.time()
+        imagelist = slip.make_imagelist(name_database=name_database)#, seed=seed)
+        for filename, croparea in imagelist:
+            # whitening
+            image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, seed=seed)
+            image = slip.whitening(image)
+            # Extract all reference patches and ravel them
+            data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))#, seed=seed)
+            data_ = data_.reshape(data_.shape[0], -1)
+            data_ -= np.mean(data_, axis=0)
+            if patch_norm:
+                data_ /= np.std(data_, axis=0)
+            # collect everything as a matrix
+            try:
+                data = np.vstack((data, data_))
+            except Exception:
+                data = data_.copy()
+            if verbose:
+                # update the bar
+                sys.stdout.write(filename + ", ")
+                sys.stdout.flush()
+        if verbose:
+            dt = time.time() - t0
+            sys.stdout.write("\n")
+            sys.stdout.write("Data is of shape : "+ str(data.shape))
+            sys.stdout.write(' - done in %.2fs.' % dt)
+            sys.stdout.flush()
+    else:
+        if not(os.path.isfile(fmatname + '_data.npy')):
+            if not(os.path.isfile(fmatname + '_data' + '_lock')):
+                touch(fmatname + '_data' + '_lock')
+                touch(fmatname + '_data' + self.LOCK)
+                try:
+                    if self.verbose: print('No cache found {}: Extracting data...'.format(fmatname + '_data'), end=' ')
+                    data = get_data(height=height, width=width, n_image=n_image,
+                                    patch_size=patch_size, datapath=datapath,
+                                    name_database=name_database, max_patches=max_patches,
+                                    seed=seed, patch_norm=patch_norm, verbose=verbose,
+                                    fname=None)
+                    np.save(fmatname + '_data.npy', data)
+                finally:
+                    try:
+                        os.remove(fmatname + '_data' + self.LOCK)
+                        os.remove(fmatname + '_data' + '_lock')
+                    except:
+                        print('Coud not remove ', fmatname + '_data' + self.LOCK)
+            else:
+                print('the data extraction is locked', fmatname + '_data' + self.LOCK)
+        else:
+            if self.verbose: print("loading the dico called : {0}".format(fmatname + '_data'))
+            # Une seule fois mp ici
+            data = np.load(fmatname + '_data.npy')
     return data
 
 def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
@@ -151,7 +181,6 @@ def show_dico(shl_exp, order=False, title=None, fname=None, dpi=200, **kwargs):
         indices = range(dim_graph)
     dim_patch = int(np.sqrt(dico.dictionary.shape[1]))
 
-    for i, component in enumerate(dico.dictionary):
     for i in range(dim_graph):
         ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
         dico_to_display = dico.dictionary[indices[i]]

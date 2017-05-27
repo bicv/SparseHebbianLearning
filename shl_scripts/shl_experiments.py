@@ -82,7 +82,7 @@ class SHL(object):
                  n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='./data_cache',
+                 data_cache='/tmp/data_cache',
                  do_coding=True,
                  cache_coding=False,
                  ):
@@ -226,6 +226,8 @@ class SHL(object):
                                                record_each=self.record_each, matname=None, **kwargs)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
+                    except ImportError:
+                        print('hack')
                     finally:
                         try:
                             os.remove(fmatname + self.LOCK)
