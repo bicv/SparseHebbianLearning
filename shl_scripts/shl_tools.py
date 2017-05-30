@@ -365,7 +365,7 @@ def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05):
 
 #import seaborn as sns
 #import pandas as pd
-def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.05, xlabel='True', ylabel='MP'):
+def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True', ylabel='MP'):
 
     fig = plt.figure(figsize=(16, 16))
     ax = fig.add_subplot(111)

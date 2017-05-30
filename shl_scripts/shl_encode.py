@@ -138,7 +138,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
         The dictionary matrix against which to solve the sparse coding of
         the data.
 
-    fit_tol : criterium based on the residual error
+    fit_tol : criterium based on the residual error - not implemented yet
 
     Returns
     -------
@@ -157,7 +157,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     if not P_cum is None:
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
-    if fit_tol is None: fit_tol = 0.
+    #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
     corr = (X @ dictionary.T)
