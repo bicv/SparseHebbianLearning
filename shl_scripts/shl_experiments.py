@@ -153,26 +153,24 @@ class SHL(object):
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
         else:
-            fmatname = os.path.join(self.data_cache, matname)
-            if not(os.path.isfile(fmatname + '_coding.npy')):
-                if not(os.path.isfile(fmatname + '_coding' + '_lock')):
-                    touch(fmatname + '_coding' + '_lock')
-                    touch(fmatname + '_coding' + self.LOCK)
+            fmatname = os.path.join(self.data_cache, matname) + '_coding.npy'
+            if not(os.path.isfile(fmatname)):
+                if not(os.path.isfile(fmatname + '_lock')):
+                    touch(fmatname + '_lock')
+                    touch(fmatname + self.LOCK)
+                    if self.verbose: print('No cache found {}: Coding with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
+                    sparse_code = self.code(data, dico, matname=None)
+                    np.save(fmatname, sparse_code)
                     try:
-                        if self.verbose: print('No cache found {}: Coding with algo = {} \n'.format(fmatname + '_coding.npy', self.learning_algorithm), end=' ')
-                        sparse_code = self.code(data, dico, matname=None)
-                        np.save(fmatname + '_coding.npy', sparse_code)
-                    finally:
-                        try:
-                            os.remove(fmatname + '_coding' + self.LOCK)
-                            os.remove(fmatname + '_coding' + '_lock')
-                        except:
-                            print('Coud not remove ', fmatname + '_coding' + self.LOCK)
+                        os.remove(fmatname + self.LOCK)
+                        os.remove(fmatname + '_lock')
+                    except:
+                        print('Coud not remove ', fmatname + self.LOCK)
                 else:
-                    print('the computation is locked', fmatname + '_coding' + self.LOCK)
+                    print('the computation is locked', fmatname + self.LOCK)
             else:
-                if self.verbose: print("loading the code called : {0}".format(fmatname + '_coding.npy'))
-                sparse_code = np.load(fmatname + '_coding.npy')
+                if self.verbose: print("loading the code called : {0}".format(fmatname))
+                sparse_code = np.load(fmatname)
 
         return sparse_code
 
@@ -205,7 +203,7 @@ class SHL(object):
 
         else:
             import pickle
-            fmatname = os.path.join(self.data_cache, matname)
+            fmatname = os.path.join(self.data_cache, matname) + '_dico.pkl'
             if not(os.path.isfile(fmatname)):
                 time.sleep(np.random.rand()*0.1)
                 if not(os.path.isfile(fmatname + '_lock')):

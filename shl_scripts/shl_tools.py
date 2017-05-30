@@ -349,7 +349,7 @@ def plot_variance_histogram(shl_exp, sparse_code, data=None, algorithm=None, fna
     return fig, ax
 
 
-def plot_P_cum(P_cum, verbose=False, alpha=.05):
+def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05):
     fig = plt.figure(figsize=(16, 8))
     ax = fig.add_subplot(111)
     coefficients = np.linspace(0, 1, P_cum.shape[1])
@@ -359,18 +359,22 @@ def plot_P_cum(P_cum, verbose=False, alpha=.05):
     ax.set_xlabel('normalized coefficients')
     ax.set_ylabel('z-score')
     #ax.set_xlim(0)
+    ax.set_yticks( np.linspace(0, 1, n_yticks))
     ax.axis('tight')
     return fig, ax
 
 #import seaborn as sns
 #import pandas as pd
-def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.05):
+def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.05, xlabel='True', ylabel='MP'):
 
     fig = plt.figure(figsize=(16, 16))
     ax = fig.add_subplot(111)
+    a_min = np.min((sparse_vector.min(), my_sparse_code.min()))
+    a_max = np.max((sparse_vector.max(), my_sparse_code.max()))
+    ax.plot(np.array([a_min, a_max]), np.array([a_min, a_max]), 'k--', lw=2)
     ax.scatter(sparse_vector.ravel(), my_sparse_code.ravel(), alpha=alpha)
-    ax.set_xlabel('True')
-    ax.set_ylabel('MP')
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     ax.set_xlim(0)
     ax.set_ylim(0)
     ax.axis('equal')

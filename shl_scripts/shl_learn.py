@@ -431,9 +431,10 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., do_sym=True, verbos
 def get_P_cum(code, nb_quant=100, C=5., do_sym=True):
     from shl_scripts.shl_encode import prior
     n_samples, nb_filter = code.shape
+    code_bins = np.linspace(0., 1, nb_quant, endpoint=True)
     P_cum = np.zeros((nb_filter, nb_quant))
     for i in range(nb_filter):
-        p, bins = np.histogram(prior(code[:, i], C=C, do_sym=do_sym), bins=np.linspace(0., 1, nb_quant, endpoint=True), density=True)
+        p, bins = np.histogram(prior(code[:, i], C=C, do_sym=do_sym), bins=code_bins, density=True)
         p /= p.sum()
         P_cum[i, :] = np.hstack((0, np.cumsum(p)))
     return P_cum
