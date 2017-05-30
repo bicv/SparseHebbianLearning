@@ -267,10 +267,12 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         print('[dict_learning]', end=' ')
     gain = np.ones(n_dictionary)
     mean_var = np.ones(n_dictionary)
-    if alpha_homeo==0 or eta_homeo==0:
+    if alpha_homeo==0:
         P_cum = np.linspace(0, 1, nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
     else:
         P_cum = None
+
+    # print(alpha_homeo, eta_homeo, alpha_homeo==0, eta_homeo==0, alpha_homeo==0 or eta_homeo==0, 'P_cum', P_cum)
 
     # splits the whole dataset into batches
     n_batches = n_samples // batch_size
