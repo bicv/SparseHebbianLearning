@@ -151,6 +151,9 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, algorithm=algorithm, P_cum=self.P_cum,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
+
+    # def decode(self, sparse_code, dico):
+    #     return sparse_code @ dico.dictionary
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,

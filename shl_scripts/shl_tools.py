@@ -117,7 +117,9 @@ def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
 
 
 def compute_RMSE(data, dico):
-    ''' Compute the Root Mean Square Error between the image and it's encoded representation'''
+    """
+    Compute the Root Mean Square Error between the image and it's encoded representation
+    """
     a = dico.transform(data)
     residual = data - a @ dico.dictionary
     mse = np.sum(residual**2, axis=1)/np.sqrt(np.sum(data**2, axis=1))
@@ -125,8 +127,10 @@ def compute_RMSE(data, dico):
     return rmse
 
 def compute_KL(data, dico):
-    '''Compute the Kullback Leibler ratio to compare a distribution to its gaussian equivalent.
-    if the KL is close to 1, the studied distribution is closed to a gaussian'''
+    """
+    Compute the Kullback Leibler ratio to compare a distribution to its gaussian equivalent.
+    if the KL is close to 1, the studied distribution is closed to a gaussian
+    """
     sparse_code = dico.transform(data)
     N = dico.dictionary.shape[0]
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
@@ -136,7 +140,9 @@ def compute_KL(data, dico):
     return KL
 
 def compute_kurto(data, dico):
-    '''Compute the kurtosis'''
+    """
+    Compute the kurtosis
+    """
     sparse_code= dico.transform(data)
     P_norm = np.mean(sparse_code**2, axis=0)#/Z
     from scipy.stats import kurtosis
@@ -144,27 +150,24 @@ def compute_kurto(data, dico):
     return kurto
 
 # To adapt with shl_exp
-def show_dico_in_order(shl_exp, data=None, algorithm=None,title=None, fname=None):
+def show_dico_in_order(shl_exp, dico, data=None, title=None, fname=None, dpi=200, **kwargs):
     """
     Displays the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end
 
     """
-    return show_dico(shl_exp, order=True, title=title, fname=fname, dpi=dpi, **kwargs)
+    return show_dico(shl_exp, dico=dico, data=data, order=True, title=title, fname=fname, dpi=dpi, **kwargs)
 
-def show_dico(shl_exp, dico, order=False, title=None, fname=None, dpi=200, **kwargs):
-    '''
+def show_dico(shl_exp, dico,  data=None, order=False, title=None, fname=None, dpi=200, **kwargs):
+    """
     display the dictionary in a random order
-    '''
+    """
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
 
     dim_graph = dico.dictionary.shape[0]
     if order:
-        if (algorithm is not None) and (data is not None)  :
-            sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
-        else :
-            sparse_code = shl_exp.coding
+        sparse_code = shl_exp.code(data=data, dico=dico)
         res_lst = np.count_nonzero(sparse_code, axis=0)
         indices = res_lst.argsort()
     else:
@@ -186,7 +189,9 @@ def show_dico(shl_exp, dico, order=False, title=None, fname=None, dpi=200, **kwa
     return fig, ax
 
 def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):
-    '''Plot the coeff distribution of a given dictionary'''
+    """
+    Plot the coeff distribution of a given dictionary
+    """
 
     if algorithm is not None :
         sparse_code = shl_encode.sparse_encode(data,dico.dictionary,algorithm=algorithm)
@@ -210,8 +215,10 @@ def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):
     return fig, ax
 
 
-def bins_step(mini,maxi,nb_step):
-    '''doing a range of non integer number to make histogramm more beautiful'''
+def bins_step(mini, maxi, nb_step):
+    """
+    doing a range of non integer number to make histogram more beautiful
+    """
     step=(maxi-mini)/nb_step
     out=list()
     a=mini
@@ -222,7 +229,10 @@ def bins_step(mini,maxi,nb_step):
     return out
 
 def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None):
-    '''plot the coefficient distribution of the filter which is selected the more, and the one which is selected the less'''
+    """
+    plot the coefficient distribution of the filter which is selected the more,
+    and the one which is selected the less
+    """
     if (algorithm is not None) and (data is not None)  :
         sparse_code = shl_encode.sparse_encode(data, dico.dictionary,algorithm=algorithm)
     else :
@@ -252,7 +262,10 @@ def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None):
 
 ## To adapt with shl_exp
 def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
-    '''Overlay of 2 histogram, the histogram of the variance of the coefficient, and the corresponding gaussian one'''
+    """
+    Overlay of 2 histogram, the histogram of the variance of the coefficient,
+    and the corresponding gaussian one
+    """
     if algorithm is not None :
         sparse_code = shl_encode.sparse_encode(data, dico.dictionary, algorithm=algorithm)
     else :
@@ -336,12 +349,14 @@ def plot_variance_histogram(shl_exp, sparse_code, data=None, algorithm=None, fna
     return fig, ax
 
 
-def plot_P_cum(P_cum, verbose=False):
+def plot_P_cum(P_cum, verbose=False, alpha=.05):
     fig = plt.figure(figsize=(16, 8))
     ax = fig.add_subplot(111)
-    ax.plot(P_cum.T, c='g', alpha=.05)
+    coefficients = np.linspace(0, 1, P_cum.shape[1])
+    ax.plot(coefficients, np.ones_like(coefficients), '--')
+    ax.plot(coefficients, P_cum.T, c='g', alpha=alpha)
     ax.set_title(' non-linear functions ')
-    ax.set_xlabel('coefficients')
+    ax.set_xlabel('normalized coefficients')
     ax.set_ylabel('z-score')
     #ax.set_xlim(0)
     ax.axis('tight')

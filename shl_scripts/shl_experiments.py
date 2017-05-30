@@ -137,8 +137,9 @@ class SHL(object):
                     verbose=self.verbose, data_cache=self.data_cache, matname=matname)
 
 
-    def code(self, data, dico, coding_algorithm='mp', matname=None, **kwargs):
-
+    def code(self, data, dico, coding_algorithm='mp', matname=None, l0_sparseness=None, **kwargs):
+        if l0_sparseness is None:
+            l0_sparseness = self.l0_sparseness
         if matname is None:
             if self.verbose:
                 print('Coding data with algorithm ', coding_algorithm,  end=' ')
@@ -146,7 +147,7 @@ class SHL(object):
             from shl_scripts.shl_encode import sparse_encode
             sparse_code = sparse_encode(data, dico.dictionary,
                                         algorithm=self.learning_algorithm,
-                                        l0_sparseness=self.l0_sparseness,
+                                        l0_sparseness=l0_sparseness,
                                         fit_tol=None, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
             if self.verbose:
                 dt = time.time() - t0
@@ -170,10 +171,13 @@ class SHL(object):
                 else:
                     print('the computation is locked', fmatname + '_coding' + self.LOCK)
             else:
-                if self.verbose: print("loading the dico called : {0}".format(fmatname + '_coding.npy'))
+                if self.verbose: print("loading the code called : {0}".format(fmatname + '_coding.npy'))
                 sparse_code = np.load(fmatname + '_coding.npy')
 
         return sparse_code
+
+    def decode(self, sparse_code, dico):
+        return sparse_code @ dico.dictionary
 
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
@@ -263,23 +267,23 @@ class SHL(object):
 
     def plot_variance(self, sparse_code, data=None, algorithm=None, fname=None):
         from shl_scripts.shl_tools import plot_variance
-        return plot_variance(self, data=data, fname=fname, algorithm=algorithm)
+        return plot_variance(self, sparse_code, data=data, fname=fname, algorithm=algorithm)
 
     def plot_variance_histogram(self, sparse_code, data=None, algorithm=None, fname=None):
         from shl_scripts.shl_tools import plot_variance_histogram
-        return plot_variance_histogram(self, data=data, fname=fname, algorithm=algorithm)
+        return plot_variance_histogram(self, sparse_code, data=data, fname=fname, algorithm=algorithm)
 
     def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1):
         from shl_scripts.shl_tools import time_plot
-        return time_plot(self, variable=variable, fname=fname, N_nosample=N_nosample)
+        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample)
 
-    def show_dico(self, dico, title=None, fname=None):
+    def show_dico(self, dico, data=None, title=None, fname=None, dpi=200):
         from shl_scripts.shl_tools import show_dico
-        return show_dico(self, dico, title=title, fname=fname)
+        return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
 
-    def show_dico_in_order(self, dico, data=None, title=None, fname=None):
+    def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200):
         from shl_scripts.shl_tools import show_dico_in_order
-        return show_dico_in_order(self, dico, title=title, fname=fname)
+        return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
 
 if __name__ == '__main__':
 

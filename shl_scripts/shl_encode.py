@@ -107,13 +107,13 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
             copy_Xy=False).T
 
     elif algorithm == 'mp':
-        sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit_tol=fit_tol, P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose)
+        sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit_tol=fit_tol,
+                            P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose)
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
                          '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'
                          % algorithm)
     return sparse_code
-
 
 def prior(code, C=5., do_sym=True):
     if do_sym:
@@ -162,12 +162,12 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     # starting Matching Pursuit
     corr = (X @ dictionary.T)
     Xcorr = (dictionary @ dictionary.T)
-    SE_0 = np.sum(X*2, axis=1)
+    #SE_0 = np.sum(X*2, axis=1)
     # TODO: vectorize?
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
         #c_0 = corr_0[i_sample]
-        i_l0, SE = 0, SE_0
+        #i_l0, SE = 0, SE_0
         for i_l0 in range(int(l0_sparseness)) :
         #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
             if P_cum is None:
@@ -181,9 +181,9 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
             c_ind = c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
-            SE -= c_ind**2 # pythagora
-            i_l0 += 1
-            
+            #SE -= c_ind**2 # pythagora
+            #i_l0 += 1
+
     if verbose>0:
         duration=time.time()-t0
         print('coding duration : {0}'.format(duration))
