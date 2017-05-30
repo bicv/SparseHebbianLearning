@@ -71,7 +71,7 @@ class SHL(object):
                  l0_sparseness=15,
                  n_iter=2**14,
                  eta=.01,
-                 eta_homeo=.01, nb_quant=32, C=5., do_sym=False,
+                 eta_homeo=.01, nb_quant=128, C=5., do_sym=False,
                  alpha_homeo=0,
                  max_patches=4096,
                  batch_size=512,
