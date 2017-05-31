@@ -312,7 +312,7 @@ def plot_proba_histogram(coding, verbose=False):
     fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
     ax.bar(np.arange(n_dictionary), p*n_dictionary)
-    ax.set_title('distribution of the selection probability')
+    ax.set_title('distribution of the selection probability - entropy= ' + str(rel_ent)  )
     ax.set_ylabel('pdf')
     ax.set_xlim(0)
     ax.axis('tight')
