@@ -349,12 +349,12 @@ def plot_variance_histogram(shl_exp, sparse_code, data=None, algorithm=None, fna
     return fig, ax
 
 
-def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05):
-    fig = plt.figure(figsize=(16, 8))
-    ax = fig.add_subplot(111)
+def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05, fig=None, ax=None, c='g'):
+    if fig is None: fig = plt.figure(figsize=(16, 8))
+    if ax is None: ax = fig.add_subplot(111)
     coefficients = np.linspace(0, 1, P_cum.shape[1])
     ax.plot(coefficients, np.ones_like(coefficients), '--')
-    ax.plot(coefficients, P_cum.T, c='g', alpha=alpha)
+    ax.plot(coefficients, P_cum.T, c=c, alpha=alpha)
     ax.set_title(' non-linear functions ')
     ax.set_xlabel('normalized coefficients')
     ax.set_ylabel('z-score')
