@@ -50,6 +50,9 @@ from SLIP import Image
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
 
+import os
+home = os.environ['HOME']
+
 class SHL(object):
     """
 
@@ -64,7 +67,7 @@ class SHL(object):
                  height=256, # of image
                  width=256, # of image
                  patch_size=(16, 16),
-                 database = 'database/',
+                 database='database/',
                  n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
@@ -79,7 +82,7 @@ class SHL(object):
                  n_image=200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='/tmp/data_cache',
+                 data_cache=os.path.join(home, 'tmp/data_cache'),
                  ):
         self.height = height
         self.width = width
@@ -148,7 +151,8 @@ class SHL(object):
             sparse_code = sparse_encode(data, dico.dictionary,
                                         algorithm=self.learning_algorithm,
                                         l0_sparseness=l0_sparseness,
-                                        fit_tol=None, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
+                                        fit_tol=None,
+                                        C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)

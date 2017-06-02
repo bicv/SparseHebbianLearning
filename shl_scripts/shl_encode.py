@@ -115,7 +115,7 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
                          % algorithm)
     return sparse_code
 
-def prior(code, C=5., do_sym=True):
+def prior(code, C=5., do_sym=False):
     if do_sym:
         return 1.-np.exp(-np.abs(code)/C)
     else:

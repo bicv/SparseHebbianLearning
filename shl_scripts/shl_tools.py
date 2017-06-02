@@ -47,6 +47,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             sys.stdout.flush()
             sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
             t0 = time.time()
+        import os
         imagelist = slip.make_imagelist(name_database=name_database)#, seed=seed)
         for filename, croparea in imagelist:
             # whitening
