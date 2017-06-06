@@ -67,7 +67,7 @@ class SHL(object):
                  height=256, # of image
                  width=256, # of image
                  patch_size=(16, 16),
-                 database='database/',
+                 datapath='database/',
                  n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
@@ -86,7 +86,7 @@ class SHL(object):
                  ):
         self.height = height
         self.width = width
-        self.database = database
+        self.datapath = datapath
         self.patch_size = patch_size
         self.n_dictionary = n_dictionary
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
@@ -119,25 +119,26 @@ class SHL(object):
         self.LOCK = '_lock' + '_pid-' + str(PID) + '_host-' + HOST
 
 
-        # Load natural images and extract patches
-        self.slip = Image({'N_X':height, 'N_Y':width,
-                                        'white_n_learning' : 0,
-                                        'seed': None,
-                                        'white_N' : .07,
-                                        'white_N_0' : .0, # olshausen = 0.
-                                        'white_f_0' : .4, # olshausen = 0.2
-                                        'white_alpha' : 1.4,
-                                        'white_steepness' : 4.,
-                                        'datapath': self.database,
-                                        'do_mask':True,
-                                        'N_image': n_image})
+        # # Load natural images and extract patches
+        # self.slip = Image({'N_X':height, 'N_Y':width,
+        #                                 'white_n_learning' : 0,
+        #                                 'seed': None,
+        #                                 'white_N' : .07,
+        #                                 'white_N_0' : .0, # olshausen = 0.
+        #                                 'white_f_0' : .4, # olshausen = 0.2
+        #                                 'white_alpha' : 1.4,
+        #                                 'white_steepness' : 4.,
+        #                                 'datapath': self.datapath,
+        #                                 'do_mask':True,
+        #                                 'N_image': n_image})
 
-    def get_data(self, name_database='serre07_distractors', seed=None, patch_norm=True, matname=None, **kwargs):
+    def get_data(self, name_database='serre07_distractors', seed=None,
+                 patch_norm=True, matname=None, **kwargs):
         from shl_scripts.shl_tools import get_data
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
-                    patch_size=self.patch_size, datapath=self.database, name_database=name_database,
-                    max_patches=self.max_patches, seed=seed, patch_norm=patch_norm,
-                    verbose=self.verbose, data_cache=self.data_cache, matname=matname)
+                    patch_size=self.patch_size, datapath=self.datapath,
+                    max_patches=self.max_patches, verbose=self.verbose,
+                    data_cache=self.data_cache, seed=seed, patch_norm=patch_norm, name_database=name_database, matname=matname)
 
 
     def code(self, data, dico, coding_algorithm='mp', matname=None, l0_sparseness=None, **kwargs):
@@ -184,7 +185,11 @@ class SHL(object):
     def learn_dico(self, data=None, name_database='serre07_distractors',
                    matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
 
-        if data is None: data = self.get_data(name_database, matname=matname, **kwargs)
+        if data is None: data = self.get_data(name_database, height=self.height,
+                            width=self.width, n_image=self.n_image,
+                            patch_size=self.patch_size, datapath=self.datapath,
+                            max_patches=self.max_patches, verbose=self.verbose,
+                            data_cache=self.data_cache, matname=matname, **kwargs)
 
         if matname is None:
             # Learn the dictionary from reference patches

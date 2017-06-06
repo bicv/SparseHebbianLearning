@@ -26,8 +26,8 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
 
     """
     if matname is None:
+        # Load natural images and extract patches    
         from SLIP import Image
-
         slip = Image({'N_X':height, 'N_Y':width,
                 'white_n_learning' : 0,
                 'seed': seed,
@@ -82,6 +82,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 touch(fmatname + '_data' + '_lock')
                 try:
                     if verbose: print('No cache found {}: Extracting data...'.format(fmatname + '_data'), end=' ')
+                    print(datapath)
                     data = get_data(height=height, width=width, n_image=n_image,
                                     patch_size=patch_size, datapath=datapath,
                                     name_database=name_database, max_patches=max_patches,
