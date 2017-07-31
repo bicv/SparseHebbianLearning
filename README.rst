@@ -64,8 +64,9 @@ Contents
 --------
 
 * ``README.rst`` : this file
-* ``src/shl_scripts.py`` : the class file
-* ``*.ipynb`` : the individual experiments as notebooks
+* ``index.ipynb`` : an introduction as a notebook
+* ``src/shl_*.py`` : the class files
+* ``probe*.ipynb`` : the individual experiments as notebooks
 * ``database`` : the image files.
 
 Changelog
