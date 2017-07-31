@@ -39,7 +39,11 @@ Installation
    pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
    pip3 install -U git+https://github.com/bicv/SLIP.git
 
-* Then, download the code @ https://github.com/bicv/shl_scripts/archive/master.zip. You may also grab it directly using the command-line::
+* Then, either install the code directly:
+
+   pip3 install git+https://github.com/bicv/SHL_scripts.git
+
+* or if you wish to tinker with the code, download the code @ https://github.com/bicv/shl_scripts/archive/master.zip. You may also grab it directly using the command-line::
 
    wget https://github.com/bicv/shl_scripts/archive/master.zip
    unzip master.zip -d shl_scripts
@@ -67,7 +71,9 @@ Contents
 Changelog
 ---------
 
-* 2.1 -2015-10-20:
+* 3.0 - 2017-06-06: refactored the code for http://invibe.net/LaurentPerrinet/Publications/BoutinRuffierPerrinet17spars
+
+* 2.1 - 2015-10-20:
  * finalizing the code to reproduce the sparsenet algorithm
 
 * 2.0 - 2015-05-07:
