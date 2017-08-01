@@ -39,7 +39,7 @@ Installation
    pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
    pip3 install -U git+https://github.com/bicv/SLIP.git
 
-* Then, either install the code directly:
+* Then, either install the code directly::
 
    pip3 install git+https://github.com/bicv/SHL_scripts.git
 
