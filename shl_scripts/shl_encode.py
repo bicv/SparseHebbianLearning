@@ -115,13 +115,23 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
                          % algorithm)
     return sparse_code
 
-def prior(code, C=5., do_sym=False):
+def rescaling(code, C=5., do_sym=False):
     if do_sym:
         return 1.-np.exp(-np.abs(code)/C)
     else:
         return (1.-np.exp(-code/C))*(code>0)
 
-def z_score(Pcum, p_c, stick):
+def quantile(Pcum, p_c, stick):
+    """
+    See
+
+    - http://blog.invibe.net/posts/2017-03-29-testing-comps-pcum.html
+    - http://blog.invibe.net/posts/2017-03-29-testing-comps-fastpcum.html
+    - http://blog.invibe.net/posts/2017-03-29-testing-comps-fastpcum_scripted.html
+
+    for a derivation of the following line.
+
+    """
     return Pcum.ravel()[(p_c*Pcum.shape[1] - (p_c==1)).astype(np.int) + stick]
 
 def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C=5., verbose=0):
@@ -176,7 +186,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
                 else:
                     ind  = np.argmax(c)
             else:
-                ind  = np.argmax(z_score(P_cum, prior(c, C=C, do_sym=do_sym), stick))
+                ind  = np.argmax(quantile(P_cum, rescaling(c, C=C, do_sym=do_sym), stick))
 
             c_ind = c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
