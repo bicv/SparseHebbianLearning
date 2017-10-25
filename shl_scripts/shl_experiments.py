@@ -73,7 +73,7 @@ class SHL(object):
                  fit_tol=None,
                  l0_sparseness=15,
                  n_iter=2**14,
-                 eta=.01,
+                 eta=.005,
                  eta_homeo=.01, nb_quant=128, C=5., do_sym=False,
                  alpha_homeo=0,
                  max_patches=4096,
@@ -117,20 +117,6 @@ class SHL(object):
         # creating a tag related to this process
         PID, HOST = os.getpid(), os.uname()[1]
         self.LOCK = '_lock' + '_pid-' + str(PID) + '_host-' + HOST
-
-
-        # # Load natural images and extract patches
-        # self.slip = Image({'N_X':height, 'N_Y':width,
-        #                                 'white_n_learning' : 0,
-        #                                 'seed': None,
-        #                                 'white_N' : .07,
-        #                                 'white_N_0' : .0, # olshausen = 0.
-        #                                 'white_f_0' : .4, # olshausen = 0.2
-        #                                 'white_alpha' : 1.4,
-        #                                 'white_steepness' : 4.,
-        #                                 'datapath': self.datapath,
-        #                                 'do_mask':True,
-        #                                 'N_image': n_image})
 
     def get_data(self, name_database='serre07_distractors', seed=None,
                  patch_norm=True, matname=None, **kwargs):

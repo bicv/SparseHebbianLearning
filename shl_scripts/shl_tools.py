@@ -37,7 +37,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 'white_alpha' : 1.4,
                 'white_steepness' : 4.,
                 'datapath': datapath,
-                'do_mask':True,
+                'do_mask': True,
                 'N_image': n_image})
 
         if verbose:
@@ -96,6 +96,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                         print('Coud not remove ', fmatname + '_data')
             else:
                 print('the data extraction is locked', fmatname + '_data')
+                return 'lock'
         else:
             if verbose: print("loading the data called : {0}".format(fmatname + '_data'))
             # Une seule fois mp ici

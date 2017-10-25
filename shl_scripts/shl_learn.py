@@ -423,6 +423,7 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., do_sym=True, verbos
         Updated value of the modulation function.
 
     """
+
     if eta_homeo>0.:
         P_cum_ = get_P_cum(code, nb_quant=nb_quant, C=C, do_sym=do_sym)
         P_cum = (1 - eta_homeo)*P_cum + eta_homeo * P_cum_

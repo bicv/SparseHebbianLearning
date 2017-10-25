@@ -14,7 +14,7 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'probe']),
     author='Laurent PERRINET, Institut de Neurosciences de la Timone (CNRS/Aix-Marseille Université)',
     description=' This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the [SparseNet algorithm from Bruno Olshausen](http://redwood.berkeley.edu/bruno/sparsenet/).',
-    long_description=open('README.rst').read(),
+    long_description=open('README.rst', 'r', encoding='utf-8').read(),
     license='LICENSE.txt',
     keywords="Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit",
     url = 'https://github.com/laurentperrinet/' + NAME, # use the URL to the github repo
