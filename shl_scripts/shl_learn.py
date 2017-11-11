@@ -292,11 +292,14 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
             if ii % int(n_iter//verbose + 1) == 0:
                 print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
                        % (ii, n_iter, dt, dt//60))
-
-        if C == 0. or isinstance(C, np.ndarray):
-            from shl_scripts.shl_encode import get_rescaling
+        if isinstance(C, np.float):
+            if C == 0. :
+                from shl_scripts.shl_encode import get_rescaling
+                corr = (this_X @ dictionary.T)
+                C = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
+        if isinstance(C, np.float):
             corr = (this_X @ dictionary.T)
-            C = get_rescaling(corr, nb_quant=nb_quant, verbose=verbose)
+            C = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
 
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, algorithm=method, fit_tol=fit_tol,

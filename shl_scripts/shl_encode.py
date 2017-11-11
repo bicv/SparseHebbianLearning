@@ -124,7 +124,7 @@ def get_rescaling(code, nb_quant, do_sym=False, verbose=False):
     sorted_coeffs = np.sort(code.ravel())
     indices = [int(q*(sorted_coeffs.size-1) ) for q in np.linspace(0, 1, nb_quant, endpoint=True)]
     C = sorted_coeffs[indices]
-    return C
+    return np.array(C)
 
 def rescaling(code, C=0., do_sym=False):
     """
