@@ -193,15 +193,20 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     n_samples, n_pixels = X.shape
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
-    if not P_cum is None:
-        nb_quant = P_cum.shape[1]
-        stick = np.arange(n_dictionary)*nb_quant
     #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
     corr = (X @ dictionary.T)
     Xcorr = (dictionary @ dictionary.T)
     #SE_0 = np.sum(X*2, axis=1)
+
+    if not P_cum is None:
+        nb_quant = P_cum.shape[1]
+        stick = np.arange(n_dictionary)*nb_quant
+        if isinstance(C, np.float):
+            if C == 0.:
+                C = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
+
     # TODO: vectorize?
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
