@@ -84,7 +84,7 @@ class SparseHebbianLearning:
     def __init__(self, fit_algorithm, n_dictionary=None, eta=0.02, n_iter=40000,
                  eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
                  batch_size=100,
-                 l0_sparseness=None, fit_tol=None, nb_quant=32, C=5., do_sym=True,
+                 l0_sparseness=None, fit_tol=None, nb_quant=32, C=0., do_sym=True,
                  record_each=200, verbose=False, random_state=None):
         self.eta = eta
         self.n_dictionary = n_dictionary
@@ -157,7 +157,7 @@ class SparseHebbianLearning:
 def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                       method='mp', nb_quant=100, C=5, do_sym=True, random_state=None):
+                       method='mp', nb_quant=100, C=0., do_sym=True, random_state=None):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -265,11 +265,14 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
 
     if verbose == 1:
         print('[dict_learning]', end=' ')
-    gain = np.ones(n_dictionary)
-    mean_var = np.ones(n_dictionary)
+
     if alpha_homeo==0:
+        # do the equalitarian homeostasis
         P_cum = np.linspace(0, 1, nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
     else:
+        # do the classical homeostasis
+        gain = np.ones(n_dictionary)
+        mean_var = np.ones(n_dictionary)
         P_cum = None
 
     # print(alpha_homeo, eta_homeo, alpha_homeo==0, eta_homeo==0, alpha_homeo==0 or eta_homeo==0, 'P_cum', P_cum)
@@ -282,13 +285,18 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
     import itertools
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
     batches = itertools.cycle(batches)
-
+    # cycle over all batches
     for ii, this_X in zip(range(n_iter), batches):
         dt = (time.time() - t0)
         if verbose > 0:
             if ii % int(n_iter//verbose + 1) == 0:
                 print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
                        % (ii, n_iter, dt, dt//60))
+
+        if C == 0. or isinstance(C, np.ndarray):
+            from shl_scripts.shl_encode import get_rescaling
+            corr = (this_X @ dictionary.T)
+            C = get_rescaling(corr, nb_quant=nb_quant, verbose=verbose)
 
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, algorithm=method, fit_tol=fit_tol,
@@ -309,7 +317,6 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
                 gain = mean_var**alpha_homeo
                 gain /= gain.mean()
-                # print(np.mean(sparse_code**2, axis=0), gain, gain.mean())
                 dictionary /= gain[:, np.newaxis]
             else:
                 P_cum = update_P_cum(P_cum, sparse_code, eta_homeo, nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
@@ -395,7 +402,7 @@ def update_gain(gain, code, eta_homeo, verbose=False):
     return gain
 
 
-def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., do_sym=True, verbose=False):
+def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=0., do_sym=True, verbose=False):
     """Update the estimated modulation function in place.
 
     Parameters
@@ -429,13 +436,14 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=5., do_sym=True, verbos
         P_cum = (1 - eta_homeo)*P_cum + eta_homeo * P_cum_
     return P_cum
 
-def get_P_cum(code, nb_quant=100, C=5., do_sym=True):
-    from shl_scripts.shl_encode import prior
+def get_P_cum(code, nb_quant=100, C=0., do_sym=True):
+    from shl_scripts.shl_encode import rescaling
+    qcode = rescaling(code, C=C, do_sym=do_sym)
     n_samples, nb_filter = code.shape
     code_bins = np.linspace(0., 1., nb_quant, endpoint=True)
     P_cum = np.zeros((nb_filter, nb_quant))
     for i in range(nb_filter):
-        p, bins = np.histogram(rescaling(code[:, i], C=C, do_sym=do_sym), bins=code_bins, density=True)
+        p, bins = np.histogram(qcode[:, i], bins=code_bins, density=True)
         p /= p.sum()
         P_cum[i, :] = np.hstack((0, np.cumsum(p)))
     return P_cum

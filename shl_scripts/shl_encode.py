@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
-                          P_cum=None, l0_sparseness=10, C=5., do_sym=True, verbose=0):
+                          P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0):
     """Generic sparse coding
 
     Each column of the result is the solution to a sparse coding problem.
@@ -115,11 +115,40 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
                          % algorithm)
     return sparse_code
 
-def rescaling(code, C=5., do_sym=False):
+def get_rescaling(code, nb_quant, do_sym=False, verbose=False):
     if do_sym:
-        return 1.-np.exp(-np.abs(code)/C)
+        code = np.abs(code)
     else:
-        return (1.-np.exp(-code/C))*(code>0)
+        code *= code>0
+
+    sorted_coeffs = np.sort(code.ravel())
+    indices = [int(q*(sorted_coeffs.size-1) ) for q in np.linspace(0, 1, nb_quant, endpoint=True)]
+    C = sorted_coeffs[indices]
+    return C
+
+def rescaling(code, C=0., do_sym=False):
+    """
+    See
+
+    - http://blog.invibe.net/posts/2017-11-07-meul-with-a-non-parametric-homeostasis.html
+
+    for a derivation of the following function.
+
+    """
+    if isinstance(C, np.float):
+        if C==0.: print('WARNING! C is equal to zero!')
+        if do_sym:
+            return 1.-np.exp(-np.abs(code)/C)
+        else:
+            return (1.-np.exp(-code/C))*(code>0)
+    elif isinstance(C, np.ndarray):
+        if do_sym:
+            code = np.abs(code)
+        else:
+            code *= code>0
+
+        code_bins = np.linspace(0., 1., C.size, endpoint=True)
+        return np.interp(code, C, code_bins) #* (code > 0.)
 
 def quantile(Pcum, p_c, stick):
     """
@@ -134,7 +163,7 @@ def quantile(Pcum, p_c, stick):
     """
     return Pcum.ravel()[(p_c*Pcum.shape[1] - (p_c==1)).astype(np.int) + stick]
 
-def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C=5., verbose=0):
+def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C=0., verbose=0):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -187,13 +216,12 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
                     ind  = np.argmax(c)
             else:
                 ind  = np.argmax(quantile(P_cum, rescaling(c, C=C, do_sym=do_sym), stick))
-
+            #print(i_l0, ind, rescaling(c, C=C, do_sym=do_sym))
             c_ind = c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
             #SE -= c_ind**2 # pythagora
             #i_l0 += 1
-
     if verbose>0:
         duration=time.time()-t0
         print('coding duration : {0}'.format(duration))

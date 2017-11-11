@@ -358,7 +358,7 @@ def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05, fig=None, ax=None,
     ax.plot(coefficients, P_cum.T, c=c, alpha=alpha)
     ax.set_title(' non-linear functions ')
     ax.set_xlabel('normalized coefficients')
-    ax.set_ylabel('z-score')
+    ax.set_ylabel('quantile')
     #ax.set_xlim(0)
     ax.set_yticks( np.linspace(0, 1, n_yticks))
     ax.axis('tight')
