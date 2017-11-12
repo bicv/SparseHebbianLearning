@@ -132,21 +132,18 @@ def rescaling(code, C=0., do_sym=False):
 
     - http://blog.invibe.net/posts/2017-11-07-meul-with-a-non-parametric-homeostasis.html
 
-    for a derivation of the following function.
+    for a derivation of this function.
 
     """
+    if do_sym:
+        code = np.abs(code)
+    else:
+        code *= code>0
+
     if isinstance(C, np.float):
         if C==0.: print('WARNING! C is equal to zero!')
-        if do_sym:
-            return 1.-np.exp(-np.abs(code)/C)
-        else:
-            return (1.-np.exp(-code/C))*(code>0)
+        return 1.-np.exp(-np.abs(code)/C)
     elif isinstance(C, np.ndarray):
-        if do_sym:
-            code = np.abs(code)
-        else:
-            code *= code>0
-
         code_bins = np.linspace(0., 1., C.size, endpoint=True)
         return np.interp(code, C, code_bins) #* (code > 0.)
 

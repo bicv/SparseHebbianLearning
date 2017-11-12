@@ -297,7 +297,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 from shl_scripts.shl_encode import get_rescaling
                 corr = (this_X @ dictionary.T)
                 C = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
-        if isinstance(C, np.float):
+        if isinstance(C, np.ndarray):
             corr = (this_X @ dictionary.T)
             C = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
 
