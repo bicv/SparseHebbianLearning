@@ -440,6 +440,8 @@ def update_P_cum(P_cum, code, eta_homeo, nb_quant=100, C=0., do_sym=True, verbos
     return P_cum
 
 def get_P_cum(code, nb_quant=100, C=0., do_sym=True):
+    from shl_scripts.shl_encode import get_rescaling
+
     from shl_scripts.shl_encode import rescaling
     qcode = rescaling(code, C=C, do_sym=do_sym)
     n_samples, nb_filter = code.shape

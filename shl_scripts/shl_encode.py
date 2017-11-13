@@ -145,9 +145,9 @@ def rescaling(code, C=0., do_sym=False):
         return 1.-np.exp(-np.abs(code)/C)
     elif isinstance(C, np.ndarray):
         code_bins = np.linspace(0., 1., C.size, endpoint=True)
-        return np.interp(code, C, code_bins) #* (code > 0.)
+        return np.interp(code, C, code_bins) * (code > 0.)
 
-def quantile(Pcum, p_c, stick):
+def quantile(P_cum, p_c, stick):
     """
     See
 
@@ -158,7 +158,7 @@ def quantile(Pcum, p_c, stick):
     for a derivation of the following line.
 
     """
-    return Pcum.ravel()[(p_c*Pcum.shape[1] - (p_c==1)).astype(np.int) + stick]
+    return P_cum.ravel()[(p_c*P_cum.shape[1] - (p_c==1)).astype(np.int) + stick]
 
 def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C=0., verbose=0):
     """
