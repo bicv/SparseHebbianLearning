@@ -124,7 +124,7 @@ def get_rescaling(code, nb_quant, do_sym=False, verbose=False):
     sorted_coeffs = np.sort(code.ravel())
     indices = [int(q*(sorted_coeffs.size-1) ) for q in np.linspace(0, 1, nb_quant, endpoint=True)]
     C = sorted_coeffs[indices]
-    return np.array(C)
+    return C
 
 def rescaling(code, C=0., do_sym=False, verbose=False):
     """
@@ -132,18 +132,21 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
 
     - http://blog.invibe.net/posts/2017-11-07-meul-with-a-non-parametric-homeostasis.html
 
-    for a derivation of this function.
+    for a derivation of the following function.
 
     """
-    if do_sym:
-        code = np.abs(code)
-    else:
-        code *= code>0
-
     if isinstance(C, np.float):
         if C==0.: print('WARNING! C is equal to zero!')
-        return 1.-np.exp(-np.abs(code)/C)
+        if do_sym:
+            return 1.-np.exp(-np.abs(code)/C)
+        else:
+            return (1.-np.exp(-code/C))*(code>0)
     elif isinstance(C, np.ndarray):
+        if do_sym:
+            code = np.abs(code)
+        else:
+            code *= code>0
+
         code_bins = np.linspace(0., 1., C.size, endpoint=True)
         return np.interp(code, C, code_bins) * (code > 0.)
 
@@ -190,6 +193,9 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     n_samples, n_pixels = X.shape
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
+    if not P_cum is None:
+        nb_quant = P_cum.shape[1]
+        stick = np.arange(n_dictionary)*nb_quant
     #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit

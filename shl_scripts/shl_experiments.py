@@ -75,7 +75,7 @@ class SHL(object):
                  n_iter=2**14,
                  eta=.005,
                  eta_homeo=.01, nb_quant=128, C=0., do_sym=False,
-                 alpha_homeo=0,
+                 alpha_homeo=0.,
                  max_patches=4096,
                  batch_size=512,
                  record_each=128,
@@ -150,9 +150,7 @@ class SHL(object):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
                     if self.verbose: print('No cache found {}: Coding with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
-                    sparse_code = self.code(data, dico, matname=None,
-                                        l0_sparseness=l0_sparseness,
-                                        fit_tol=None, verbose=0)
+                    sparse_code = self.code(data, dico, matname=None)
                     np.save(fmatname, sparse_code)
                     try:
                         os.remove(fmatname + self.LOCK)
@@ -161,7 +159,6 @@ class SHL(object):
                         print('Coud not remove ', fmatname + self.LOCK)
                 else:
                     print('the computation is locked', fmatname + self.LOCK)
-                    return None
             else:
                 if self.verbose: print("loading the code called : {0}".format(fmatname))
                 sparse_code = np.load(fmatname)
