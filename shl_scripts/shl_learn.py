@@ -121,7 +121,8 @@ class SparseHebbianLearning:
         """
 
         return_fn = dict_learning(
-            X, dictionary=self.dictionary, self.eta, self.n_dictionary, self.l0_sparseness,
+            X, self.eta, self.n_dictionary, self.l0_sparseness,
+            dictionary=self.dictionary, P_cum=self.P_cum,
             n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
             method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym, dict_init=self.dict_init,
             batch_size=self.batch_size, record_each=self.record_each,
@@ -155,7 +156,7 @@ class SparseHebbianLearning:
 
     # def decode(self, sparse_code, dico):
     #     return sparse_code @ dico.dictionary
-def dict_learning(X, dictionary=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
+def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', C=0., nb_quant=100, do_sym=True, random_state=None):
@@ -285,14 +286,15 @@ def dict_learning(X, dictionary=None, eta=0.02, n_dictionary=2, l0_sparseness=10
 
     if alpha_homeo==0:
         # do the equalitarian homeostasis
-        P_cum = np.linspace(0, 1, nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
-        if C == 0.:
-            # initialize the rescaling vector
-            from shl_scripts.shl_encode import get_rescaling
-            corr = (batches[0] @ dictionary.T)
-            C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
-            # and stack it to P_cum array for convenience
-            P_cum = np.vstack((P_cum, C_vec))
+        if P_cum is None:
+            P_cum = np.linspace(0, 1, nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
+            if C == 0.:
+                # initialize the rescaling vector
+                from shl_scripts.shl_encode import get_rescaling
+                corr = (batches[0] @ dictionary.T)
+                C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
+                # and stack it to P_cum array for convenience
+                P_cum = np.vstack((P_cum, C_vec))
     else:
         # do the classical homeostasis
         gain = np.ones(n_dictionary)
