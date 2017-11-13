@@ -126,7 +126,7 @@ def get_rescaling(code, nb_quant, do_sym=False, verbose=False):
     C = sorted_coeffs[indices]
     return np.array(C)
 
-def rescaling(code, C=0., do_sym=False):
+def rescaling(code, C=0., do_sym=False, verbose=False):
     """
     See
 
@@ -200,9 +200,9 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     if not P_cum is None:
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
-        if isinstance(C, np.float):
-            if C == 0.:
-                C = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
+        if C == 0.:
+            C = P_cum[-1, :]
+            P_cum = P_cum[:-1, :]
 
     # TODO: vectorize?
     for i_sample in range(n_samples):
