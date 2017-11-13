@@ -275,6 +275,8 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         mean_var = np.ones(n_dictionary)
         P_cum = None
 
+    if C==0.:
+        C = np.linspace(0, 200, nb_quant)
     # print(alpha_homeo, eta_homeo, alpha_homeo==0, eta_homeo==0, alpha_homeo==0 or eta_homeo==0, 'P_cum', P_cum)
 
     # splits the whole dataset into batches
@@ -292,14 +294,6 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
             if ii % int(n_iter//verbose + 1) == 0:
                 print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
                        % (ii, n_iter, dt, dt//60))
-        if isinstance(C, np.float):
-            if C == 0. :
-                from shl_scripts.shl_encode import get_rescaling
-                corr = (this_X @ dictionary.T)
-                C = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
-        if isinstance(C, np.ndarray):
-            corr = (this_X @ dictionary.T)
-            C = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
 
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, algorithm=method, fit_tol=fit_tol,
@@ -322,6 +316,9 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 gain /= gain.mean()
                 dictionary /= gain[:, np.newaxis]
             else:
+                if isinstance(C, np.ndarray):
+                    from shl_scripts.shl_encode import get_rescaling
+                    C = get_rescaling(sparse_code, nb_quant=nb_quant, verbose=verbose)
                 P_cum = update_P_cum(P_cum, sparse_code, eta_homeo, nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         if record_each>0:
@@ -331,7 +328,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, algorithm=method, fit_tol=fit_tol,
                                           P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0_sparseness)
                 # calculation of relative entropy
-                p = np.count_nonzero(sparse_code_rec, axis=0)/ (sparse_code_rec.shape[1])
+                p = np.count_nonzero(sparse_code_rec,axis=0)/ (sparse_code_rec.shape[1])
                 p /= p.sum()
                 rel_ent = np.sum(-p * np.log(p)) / np.log(sparse_code_rec.shape[1])
                 error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
