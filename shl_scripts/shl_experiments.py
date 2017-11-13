@@ -210,7 +210,7 @@ class SHL(object):
                         if self.verbose != 0 :
                             print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
 
-                        dico = self.learn_dico(data=data, name_database=name_database,
+                        dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum, name_database=name_database,
                                                record_each=self.record_each, matname=None, **kwargs)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
