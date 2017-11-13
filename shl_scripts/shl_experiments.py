@@ -137,8 +137,8 @@ class SHL(object):
             from shl_scripts.shl_encode import sparse_encode
             sparse_code = sparse_encode(data, dico.dictionary,
                                         algorithm=self.learning_algorithm,
-                                        l0_sparseness=l0_sparseness,
                                         fit_tol=None,
+                                        l0_sparseness=l0_sparseness,
                                         C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
             if self.verbose:
                 dt = time.time() - t0
