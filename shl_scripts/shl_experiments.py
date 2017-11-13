@@ -168,7 +168,7 @@ class SHL(object):
     def decode(self, sparse_code, dico):
         return sparse_code @ dico.dictionary
 
-    def learn_dico(self, data=None, name_database='serre07_distractors',
+    def learn_dico(self, dictionary=None, P_cum=None, data=None, name_database='serre07_distractors',
                    matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
 
         if data is None: data = self.get_data(name_database, height=self.height,
@@ -181,7 +181,8 @@ class SHL(object):
             # Learn the dictionary from reference patches
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm,
+            dico = SparseHebbianLearning(dictionary=dictionary, P_cum=P_cum,
+                                         fit_algorithm=self.learning_algorithm,
                                          nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,

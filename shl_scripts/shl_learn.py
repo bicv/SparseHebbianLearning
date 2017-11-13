@@ -81,12 +81,13 @@ class SparseHebbianLearning:
     http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.html
 
     """
-    def __init__(self, fit_algorithm, n_dictionary=None, eta=0.02, n_iter=40000,
+    def __init__(self, fit_algorithm, dictionary=None, P_cum=None, n_dictionary=None, eta=0.02, n_iter=40000,
                  eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None, nb_quant=32, C=0., do_sym=True,
                  record_each=200, verbose=False, random_state=None):
         self.eta = eta
+        self.dictionary = dictionary
         self.n_dictionary = n_dictionary
         self.n_iter = n_iter
         self.eta_homeo = eta_homeo
@@ -102,7 +103,7 @@ class SparseHebbianLearning:
         self.record_each = record_each
         self.verbose = verbose
         self.random_state = random_state
-        self.P_cum  = None
+        self.P_cum  = P_cum
 
     def fit(self, X, y=None):
         """Fit the model from data in X.
@@ -120,7 +121,7 @@ class SparseHebbianLearning:
         """
 
         return_fn = dict_learning(
-            X, self.eta, self.n_dictionary, self.l0_sparseness,
+            X, dictionary=self.dictionary, self.eta, self.n_dictionary, self.l0_sparseness,
             n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
             method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym, dict_init=self.dict_init,
             batch_size=self.batch_size, record_each=self.record_each,
@@ -154,7 +155,7 @@ class SparseHebbianLearning:
 
     # def decode(self, sparse_code, dico):
     #     return sparse_code @ dico.dictionary
-def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
+def dict_learning(X, dictionary=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', C=0., nb_quant=100, do_sym=True, random_state=None):
@@ -265,7 +266,8 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
     t0 = time.time()
     n_samples, n_pixels = X.shape
 
-    dictionary = np.random.randn(n_dictionary, n_pixels)
+    if not dictionary is None:
+        dictionary = np.random.randn(n_dictionary, n_pixels)
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
     dictionary /= norm[:, np.newaxis]
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
