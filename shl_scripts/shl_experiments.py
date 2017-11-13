@@ -230,6 +230,19 @@ class SHL(object):
                 # Une seule fois mp ici
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
+                if not dictionary is None or not P_cum is None:
+                    if not (os.path.isfile(fmatname + '_lock')):
+                        touch(fmatname + '_lock')
+                        touch(fmatname + self.LOCK)
+                        dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum, name_database=name_database,
+                                           record_each=self.record_each, matname=None, **kwargs)
+                        with open(fmatname, 'wb') as fp:
+                            pickle.dump(dico, fp)
+                        try:
+                            os.remove(fmatname + self.LOCK)
+                            os.remove(fmatname + '_lock')
+                        except:
+                            if self.verbose: print('Coud not remove ', fmatname + self.LOCK)
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
