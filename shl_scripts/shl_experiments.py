@@ -197,8 +197,9 @@ class SHL(object):
                 print('done in %.2fs.' % dt)
 
         else:
-            import pickle
+            dico = 'lock'
             fmatname = os.path.join(self.data_cache, matname) + '_dico.pkl'
+            import pickle
             if not(os.path.isfile(fmatname)):
                 time.sleep(np.random.rand()*0.1)
                 if not(os.path.isfile(fmatname + '_lock')):
@@ -212,8 +213,8 @@ class SHL(object):
                                                record_each=self.record_each, matname=None, **kwargs)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
-                    except ImportError:
-                        print('hack')
+                    except AttributeError:
+                        print('Attribute Error')
                     finally:
                         try:
                             os.remove(fmatname + self.LOCK)

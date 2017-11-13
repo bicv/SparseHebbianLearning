@@ -280,11 +280,6 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
     X_train = X.copy()
     np.random.shuffle(X_train)
     batches = np.array_split(X_train, n_batches)
-    import itertools
-    # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
-    batches = itertools.cycle(batches)
-    # cycle over all batches
-
 
     if alpha_homeo==0:
         # do the equalitarian homeostasis
@@ -292,7 +287,7 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         if C == 0.:
             # initialize the rescaling vector
             from shl_scripts.shl_encode import get_rescaling
-            corr = (this_X @ dictionary.T)
+            corr = (batches[0] @ dictionary.T)
             C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
             # and stack it to P_cum array for convenience
             P_cum = np.vstack((P_cum, C_vec))
@@ -302,6 +297,10 @@ def dict_learning(X, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n
         mean_var = np.ones(n_dictionary)
         P_cum = None
 
+    import itertools
+    # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
+    batches = itertools.cycle(batches)
+    # cycle over all batches
     for ii, this_X in zip(range(n_iter), batches):
         dt = (time.time() - t0)
         if verbose > 0:
