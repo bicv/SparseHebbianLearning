@@ -32,8 +32,9 @@ class SparseHebbianLearning:
         If equal to 1 the homeostatic learning rule learns a linear relation to
         variance.
 
-    dict_init : array of shape (n_dictionary, n_pixels),
+    dictionary : array of shape (n_dictionary, n_pixels),
         initial value of the dictionary for warm restart scenarios
+        Use ``None`` for a new learning.
 
     fit_algorithm : {'mp', 'lars', 'cd'}
         see sparse_encode
@@ -82,7 +83,7 @@ class SparseHebbianLearning:
 
     """
     def __init__(self, fit_algorithm, dictionary=None, P_cum=None, n_dictionary=None, eta=0.02, n_iter=40000,
-                 eta_homeo=0.001, alpha_homeo=0.02, dict_init=None,
+                 eta_homeo=0.001, alpha_homeo=0.02,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None, nb_quant=32, C=0., do_sym=True,
                  record_each=200, verbose=False, random_state=None):
@@ -97,7 +98,6 @@ class SparseHebbianLearning:
         self.C = C
         self.do_sym = do_sym
         self.batch_size = batch_size
-        self.dict_init = dict_init
         self.l0_sparseness = l0_sparseness
         self.fit_tol = fit_tol
         self.record_each = record_each
@@ -120,11 +120,10 @@ class SparseHebbianLearning:
             Returns the instance itself.
         """
 
-        return_fn = dict_learning(
-            X, self.eta, self.n_dictionary, self.l0_sparseness,
-            dictionary=self.dictionary, P_cum=self.P_cum,
+        return_fn = dict_learning(X, self.dictionary, self.P_cum,
+                                  self.eta, self.n_dictionary, self.l0_sparseness,
             n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
-            method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym, dict_init=self.dict_init,
+            method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
             batch_size=self.batch_size, record_each=self.record_each,
             verbose=self.verbose, random_state=self.random_state)
 
@@ -153,11 +152,8 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, algorithm=algorithm, P_cum=self.P_cum,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
-
-    # def decode(self, sparse_code, dico):
-    #     return sparse_code @ dico.dictionary
 def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
-                       eta_homeo=0.01, alpha_homeo=0.02, dict_init=None,
+                       eta_homeo=0.01, alpha_homeo=0.02,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', C=0., nb_quant=100, do_sym=True, random_state=None):
     """
@@ -216,7 +212,7 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
         characteristic scale for the quantization.
         Use C=0. to have an adaptive scaling.
 
-    dict_init : array of shape (n_dictionary, n_pixels),
+    dictionary : array of shape (n_dictionary, n_pixels),
         initial value of the dictionary for warm restart scenarios
 
     fit_algorithm : {'mp', 'omp', 'comp', 'lars', 'cd'}
@@ -267,7 +263,7 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
     t0 = time.time()
     n_samples, n_pixels = X.shape
 
-    if not dictionary is None:
+    if dictionary is None:
         dictionary = np.random.randn(n_dictionary, n_pixels)
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
     dictionary /= norm[:, np.newaxis]

@@ -119,7 +119,7 @@ class SHL(object):
         self.LOCK = '_lock' + '_pid-' + str(PID) + '_host-' + HOST
 
     def get_data(self, name_database='serre07_distractors', seed=None,
-                 patch_norm=True, matname=None, **kwargs):
+                 patch_norm=True, matname=None):
         from shl_scripts.shl_tools import get_data
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.datapath,
@@ -127,7 +127,7 @@ class SHL(object):
                     data_cache=self.data_cache, seed=seed, patch_norm=patch_norm, name_database=name_database, matname=matname)
 
 
-    def code(self, data, dico, coding_algorithm='mp', matname=None, l0_sparseness=None, **kwargs):
+    def code(self, data, dico, coding_algorithm='mp', matname=None, l0_sparseness=None):
         if l0_sparseness is None:
             l0_sparseness = self.l0_sparseness
         if matname is None:
@@ -169,13 +169,13 @@ class SHL(object):
         return sparse_code @ dico.dictionary
 
     def learn_dico(self, dictionary=None, P_cum=None, data=None, name_database='serre07_distractors',
-                   matname=None, folder_exp=None, list_figures=[], fname=None, **kwargs):
+                   matname=None, record_each=None, folder_exp=None, list_figures=[], fname=None):
 
         if data is None: data = self.get_data(name_database, height=self.height,
                             width=self.width, n_image=self.n_image,
                             patch_size=self.patch_size, datapath=self.datapath,
                             max_patches=self.max_patches, verbose=self.verbose,
-                            data_cache=self.data_cache, matname=matname, **kwargs)
+                            data_cache=self.data_cache, matname=matname)
 
         if matname is None:
             # Learn the dictionary from reference patches
@@ -186,7 +186,7 @@ class SHL(object):
                                          nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
-                                         dict_init=None, l0_sparseness=self.l0_sparseness,
+                                         l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol,
                                          record_each=self.record_each)
@@ -211,7 +211,7 @@ class SHL(object):
                             print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
 
                         dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum, name_database=name_database,
-                                               record_each=self.record_each, matname=None, **kwargs)
+                                               record_each=self.record_each, matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
                     except AttributeError:
@@ -235,7 +235,7 @@ class SHL(object):
                         touch(fmatname + '_lock')
                         touch(fmatname + self.LOCK)
                         dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum, name_database=name_database,
-                                           record_each=self.record_each, matname=None, **kwargs)
+                                           record_each=self.record_each, matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
                         try:
