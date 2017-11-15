@@ -147,8 +147,13 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
         else:
             code *= code>0
 
-        code_bins = np.linspace(0., 1., C.size, endpoint=True)
-        return np.interp(code, C, code_bins) * (code > 0.)
+        #code_bins = np.linspace(0., 1., C.size, endpoint=True)
+        #return np.interp(code, C, code_bins) * (code > 0.)
+        p_c = np.zeros_like(code)
+        ind_nz = code>0.
+        code_bins = np.linspace(0., 1, C.size, endpoint=True)
+        p_c[ind_nz] = np.interp(code[ind_nz], C, code_bins)
+        return p_c
 
 def quantile(P_cum, p_c, stick):
     """
