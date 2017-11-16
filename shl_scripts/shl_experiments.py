@@ -73,7 +73,7 @@ class SHL(object):
                  fit_tol=None,
                  l0_sparseness=15,
                  n_iter=2**12,
-                 eta=.005,
+                 eta=.025,
                  eta_homeo=.01, nb_quant=128, C=0., do_sym=False,
                  alpha_homeo=0.,
                  max_patches=4096,
