@@ -131,7 +131,7 @@ class SHL(object):
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.datapath,
                     max_patches=self.max_patches, verbose=self.verbose,
-                    data_cache=self.data_cache, seed=seed, patch_norm=patch_norm,
+                    data_cache=self.data_cache, seed=self.seed, patch_norm=self.patch_norm,
                         seed=self.seed,
                         patch_norm=self.patch_norm,
                         name_database=self.name_database, matname=matname)

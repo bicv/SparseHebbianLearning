@@ -115,16 +115,16 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
                          % algorithm)
     return sparse_code
 
-def get_rescaling(code, nb_quant, do_sym=False, verbose=False):
-    if do_sym:
-        code = np.abs(code)
-    else:
-        code *= code>0
+def get_rescaling(corr, nb_quant, do_sym=False, verbose=False):
+    # if do_sym:
+    #     corr = np.abs(corr)
+    # else:
+    #     corr *= corr>0
 
-    sorted_coeffs = np.sort(code.ravel())
+    sorted_coeffs = np.sort(corr.ravel())
     indices = [int(q*(sorted_coeffs.size-1) ) for q in np.linspace(0, 1, nb_quant, endpoint=True)]
-    C = sorted_coeffs[indices]
-    return C
+    C_vec = sorted_coeffs[indices]
+    return C_vec
 
 def rescaling(code, C=0., do_sym=False, verbose=False):
     """
@@ -142,18 +142,18 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
         else:
             return (1.-np.exp(-code/C))*(code>0)
     elif isinstance(C, np.ndarray):
-        if do_sym:
-            code = np.abs(code)
-        else:
-            code *= code>0
+        # if do_sym:
+        #     code = np.abs(code)
+        # else:
+        #     code *= code>0
 
-        #code_bins = np.linspace(0., 1., C.size, endpoint=True)
-        #return np.interp(code, C, code_bins) * (code > 0.)
-        p_c = np.zeros_like(code)
-        ind_nz = code>0.
-        code_bins = np.linspace(0., 1, C.size, endpoint=True)
-        p_c[ind_nz] = np.interp(code[ind_nz], C, code_bins)
-        return p_c
+        code_bins = np.linspace(0., 1., C.size, endpoint=True)
+        return np.interp(code, C, code_bins) * (code > 0.)
+        # p_c = np.zeros_like(code)
+        # ind_nz = code>0.
+        # code_bins = np.linspace(0., 1, C.size, endpoint=True)
+        # p_c[ind_nz] = np.interp(code[ind_nz], C, code_bins)
+        # return p_c
 
 def quantile(P_cum, p_c, stick):
     """
@@ -182,7 +182,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
         The dictionary matrix against which to solve the sparse coding of
         the data.
 
-    fit_tol : criterium based on the residual error - not implemented yet
+    fit_tol : criterium based on the residual error - not implem    ented yet
 
     Returns
     -------

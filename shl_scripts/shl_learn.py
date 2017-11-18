@@ -283,7 +283,7 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
     if alpha_homeo==0:
         # do the equalitarian homeostasis
         if P_cum is None:
-            P_cum = np.linspace(0, 1, nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
+            P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
             if C == 0.:
                 # initialize the rescaling vector
                 from shl_scripts.shl_encode import get_rescaling
@@ -332,11 +332,11 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
                 if C==0.:
                     corr = (this_X @ dictionary.T)
                     C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
-                    P_cum[-1, :]= (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
                     P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
                                                  code=sparse_code, eta_homeo=eta_homeo,
                                                  C=P_cum[-1, :], nb_quant=nb_quant, do_sym=do_sym,
                                                  verbose=verbose)
+                    P_cum[-1, :] = (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
                 else:
                     P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
                                          nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
@@ -457,13 +457,14 @@ def update_P_cum(P_cum, code, eta_homeo, C, nb_quant=100, do_sym=True, verbose=F
 
 def get_P_cum(code, C, nb_quant=100, do_sym=True, verbose=False):
     from shl_scripts.shl_encode import rescaling
+    p_c = rescaling(code, C, do_sym=do_sym, verbose=verbose)
+
     n_samples, nb_filter = code.shape
     code_bins = np.linspace(0., 1., nb_quant, endpoint=True)
     P_cum = np.zeros((nb_filter, nb_quant))
 
-    qcode = rescaling(code, C, do_sym=do_sym, verbose=verbose)
     for i in range(nb_filter):
-        p, bins = np.histogram(qcode[:, i], bins=code_bins, density=True)
+        p, bins = np.histogram(p_c[:, i], bins=code_bins, density=True)
         p /= p.sum()
         P_cum[i, :] = np.hstack((0, np.cumsum(p)))
     return P_cum
