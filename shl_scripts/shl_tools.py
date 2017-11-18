@@ -48,13 +48,13 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
             t0 = time.time()
         import os
-        imagelist = slip.make_imagelist(name_database=name_database)#, seed=seed)
+        imagelist = slip.make_imagelist(name_database=name_database)
         for filename, croparea in imagelist:
             # whitening
-            image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)#, seed=seed)
+            image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)
             image = slip.whitening(image)
             # Extract all reference patches and ravel them
-            data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))#, seed=seed)
+            data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))
             data_ = data_.reshape(data_.shape[0], -1)
             data_ -= np.mean(data_, axis=0)
             if patch_norm:

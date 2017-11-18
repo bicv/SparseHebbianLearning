@@ -67,7 +67,7 @@ class SHL(object):
                  height=256, # of image
                  width=256, # of image
                  patch_size=(16, 16),
-                 datapath='database/',
+                 datapath=os.path.join(home, 'quantic/science/BICV/SLIP/database/'), #'database/',
                  n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
@@ -77,10 +77,12 @@ class SHL(object):
                  eta_homeo=.01, nb_quant=128, C=0., do_sym=False,
                  alpha_homeo=0.,
                  max_patches=4096,
-                 name_database='kodakdb', seed=None, patch_norm=True,
+                 name_database='kodakdb',
+                 seed=42,
+                 patch_norm=True,
                  batch_size=128,
                  record_each=128,
-                 n_image=200,
+                 n_image=None, #200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache=os.path.join(home, 'tmp/data_cache'),
@@ -92,10 +94,13 @@ class SHL(object):
         self.n_dictionary = n_dictionary
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
-        self.name_database=name_database,
-        self.seed=seed,
-        self.patch_norm=patch_norm,
-        self.n_image = int(n_image/DEBUG_DOWNSCALE)
+        self.name_database = name_database #[0],
+        self.seed = seed,
+        self.patch_norm = patch_norm,
+        if not n_image is None:
+            self.n_image = int(n_image/DEBUG_DOWNSCALE)
+        else:
+            self.n_image = None
         self.batch_size = batch_size
         self.learning_algorithm = learning_algorithm
         self.fit_tol = fit_tol
@@ -131,10 +136,9 @@ class SHL(object):
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.datapath,
                     max_patches=self.max_patches, verbose=self.verbose,
-                    data_cache=self.data_cache, seed=self.seed, patch_norm=self.patch_norm,
-                        seed=self.seed,
-                        patch_norm=self.patch_norm,
-                        name_database=self.name_database, matname=matname)
+                    data_cache=self.data_cache, seed=self.seed,
+                    patch_norm=self.patch_norm,
+                    name_database=self.name_database, matname=matname)
 
 
     def code(self, data, dico, coding_algorithm='mp', matname=None, l0_sparseness=None):
@@ -178,10 +182,10 @@ class SHL(object):
     def decode(self, sparse_code, dico):
         return sparse_code @ dico.dictionary
 
-    def learn_dico(self, dictionary=None, P_cum=None, data=None, name_database='serre07_distractors',
+    def learn_dico(self, dictionary=None, P_cum=None, data=None,
                    matname=None, record_each=None, folder_exp=None, list_figures=[], fname=None):
 
-        if data is None: data = self.get_data(name_database, matname=matname)
+        if data is None: data = self.get_data(matname=matname)
 
         if matname is None:
             # Learn the dictionary from reference patches
@@ -216,7 +220,7 @@ class SHL(object):
                         if self.verbose != 0 :
                             print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
 
-                        dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum, name_database=name_database,
+                        dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum,
                                                record_each=self.record_each, matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
@@ -240,7 +244,7 @@ class SHL(object):
                     if not (os.path.isfile(fmatname + '_lock')):
                         touch(fmatname + '_lock')
                         touch(fmatname + self.LOCK)
-                        dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum, name_database=name_database,
+                        dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum, name_database=self.name_database,
                                            record_each=self.record_each, matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
