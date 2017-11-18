@@ -72,11 +72,12 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  l0_sparseness=15,
-                 n_iter=2**12,
+                 n_iter=2**14,
                  eta=.025,
                  eta_homeo=.01, nb_quant=128, C=0., do_sym=False,
                  alpha_homeo=0.,
                  max_patches=4096,
+                 name_database='kodakdb', seed=None, patch_norm=True,
                  batch_size=128,
                  record_each=128,
                  n_image=200,
@@ -91,6 +92,9 @@ class SHL(object):
         self.n_dictionary = n_dictionary
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
+        self.name_database=name_database,
+        self.seed=seed,
+        self.patch_norm=patch_norm,
         self.n_image = int(n_image/DEBUG_DOWNSCALE)
         self.batch_size = batch_size
         self.learning_algorithm = learning_algorithm
@@ -118,13 +122,19 @@ class SHL(object):
         PID, HOST = os.getpid(), os.uname()[1]
         self.LOCK = '_lock' + '_pid-' + str(PID) + '_host-' + HOST
 
-    def get_data(self, name_database='serre07_distractors', seed=None,
-                 patch_norm=True, matname=None):
+    def get_data(self, matname=None):
         from shl_scripts.shl_tools import get_data
+        # height=256, width=256, n_image=200, patch_size=(12,12),
+        #     datapath='database/', name_database='serre07_distractors',
+        #     max_patches=1024, seed=None, patch_norm=True, verbose=0,
+        #     data_cache='/tmp/data_cache', matname=None
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.datapath,
                     max_patches=self.max_patches, verbose=self.verbose,
-                    data_cache=self.data_cache, seed=seed, patch_norm=patch_norm, name_database=name_database, matname=matname)
+                    data_cache=self.data_cache, seed=seed, patch_norm=patch_norm,
+                        seed=self.seed,
+                        patch_norm=self.patch_norm,
+                        name_database=self.name_database, matname=matname)
 
 
     def code(self, data, dico, coding_algorithm='mp', matname=None, l0_sparseness=None):
@@ -171,11 +181,7 @@ class SHL(object):
     def learn_dico(self, dictionary=None, P_cum=None, data=None, name_database='serre07_distractors',
                    matname=None, record_each=None, folder_exp=None, list_figures=[], fname=None):
 
-        if data is None: data = self.get_data(name_database, height=self.height,
-                            width=self.width, n_image=self.n_image,
-                            patch_size=self.patch_size, datapath=self.datapath,
-                            max_patches=self.max_patches, verbose=self.verbose,
-                            data_cache=self.data_cache, matname=matname)
+        if data is None: data = self.get_data(name_database, matname=matname)
 
         if matname is None:
             # Learn the dictionary from reference patches
