@@ -211,7 +211,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
     if not P_cum is None:
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
-        deshuffled = range(n_dictionary)
+        deshuffled = np.arange(n_dictionary)
         if C == 0.:
             C = P_cum[-1, :]
             P_cum = P_cum[:-1, :]
@@ -231,7 +231,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
             else:
                 q = quantile(P_cum, rescaling(c, C=C, do_sym=do_sym), stick)
                 shuffled = np.random.permutation(n_dictionary)
-                deshuffled[shuffled] = range(n_dictionary)
+                deshuffled[shuffled] = np.arange(n_dictionary)
                 ind = np.argmax(q[shuffled])
             #print(i_l0, ind, rescaling(c, C=C, do_sym=do_sym))
             c_ind = c[ind] / Xcorr[ind, ind]
