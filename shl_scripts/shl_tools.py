@@ -176,7 +176,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, fname=None, dp
     dim_patch = int(np.sqrt(dico.dictionary.shape[1]))
 
     for i in range(dim_graph):
-        ax = fig.add_subplot(np.sqrt(dim_graph), np.sqrt(dim_graph), i + 1)
+        ax = fig.add_subplot(np.ceil(np.sqrt(dim_graph)), np.ceil(np.sqrt(dim_graph)), i + 1)
         dico_to_display = dico.dictionary[indices[i]]
         cmax = np.max(np.abs(dico_to_display))
         ax.imshow(dico_to_display.reshape((dim_patch,dim_patch)),
