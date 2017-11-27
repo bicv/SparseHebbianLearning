@@ -315,8 +315,8 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
         residual /= n_dictionary # divide by the number of features
-        dictionary *= np.sqrt(1-eta) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
-        dictionary += np.sqrt(eta) * (sparse_code.T @ residual)
+        dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
+        dictionary += eta * (sparse_code.T @ residual)
 
         # homeostasis
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T

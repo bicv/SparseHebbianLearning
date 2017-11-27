@@ -168,7 +168,7 @@ def quantile(P_cum, p_c, stick):
     """
     return P_cum.ravel()[(p_c*P_cum.shape[1] - (p_c==1)).astype(np.int) + stick]
 
-def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C=0., verbose=0):
+def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, C=0., verbose=0):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -230,11 +230,12 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, do_sym=True, P_cum=None, C
                     ind  = np.argmax(c)
             else:
                 q = quantile(P_cum, rescaling(c, C=C, do_sym=do_sym), stick)
-                shuffled = np.random.permutation(n_dictionary)
-                deshuffled[shuffled] = np.arange(n_dictionary)
-                ind = np.argmax(q[shuffled])
+                # shuffled = np.random.permutation(n_dictionary)
+                # deshuffled[shuffled] = np.arange(n_dictionary)
+                # ind = np.argmax(q[shuffled])
+                ind = np.argmax(q)
             #print(i_l0, ind, rescaling(c, C=C, do_sym=do_sym))
-            c_ind = c[ind] / Xcorr[ind, ind]
+            c_ind = alpha * c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
             #SE -= c_ind**2 # pythagora
