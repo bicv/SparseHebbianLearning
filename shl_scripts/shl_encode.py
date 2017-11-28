@@ -142,20 +142,10 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
         else:
             return (1.-np.exp(-code/C))*(code>0)
     elif isinstance(C, np.ndarray):
-        # if do_sym:
-        #     code = np.abs(code)
-        # else:
-        #     code *= code>0
-
         code_bins = np.linspace(0., 1., C.size, endpoint=True)
         return np.interp(code, C, code_bins) * (code > 0.)
-        # p_c = np.zeros_like(code)
-        # ind_nz = code>0.
-        # code_bins = np.linspace(0., 1, C.size, endpoint=True)
-        # p_c[ind_nz] = np.interp(code[ind_nz], C, code_bins)
-        # return p_c
 
-def quantile(P_cum, p_c, stick):
+def quantile(P_cum, p_c, stick, do_fast=True):
     """
     See
 
@@ -166,9 +156,15 @@ def quantile(P_cum, p_c, stick):
     for a derivation of the following line.
 
     """
-    return P_cum.ravel()[(p_c*P_cum.shape[1] - (p_c==1)).astype(np.int) + stick]
+    if do_fast:
+        return P_cum.ravel()[(p_c*P_cum.shape[1] - (p_c==1)).astype(np.int) + stick]
+    else:
+        z_res = np.zeros_like(p_c)
+        for i in range(P_cum.shape[0]):
+            z_res[i] = np.interp(p_c[i], code_bins, P_cum[i, :])
+        return z_res
 
-def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, C=0., verbose=0):
+def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, do_fast=True, C=0., verbose=0):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -223,17 +219,13 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_c
         #i_l0, SE = 0, SE_0
         for i_l0 in range(int(l0_sparseness)) :
         #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
-            if P_cum is None:
-                if do_sym:
-                    ind  = np.argmax(np.abs(c))
-                else:
-                    ind  = np.argmax(c)
-            else:
-                q = quantile(P_cum, rescaling(c, C=C, do_sym=do_sym), stick)
+            q = rescaling(c, C=C, do_sym=do_sym)
+            if not P_cum is None:
+                q = quantile(P_cum, q, stick, do_fast=do_fast)
                 # shuffled = np.random.permutation(n_dictionary)
                 # deshuffled[shuffled] = np.arange(n_dictionary)
                 # ind = np.argmax(q[shuffled])
-                ind = np.argmax(q)
+            ind = np.argmax(q)
             #print(i_l0, ind, rescaling(c, C=C, do_sym=do_sym))
             c_ind = alpha * c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind

@@ -315,8 +315,8 @@ def plot_proba_histogram(coding, verbose=False):
     ax.bar(np.arange(n_dictionary), p*n_dictionary)
     ax.set_title('distribution of the selection probability - entropy= ' + str(rel_ent)  )
     ax.set_ylabel('pdf')
-    ax.set_xlim(0)
     ax.axis('tight')
+    ax.set_xlim(0, n_dictionary)
     return fig, ax
 
 def plot_variance(shl_exp, sparse_code, data=None, algorithm=None, fname=None):
@@ -345,7 +345,8 @@ def plot_variance_histogram(shl_exp, sparse_code, data=None, algorithm=None, fna
         ax = sns.distplot(df['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
     ax.set_title('distribution of the mean variance of coefficients')
     ax.set_ylabel('pdf')
-    ax.set_xlim(0)
+    ax.axis('tight')
+    ax.set_xlim(0, n_dictionary)
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
@@ -357,7 +358,7 @@ def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05, fig=None, ax=None,
     ax.plot(coefficients, np.ones_like(coefficients), '--')
     ax.plot(coefficients, P_cum.T, c=c, alpha=alpha)
     ax.set_title(' non-linear functions ')
-    ax.set_xlabel('normalized coefficients')
+    ax.set_xlabel('rescaled coefficients')
     ax.set_ylabel('quantile')
     #ax.set_xlim(0)
     ax.set_yticks( np.linspace(0, 1, n_yticks))
