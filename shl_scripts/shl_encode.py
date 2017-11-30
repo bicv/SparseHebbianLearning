@@ -135,7 +135,7 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
     for a derivation of the following function.
 
     """
-    if isinstance(C, np.float):
+    if isinstance(C, (np.float, int)):
         if C==0.: print('WARNING! C is equal to zero!')
         if do_sym:
             return 1.-np.exp(-np.abs(code)/C)
@@ -221,7 +221,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_c
             C = P_cum[-1, :]
             P_cum = P_cum[:-1, :]
 
-    # TODO: vectorize?
+    # TODO: vectorize by doing all patches at the same time?
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
         #c_0 = corr_0[i_sample]
@@ -231,11 +231,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_c
             q = rescaling(c, C=C, do_sym=do_sym)
             if not P_cum is None:
                 q = quantile(P_cum, q, stick, do_fast=do_fast)
-                # shuffled = np.random.permutation(n_dictionary)
-                # deshuffled[shuffled] = np.arange(n_dictionary)
-                # ind = np.argmax(q[shuffled])
             ind = np.argmax(q)
-            #print(i_l0, ind, rescaling(c, C=C, do_sym=do_sym))
             c_ind = alpha * c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
