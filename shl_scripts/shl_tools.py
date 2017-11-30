@@ -333,6 +333,7 @@ def plot_variance(shl_exp, sparse_code, data=None, algorithm=None, fname=None):
     return fig, ax
 
 def plot_variance_histogram(shl_exp, sparse_code, data=None, algorithm=None, fname=None):
+    n_dictionary = shl_exp.n_dictionary
     from scipy.stats import gamma
 
     Z = np.mean(sparse_code**2)
