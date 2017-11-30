@@ -143,26 +143,35 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
             return (1.-np.exp(-code/C))*(code>0)
     elif isinstance(C, np.ndarray):
         code_bins = np.linspace(0., 1., C.size, endpoint=True)
-        return np.interp(code, C, code_bins) * (code > 0.)
+        return np.interp(code, C, code_bins, left=0., right=1.) * (code > 0.)
 
 def quantile(P_cum, p_c, stick, do_fast=True):
     """
     See
 
     - http://blog.invibe.net/posts/2017-03-29-testing-comps-pcum.html
-    - http://blog.invibe.net/posts/2017-03-29-testing-comps-fastpcum.html
     - http://blog.invibe.net/posts/2017-03-29-testing-comps-fastpcum_scripted.html
 
-    for a derivation of the following line.
+    for tests of this function
+
+    for a derivation of the following line in the fast mode, see:
+
+    - http://blog.invibe.net/posts/2017-03-29-testing-comps-fastpcum.html
 
     """
     if do_fast:
-        return P_cum.ravel()[(p_c*P_cum.shape[1] - (p_c==1)).astype(np.int) + stick]
+        #return P_cum.ravel()[(p_c*P_cum.shape[1] - (p_c==1)).astype(np.int) + stick]
+        indices = (p_c * P_cum.shape[1]).astype(np.int)
+        p = p_c * P_cum.shape[1] - indices
+        floor = P_cum.ravel()[indices - (p_c == 1) + stick]
+        ceil = P_cum.ravel()[indices + 1 - 2 * (p_c == 1) + stick]
+        return (1 - p) * floor + p * ceil
     else:
-        z_res = np.zeros_like(p_c)
+        code_bins = np.linspace(0., 1., P_cum.shape[1], endpoint=True)
+        q_i = np.zeros_like(p_c)
         for i in range(P_cum.shape[0]):
-            z_res[i] = np.interp(p_c[i], code_bins, P_cum[i, :])
-        return z_res
+            q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
+        return q_i
 
 def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, do_fast=True, C=0., verbose=0):
     """
