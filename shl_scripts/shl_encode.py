@@ -164,8 +164,7 @@ def quantile(P_cum, p_c, stick, do_fast=True):
         indices = (p_c * P_cum.shape[1]).astype(np.int)
         p = p_c * P_cum.shape[1] - indices
         floor = P_cum.ravel()[indices - (p_c == 1) + stick]
-        ceil = P_cum.ravel()[indices + 1 - 2 * (p_c == 1) + stick]
-        return (1 - p) * floor + p * ceil
+        ceil = P_cum.ravel()[indices + 1 - (p_c==0) - (p_c==1) - (indices>=P_cum.shape[1]-1) + stick] # ceiling,  accounting for both extremes, and moved similarly        return (1 - p) * floor + p * ceil
     else:
         code_bins = np.linspace(0., 1., P_cum.shape[1], endpoint=True)
         q_i = np.zeros_like(p_c)
