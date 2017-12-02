@@ -67,17 +67,19 @@ class SHL(object):
                  height=256, # of image
                  width=256, # of image
                  patch_size=(16, 16),
-                 datapath=os.path.join(home, 'quantic/science/BICV/SLIP/database/'), #'database/',
+                 #datapath=os.path.join(home, 'quantic/science/BICV/SLIP/database/'), #'database/',
+                 datapath='/tmp/database/',
+                 name_database='kodakdb',
                  n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
+                 do_precision=False,
                  l0_sparseness=15,
                  n_iter=2**14,
-                 eta=.005,
-                 eta_homeo=.01, nb_quant=512, C=5., do_sym=False,
+                 eta=.015,
+                 eta_homeo=.01, nb_quant=128, C=5., do_sym=False,
                  alpha_homeo=0.,
                  max_patches=4096,
-                 name_database='kodakdb',
                  seed=42,
                  patch_norm=True,
                  batch_size=128,
@@ -104,6 +106,7 @@ class SHL(object):
         self.batch_size = batch_size
         self.learning_algorithm = learning_algorithm
         self.fit_tol = fit_tol
+        self.do_precision = do_precision
 
         self.l0_sparseness = l0_sparseness
         self.eta = eta
@@ -141,7 +144,7 @@ class SHL(object):
                     name_database=self.name_database, matname=matname)
 
 
-    def code(self, data, dico, coding_algorithm='mp', matname=None, l0_sparseness=None):
+    def code(self, data, dico, coding_algorithm='mp', matname=None, fit_tol=None, l0_sparseness=None):
         if l0_sparseness is None:
             l0_sparseness = self.l0_sparseness
         if matname is None:
@@ -149,10 +152,10 @@ class SHL(object):
                 print('Coding data with algorithm ', coding_algorithm,  end=' ')
                 t0 = time.time()
             from shl_scripts.shl_encode import sparse_encode
-            sparse_code = sparse_encode(data, dico.dictionary,
-                                        algorithm=self.learning_algorithm,
-                                        fit_tol=None,
+            sparse_code = sparse_encode(data, dico.dictionary, dico.precision,
+                                        fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
+                                        algorithm=self.learning_algorithm,
                                         C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
             if self.verbose:
                 dt = time.time() - t0
@@ -164,7 +167,8 @@ class SHL(object):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
                     if self.verbose: print('No cache found {}: Coding with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
-                    sparse_code = self.code(data, dico, matname=None)
+                    sparse_code = self.code(data, dico,
+                                            fit_tol=fit_tol, l0_sparseness=l0_sparseness, matname=None)
                     np.save(fmatname, sparse_code)
                     try:
                         os.remove(fmatname + self.LOCK)
@@ -182,7 +186,7 @@ class SHL(object):
     def decode(self, sparse_code, dico):
         return sparse_code @ dico.dictionary
 
-    def learn_dico(self, dictionary=None, P_cum=None, data=None,
+    def learn_dico(self, dictionary=None, precision=None, P_cum=None, data=None,
                    matname=None, record_each=None, folder_exp=None, list_figures=[], fname=None):
 
         if data is None: data = self.get_data(matname=matname)
@@ -191,14 +195,14 @@ class SHL(object):
             # Learn the dictionary from reference patches
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(dictionary=dictionary, P_cum=P_cum,
+            dico = SparseHebbianLearning(dictionary=dictionary, precision=precision, P_cum=P_cum,
                                          fit_algorithm=self.learning_algorithm,
                                          nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
-                                         fit_tol=self.fit_tol,
+                                         fit_tol=self.fit_tol, do_precision=self.do_precision,
                                          record_each=self.record_each)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
@@ -220,8 +224,8 @@ class SHL(object):
                         if self.verbose != 0 :
                             print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
 
-                        dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum,
-                                               record_each=self.record_each, matname=None)
+                        dico = self.learn_dico(data=data, dictionary=dictionary, precision=precision, P_cum=P_cum,
+                                               matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
                     except AttributeError:
@@ -244,8 +248,8 @@ class SHL(object):
                     if not (os.path.isfile(fmatname + '_lock')):
                         touch(fmatname + '_lock')
                         touch(fmatname + self.LOCK)
-                        dico = self.learn_dico(data=data, dictionary=dictionary, P_cum=P_cum, name_database=self.name_database,
-                                           record_each=self.record_each, matname=None)
+                        dico = self.learn_dico(data=data, dictionary=dictionary, precision=precision, P_cum=P_cum,
+                                               matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
                         try:
@@ -260,7 +264,8 @@ class SHL(object):
             if 'show_dico_in_order' in list_figures:
                 fig,ax = self.show_dico_in_order(dico, title=matname, fname=fname)
             if 'plot_variance' in list_figures:
-                sparse_code = self.code(data, dico, matname=matname)
+                sparse_code = self.code(data, dico,
+                                            fit_tol=self.fit_tol, l0_sparseness=self.l0_sparseness, matname=matname)
                 fig, ax = self.plot_variance(sparse_code, data=data, fname=fname)
             if 'plot_variance_histogram' in list_figures:
                 sparse_code = self.code(data, dico, matname=matname)

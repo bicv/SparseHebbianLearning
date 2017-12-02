@@ -4,7 +4,7 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 import time
 
-def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
+def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
                           P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0):
     """Generic sparse coding
 
@@ -135,7 +135,7 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
     for a derivation of the following function.
 
     """
-    if isinstance(C, np.float):
+    if isinstance(C, (np.float, int)):
         if C==0.: print('WARNING! C is equal to zero!')
         if do_sym:
             return 1.-np.exp(-np.abs(code)/C)
@@ -160,11 +160,15 @@ def quantile(P_cum, p_c, stick, do_fast=True):
 
     """
     if do_fast:
-        #return P_cum.ravel()[(p_c*P_cum.shape[1] - (p_c==1)).astype(np.int) + stick]
-        indices = (p_c * P_cum.shape[1]).astype(np.int)
-        p = p_c * P_cum.shape[1] - indices
-        floor = P_cum.ravel()[indices - (p_c == 1) + stick]
-        ceil = P_cum.ravel()[indices + 1 - (p_c==0) - (p_c==1) - (indices>=P_cum.shape[1]-1) + stick] # ceiling,  accounting for both extremes, and moved similarly        return (1 - p) * floor + p * ceil
+        try:
+            #return P_cum.ravel()[(p_c*P_cum.shape[1] - (p_c==1)).astype(np.int) + stick]
+            indices = (p_c * P_cum.shape[1]).astype(np.int)
+            p = p_c * P_cum.shape[1] - indices
+            floor = P_cum.ravel()[indices - (p_c == 1) + stick]
+            ceil = P_cum.ravel()[indices + 1 - (p_c==0) - 2*(p_c==1) + stick]
+        except IndexError:
+            print(P_cum.shape, np.prod(P_cum.shape), p_c, floor, p, indices - (p_c == 1) + stick, indices + 1 - (p_c==0) - 2*(p_c==1) + stick)
+        return (1 - p) * floor + p * ceil
     else:
         code_bins = np.linspace(0., 1., P_cum.shape[1], endpoint=True)
         q_i = np.zeros_like(p_c)
@@ -220,7 +224,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_c
             C = P_cum[-1, :]
             P_cum = P_cum[:-1, :]
 
-    # TODO: vectorize?
+    # TODO: vectorize by doing all patches at the same time?
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
         #c_0 = corr_0[i_sample]
@@ -230,11 +234,7 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_c
             q = rescaling(c, C=C, do_sym=do_sym)
             if not P_cum is None:
                 q = quantile(P_cum, q, stick, do_fast=do_fast)
-                # shuffled = np.random.permutation(n_dictionary)
-                # deshuffled[shuffled] = np.arange(n_dictionary)
-                # ind = np.argmax(q[shuffled])
             ind = np.argmax(q)
-            #print(i_l0, ind, rescaling(c, C=C, do_sym=do_sym))
             c_ind = alpha * c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
