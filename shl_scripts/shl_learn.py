@@ -279,6 +279,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
     if dictionary is None:
         dictionary = np.random.randn(n_dictionary, n_pixels)
+
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
     dictionary /= norm[:, np.newaxis]
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
