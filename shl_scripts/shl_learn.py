@@ -82,14 +82,16 @@ class SparseHebbianLearning:
     http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.html
 
     """
-    def __init__(self, fit_algorithm, dictionary=None, P_cum=None, n_dictionary=None,
+    def __init__(self, fit_algorithm, dictionary=None, precision=None, P_cum=None, n_dictionary=None,
                  eta=0.02, n_iter=40000,
                  eta_homeo=0.001, alpha_homeo=0.02,
                  batch_size=100,
-                 l0_sparseness=None, fit_tol=None, nb_quant=32, C=0., do_sym=True,
+                 l0_sparseness=None, fit_tol=None, do_precision=None,
+                 nb_quant=32, C=0., do_sym=True,
                  record_each=200, verbose=False, random_state=None):
         self.eta = eta
         self.dictionary = dictionary
+        self.precision = precision
         self.n_dictionary = n_dictionary
         self.n_iter = n_iter
         self.eta_homeo = eta_homeo
@@ -101,6 +103,7 @@ class SparseHebbianLearning:
         self.batch_size = batch_size
         self.l0_sparseness = l0_sparseness
         self.fit_tol = fit_tol
+        self.do_precision = do_precision
         self.record_each = record_each
         self.verbose = verbose
         self.random_state = random_state
@@ -121,17 +124,17 @@ class SparseHebbianLearning:
             Returns the instance itself.
         """
 
-        return_fn = dict_learning(X, self.dictionary, self.P_cum,
+        return_fn = dict_learning(X, self.dictionary, self.precision, self.P_cum,
                                   self.eta, self.n_dictionary, self.l0_sparseness,
-            n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
-            method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
-            batch_size=self.batch_size, record_each=self.record_each,
-            verbose=self.verbose, random_state=self.random_state)
+                                  n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
+                                  method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
+                                  batch_size=self.batch_size, record_each=self.record_each,
+                                  verbose=self.verbose, random_state=self.random_state)
 
         if self.record_each==0:
-            self.dictionary, self.P_cum = return_fn
+            self.dictionary, self.precision, self.P_cum = return_fn
         else:
-            self.dictionary, self.P_cum, self.record = return_fn
+            self.dictionary, self.precision, self.P_cum, self.record = return_fn
 
     def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None):
         """Fit the model from data in X.
@@ -150,10 +153,11 @@ class SparseHebbianLearning:
         if algorithm is None:  algorithm = self.fit_algorithm
         if l0_sparseness is None:  l0_sparseness = self.l0_sparseness
         if fit_tol is None:  fit_tol = self.fit_tol
-        return sparse_encode(X, self.dictionary, algorithm=algorithm, P_cum=self.P_cum,
+        return sparse_encode(X, self.dictionary, self.precision, algorithm=algorithm, P_cum=self.P_cum,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
-def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None, n_iter=100,
+def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None,
+                  do_precision=False, n_iter=100,
                        eta_homeo=0.01, alpha_homeo=0.02,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', C=0., nb_quant=100, do_sym=True, random_state=None):
@@ -187,6 +191,12 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
     ----------
     X: array of shape (n_samples, n_pixels)
         Data matrix.
+
+    dictionary: array of shape (n_dictionary, n_pixels)
+        Initialization for the dictionary. If None, we chose Gaussian noise.
+
+    precision: array of shape (n_dictionary, n_pixels)
+        Initialization for the precision matrix. If None, we chose a uniform matrix.
 
     n_dictionary : int,
         Number of dictionary atoms to extract.
@@ -236,6 +246,9 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
         parameter: the value of the reconstruction error targeted. In this case,
         it overrides `l0_sparseness`.
 
+    do_precision: boolean
+        Switch to perform or not a precision-weighted learning.
+
     record_each :
         if set to 0, it does nothing. Else it records every record_each step the
         statistics during the learning phase (variance and kurtosis of coefficients).
@@ -269,6 +282,10 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
     dictionary /= norm[:, np.newaxis]
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
+
+    #if not precision is None: do_precision = True
+    if do_precision:
+        precision = np.ones((n_dictionary, n_pixels))
 
     if verbose == 1:
         print('[dict_learning]', end=' ')
@@ -310,14 +327,17 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
                        % (ii, n_iter, dt, dt//60))
 
         # Sparse coding
-        sparse_code = sparse_encode(this_X, dictionary, algorithm=method, fit_tol=fit_tol,
+        sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                   P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness)
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
-        residual /= n_dictionary # divide by the number of features
-        dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
+        residual /= n_batches # divide by the number of batches to get the average
+        #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
         dictionary += eta * (sparse_code.T @ residual)
+        if do_precision:
+            precision *= 1-eta
+            precision += eta * ((sparse_code**2).T @ (1./(residual**2+1.e-6)))
 
         # homeostasis
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
@@ -347,7 +367,7 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
             if ii % int(record_each) == 0:
                 from scipy.stats import kurtosis
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
-                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, algorithm=method, fit_tol=fit_tol,
+                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                           P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0_sparseness)
                 # calculation of relative entropy
                 p = np.count_nonzero(sparse_code_rec,axis=0)/ (sparse_code_rec.shape[1])
@@ -373,9 +393,9 @@ def dict_learning(X, dictionary=None, P_cum=None, eta=0.02, n_dictionary=2, l0_s
         print('done (total time: % 3is, % 4.1fmn)' % (dt, dt / 60))
 
     if record_each==0:
-        return dictionary, P_cum
+        return dictionary, precision, P_cum
     else:
-        return dictionary, P_cum, record
+        return dictionary, precision, P_cum, record
 
 def update_gain(gain, code, eta_homeo, verbose=False):
     """Update the estimated variance of coefficients in place.

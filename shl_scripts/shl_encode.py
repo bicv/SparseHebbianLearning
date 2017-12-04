@@ -4,7 +4,7 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 import time
 
-def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
+def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
                           P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0):
     """Generic sparse coding
 
@@ -19,6 +19,8 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
         The dictionary matrix against which to solve the sparse coding of
         the data. Some of the algorithms assume normalized rows.
 
+    precision : array of shape (n_dictionary, n_pixels)
+        A matrix giving for each dictionary its respective precision (inverse of variance)
 
     algorithm : {'mp', 'lasso_lars', 'lasso_cd', 'lars', 'omp', 'threshold'}
         mp :  Matching Pursuit
@@ -107,7 +109,7 @@ def sparse_encode(X, dictionary, algorithm='mp', fit_tol=None,
             copy_Xy=False).T
 
     elif algorithm == 'mp':
-        sparse_code = mp(X, dictionary, l0_sparseness=l0_sparseness, fit_tol=fit_tol,
+        sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness, fit_tol=fit_tol,
                             P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose)
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
@@ -161,13 +163,12 @@ def quantile(P_cum, p_c, stick, do_fast=True):
     """
     if do_fast:
         try:
-            indices = (p_c * shl.nb_quant).astype(np.int)  # (floor) index of each p_c in the respective line of P_cum
-            p = p_c * shl.nb_quant - indices  # ratio between floor and ceil
-            floor = P_cum.ravel()[
-                indices - (p_c == 1) + stick]  # floor, accounting for extremes, and moved on the raveled P_cum matrix
+            indices = (p_c * P_cum.shape[1]).astype(np.int)  # (floor) index of each p_c in the respective line of P_cum
+            p = p_c * P_cum.shape[1] - indices  # ratio between floor and ceil
+            floor = P_cum.ravel()[indices - (p_c == 1) + stick]  # floor, accounting for extremes, and moved on the raveled P_cum matrix
             ceil = P_cum.ravel()[indices + 1 - (p_c == 0) - (p_c == 1) -
                                 (indices >= P_cum.shape[1] - 1) + stick]  # ceiling,  accounting for both extremes, and moved similarly
-        except IndexError as e:
+        except IndexError as e: # TODO : remove this debugging HACK
             print (e)
             print(P_cum.shape, np.prod(P_cum.shape), p_c, floor, p,
                   indices - (p_c == 1) + stick,
@@ -180,7 +181,7 @@ def quantile(P_cum, p_c, stick, do_fast=True):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
         return q_i
 
-def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, do_fast=True, C=0., verbose=0):
+def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, do_fast=True, C=0., verbose=0):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -193,6 +194,9 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_c
     dictionary : array of shape (n_dictionary, n_pixels)
         The dictionary matrix against which to solve the sparse coding of
         the data.
+
+    precision : array of shape (n_dictionary, n_pixels)
+        A matrix giving for each dictionary its respective precision (inverse of variance)
 
     fit_tol : criterium based on the residual error - not implem    ented yet
 
@@ -216,9 +220,15 @@ def mp(X, dictionary, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_c
     #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
-    corr = (X @ dictionary.T)
-    Xcorr = (dictionary @ dictionary.T)
-    #SE_0 = np.sum(X*2, axis=1)
+    if precision is None:
+        corr = (X @ dictionary.T)
+        Xcorr = (dictionary @ dictionary.T)
+        #SE_0 = np.sum(X*2, axis=1)
+    else:
+        corr = (X @ (precision*dictionary).T)
+        Xcorr = (dictionary @ (precision*dictionary).T)
+        #SE_0 = np.sum(X*2, axis=1)
+
 
     if not P_cum is None:
         nb_quant = P_cum.shape[1]

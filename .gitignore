@@ -11,3 +11,5 @@ debug.log
 *.pyc
 
 shl_scripts/shl_scripts.egg-info/top_level.txt
+
+data_cache
