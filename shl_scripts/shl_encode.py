@@ -139,6 +139,7 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
     """
     if isinstance(C, (np.float, int)):
         if C==0.: print('WARNING! C is equal to zero!')
+        elif C==np.inf: return C
         if do_sym:
             return 1.-np.exp(-np.abs(code)/C)
         else:
