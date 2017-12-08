@@ -90,9 +90,7 @@ class SHL(object):
                  verbose=0,
                  data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
                  do_emp=True,
-                 p=0.,
-                 dropout=False
-                 ):
+                 p=0.                 ):
         self.height = height
         self.width = width
         self.datapath = datapath

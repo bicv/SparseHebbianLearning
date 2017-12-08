@@ -89,7 +89,7 @@ class SparseHebbianLearning:
                  l0_sparseness=None, fit_tol=None, do_precision=None, do_mask=True,
                  nb_quant=32, C=0., do_sym=True,
                  record_each=200, verbose=False, random_state=None,
-                 do_emp=False, p=0., dropout=False):
+                 do_emp=False, p=0.):
         self.eta = eta
         self.dictionary = dictionary
         self.precision = precision
@@ -165,8 +165,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                   do_precision=False, n_iter=100, do_mask=True,
                        eta_homeo=0.01, alpha_homeo=0.02,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                       method='mp', C=0., nb_quant=100, do_sym=True, random_state=None, do_emp=False, p=0.,
-                  dropout=False):
+                       method='mp', C=0., nb_quant=100, do_sym=True, random_state=None, do_emp=False, p=0.):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -363,11 +362,11 @@ n = np.arange(n_iter)
         if do_emp:
             sparse_code, sparse_who, tot = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                 P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
-                                do_emp=do_emp, p=p, dropout=dropout, sparse_who=sparse_who, tot=tot)
+                                do_emp=do_emp, p=p, sparse_who=sparse_who, tot=tot)
         else:
             sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                    P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
-                                   do_emp=do_emp, p=p, dropout=dropout)
+                                   do_emp=do_emp, p=p)
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
