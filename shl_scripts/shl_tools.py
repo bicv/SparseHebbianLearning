@@ -304,7 +304,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
 def plot_proba_histogram(coding, verbose=False):
     n_dictionary=coding.shape[1]
 
-    p = np.count_nonzero(coding, axis=0)#/coding.shape[1]
+    p = np.count_nonzero(coding, axis=0)/coding.shape[1]
     p /= p.sum()
 
     rel_ent = np.sum( -p * np.log(p)) / np.log(n_dictionary)
