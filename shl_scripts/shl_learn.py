@@ -394,7 +394,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                           P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0_sparseness)
                 # calculation of relative entropy
-                p_ = np.count_nonzero(sparse_code_rec,axis=0) #/ (sparse_code_rec.shape[1])
+                p_ = np.count_nonzero(sparse_code_rec,axis=0) / (sparse_code_rec.shape[1])
                 p_ /= p_.sum()
                 rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
                 error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches

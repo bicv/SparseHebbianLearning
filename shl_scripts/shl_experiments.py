@@ -89,8 +89,7 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
-                 do_emp=True,
-                 p=0.                 ):
+                 do_emp=True):
         self.height = height
         self.width = width
         self.datapath = datapath
@@ -124,7 +123,6 @@ class SHL(object):
         # assigning and create a folder for caching data
         self.data_cache = data_cache
         self.do_emp = do_emp
-        self.p = p
 
         if not self.data_cache is None:
             try:
@@ -162,7 +160,7 @@ class SHL(object):
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
+                                        C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0, gain=None)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
@@ -210,8 +208,7 @@ class SHL(object):
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol, do_mask=self.do_mask, do_precision=self.do_precision,
                                          record_each=self.record_each,
-                                         do_emp=self.do_emp,
-                                         p=self.p)
+                                         do_emp=self.do_emp)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 

@@ -116,10 +116,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
                          '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'
                          % algorithm)
-    if do_emp:
-        return sparse_code, sparse_who, tot
-    else:
-        return sparse_code
+    return sparse_code
 
 def get_rescaling(corr, nb_quant, do_sym=False, verbose=False):
     # if do_sym:
@@ -257,7 +254,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
                 q = rescaling(c*gain, C=C, do_sym=do_sym)
             else:
                 q = rescaling(c, C=C, do_sym=do_sym)
-        if not P_cum is None:
+            if not P_cum is None:
                 q = quantile(P_cum, q, stick, do_fast=do_fast)
             ind = np.argmax(q)
             c_ind = alpha * c[ind] / Xcorr[ind, ind]
