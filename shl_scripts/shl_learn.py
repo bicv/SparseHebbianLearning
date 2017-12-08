@@ -370,7 +370,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         if eta_homeo>0.:
             if P_cum is None:
                 # Update gain
-                mean_measure = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose, do_emp=do_emp)
+                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_emp=do_emp)
                 gain = mean_measure**alpha_homeo
                 gain /= gain.mean()
                 #dictionary /= gain[:, np.newaxis]
@@ -394,7 +394,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                           P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0_sparseness)
                 # calculation of relative entropy
-                p_ = np.count_nonzero(sparse_code_rec,axis=0)/ (sparse_code_rec.shape[1])
+                p_ = np.count_nonzero(sparse_code_rec,axis=0) #/ (sparse_code_rec.shape[1])
                 p_ /= p_.sum()
                 rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
                 error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
@@ -421,7 +421,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     else:
         return dictionary, precision, P_cum, record
 
-def update_gain(gain, code, eta_homeo, verbose=False, do_emp=False):
+def update_measure(mean_measure, code, eta_homeo, verbose=False, do_emp=False):
     """Update the estimated variance of coefficients in place.
 
     Following the classical SparseNet algorithm from Olshausen, we
@@ -440,7 +440,7 @@ def update_gain(gain, code, eta_homeo, verbose=False, do_emp=False):
 
     Parameters
     ----------
-    gain: array of shape (n_dictionary)
+    mean_measure: array of shape (n_dictionary)
         Value of the dictionary' norm at the previous iteration.
 
     code: array of shape (n_dictionary, n_samples)
@@ -463,13 +463,26 @@ def update_gain(gain, code, eta_homeo, verbose=False, do_emp=False):
     if eta_homeo>0.:
         n_dictionary, n_samples = code.shape
         #print (gain.shape) # assert gain.shape == n_dictionary
-        gain = (1 - eta_homeo)*gain + eta_homeo * np.mean(code**2, axis=0)/np.mean(code**2)
+        if do_emp:
+            mean_measure_ = np.mean(code**2, axis=0)/np.mean(code**2)
+
+        else:
+            counts = np.count_nonzero(code, axis=0)
+            mean_measure_ = counts / counts.sum()
+
+        mean_measure = (1 - eta_homeo)*mean_measure + eta_homeo * mean_measure_
 
         # n = np.arange(n_iter)
         # eta_0 = 0.4
         # eta_end = eta
         # tau = 0.2 * n_iter
         # eta = (eta_0 - eta_end) * np.exp(-(n / tau)) + eta_end
+
+        # activation = activation + nb_activ
+        # target = torch.mean(activation)
+        # tau = - (torch.max(activation) - target) / np.log(0.2)
+        # mu = 0.3
+        # modulation_exp = torch.exp((1 - mu) * torch.log(Modulation) - mu * ((activation - target) / tau))
 
     return gain
 
