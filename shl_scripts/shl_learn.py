@@ -112,7 +112,6 @@ class SparseHebbianLearning:
         self.P_cum  = P_cum
         self.do_emp = do_emp
         self.p = p
-        self.dropout = dropout
 
     def fit(self, X, y=None):
         """Fit the model from data in X.
@@ -135,8 +134,7 @@ class SparseHebbianLearning:
                                   method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
                                   batch_size=self.batch_size, record_each=self.record_each,
                                   do_mask=self.do_mask,
-                                  verbose=self.verbose, random_state=self.random_state, do_emp=self.do_emp, p=self.p,
-                                  dropout=self.dropout)
+                                  verbose=self.verbose, random_state=self.random_state, do_emp=self.do_emp, p=self.p)
 
         if self.record_each==0:
             self.dictionary, self.precision, self.P_cum = return_fn
