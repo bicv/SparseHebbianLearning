@@ -79,7 +79,7 @@ class SHL(object):
                  n_iter=2**16,
                  eta=.015,
                  eta_homeo=.01, nb_quant=128, C=5., do_sym=False,
-                 alpha_homeo=0.,
+                 alpha_homeo=0.1,
                  max_patches=4096,
                  seed=42,
                  patch_norm=True,
@@ -88,8 +88,8 @@ class SHL(object):
                  n_image=None, #200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='data_cache',  # os.path.join(home, 'tmp/data_cache'),
-                 ):
+                 data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
+                 do_HAP=True):
         self.height = height
         self.width = width
         self.datapath = datapath
@@ -122,6 +122,8 @@ class SHL(object):
         self.verbose = verbose
         # assigning and create a folder for caching data
         self.data_cache = data_cache
+        self.do_HAP = do_HAP
+
         if not self.data_cache is None:
             try:
                 os.mkdir(self.data_cache)
@@ -158,7 +160,7 @@ class SHL(object):
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0)
+                                        C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0, gain=None)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
@@ -205,7 +207,8 @@ class SHL(object):
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol, do_mask=self.do_mask, do_precision=self.do_precision,
-                                         record_each=self.record_each)
+                                         record_each=self.record_each,
+                                         do_HAP=self.do_HAP)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
@@ -268,16 +271,16 @@ class SHL(object):
             if 'plot_variance' in list_figures:
                 sparse_code = self.code(data, dico,
                                             fit_tol=self.fit_tol, l0_sparseness=self.l0_sparseness, matname=matname)
-                fig, ax = self.plot_variance(sparse_code, data=data, fname=fname)
+                fig, ax = self.plot_variance(sparse_code, fname=fname)
             if 'plot_variance_histogram' in list_figures:
                 sparse_code = self.code(data, dico, matname=matname)
-                fig, ax = self.plot_variance_histogram(sparse_code, data=data, fname=fname)
+                fig, ax = self.plot_variance_histogram(sparse_code, fname=fname)
             if 'time_plot_var' in list_figures:
-                fig, ax = self.time_plot(dico, variable='var', fname=fname);
+                fig, ax = self.time_plot(dico, variable='var', fname=fname)
             if 'time_plot_kurt' in list_figures:
-                fig, ax = self.time_plot(dico, variable='kurt', fname=fname);
+                fig, ax = self.time_plot(dico, variable='kurt', fname=fname)
             if 'time_plot_prob' in list_figures:
-                fig, ax = self.time_plot(dico, variable='prob_active', fname=fname);
+                fig, ax = self.time_plot(dico, variable='prob_active', fname=fname)
             if 'time_plot_error' in list_figures:
                 fig, ax = self.time_plot(dico, variable='error', fname=fname)
             if 'time_plot_entropy' in list_figures:
