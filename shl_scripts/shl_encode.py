@@ -163,17 +163,11 @@ def quantile(P_cum, p_c, stick, do_fast=True):
 
     """
     if do_fast:
-        try:
-            indices = (p_c * P_cum.shape[1]).astype(np.int)  # (floor) index of each p_c in the respective line of P_cum
-            p = p_c * P_cum.shape[1] - indices  # ratio between floor and ceil
-            floor = P_cum.ravel()[indices - (p_c == 1) + stick]  # floor, accounting for extremes, and moved on the raveled P_cum matrix
-            ceil = P_cum.ravel()[indices + 1 - (p_c == 0) - (p_c == 1) -
-                                (indices >= P_cum.shape[1] - 1) + stick]  # ceiling,  accounting for both extremes, and moved similarly
-        except IndexError as e: # TODO : remove this debugging HACK
-            print (e)
-            print(P_cum.shape, np.prod(P_cum.shape), p_c, floor, p,
-                  indices - (p_c == 1) + stick,
-                  indices + 1 - (p_c == 0) - (p_c == 1) - (indices >= stick + P_cum.shape[1] - 1) + stick)
+        indices = (p_c * P_cum.shape[1]).astype(np.int)  # (floor) index of each p_c in the respective line of P_cum
+        p = p_c * P_cum.shape[1] - indices  # ratio between floor and ceil
+        floor = P_cum.ravel()[indices - (p_c == 1) + stick]  # floor, accounting for extremes, and moved on the raveled P_cum matrix
+        ceil = P_cum.ravel()[indices + 1 - (p_c == 0) - (p_c == 1) -
+                            (indices >= P_cum.shape[1] - 1) + stick]  # ceiling,  accounting for both extremes, and moved similarly
         return (1 - p) * floor + p * ceil
     else:
         code_bins = np.linspace(0., 1., P_cum.shape[1], endpoint=True)
