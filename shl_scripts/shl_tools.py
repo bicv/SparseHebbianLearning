@@ -304,7 +304,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
 def plot_proba_histogram(coding, verbose=False):
     n_dictionary=coding.shape[1]
 
-    p = np.count_nonzero(coding, axis=0)/coding.shape[1]
+    p = np.count_nonzero(coding, axis=0)#/coding.shape[1]
     p /= p.sum()
 
     rel_ent = np.sum( -p * np.log(p)) / np.log(n_dictionary)
@@ -319,7 +319,7 @@ def plot_proba_histogram(coding, verbose=False):
     ax.set_xlim(0, n_dictionary)
     return fig, ax
 
-def plot_variance(shl_exp, sparse_code, data=None, algorithm=None, fname=None):
+def plot_variance(shl_exp, sparse_code, fname=None):
     n_dictionary = shl_exp.n_dictionary
     Z = np.mean(sparse_code**2)
     fig = plt.figure(figsize=(16, 4))
@@ -332,22 +332,15 @@ def plot_variance(shl_exp, sparse_code, data=None, algorithm=None, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def plot_variance_histogram(shl_exp, sparse_code, data=None, algorithm=None, fname=None):
-    n_dictionary = shl_exp.n_dictionary
-    from scipy.stats import gamma
-
-    Z = np.mean(sparse_code**2)
-    import pandas as pd
-    import seaborn as sns
-    df = pd.DataFrame(np.mean(sparse_code**2, axis=0)/Z, columns=['Variance'])
+def plot_variance_histogram(shl_exp, sparse_code, fname=None):
     fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
-    with sns.axes_style("white"):
-        ax = sns.distplot(df['Variance'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
+    variance = np.mean(sparse_code**2, axis=0)
+    ax.hist(variance, bins=np.linspace(0, variance.max(), 20, endpoint=True))
     ax.set_title('distribution of the mean variance of coefficients')
     ax.set_ylabel('pdf')
     ax.axis('tight')
-    ax.set_xlim(0, n_dictionary)
+    ax.set_xlim(0)
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 

@@ -290,13 +290,13 @@ class SHL(object):
 
         return dico
 
-    def plot_variance(self, sparse_code, data=None, algorithm=None, fname=None):
+    def plot_variance(self, sparse_code, fname=None):
         from shl_scripts.shl_tools import plot_variance
-        return plot_variance(self, sparse_code, data=data, fname=fname, algorithm=algorithm)
+        return plot_variance(self, sparse_code, fname=fname)
 
-    def plot_variance_histogram(self, sparse_code, data=None, algorithm=None, fname=None):
+    def plot_variance_histogram(self, sparse_code, fname=None):
         from shl_scripts.shl_tools import plot_variance_histogram
-        return plot_variance_histogram(self, sparse_code, data=data, fname=fname, algorithm=algorithm)
+        return plot_variance_histogram(self, sparse_code, fname=fname)
 
     def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1):
         from shl_scripts.shl_tools import time_plot
