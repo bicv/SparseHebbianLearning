@@ -88,7 +88,8 @@ class SparseHebbianLearning:
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None, do_precision=None, do_mask=True,
                  nb_quant=32, C=0., do_sym=True,
-                 record_each=200, verbose=False, random_state=None):
+                 record_each=200, verbose=False, random_state=None,
+                 do_emp=False, p=0., dropout=False):
         self.eta = eta
         self.dictionary = dictionary
         self.precision = precision
@@ -109,6 +110,9 @@ class SparseHebbianLearning:
         self.verbose = verbose
         self.random_state = random_state
         self.P_cum  = P_cum
+        self.do_emp = do_emp
+        self.p = p
+        self.dropout = dropout
 
     def fit(self, X, y=None):
         """Fit the model from data in X.
@@ -129,9 +133,10 @@ class SparseHebbianLearning:
                                   self.eta, self.n_dictionary, self.l0_sparseness,
                                   n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                   method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
-                                  batch_size=self.batch_size, record_each=self.record_each, do_precision=self.do_precision,
+                                  batch_size=self.batch_size, record_each=self.record_each,
                                   do_mask=self.do_mask,
-                                  verbose=self.verbose, random_state=self.random_state)
+                                  verbose=self.verbose, random_state=self.random_state, do_emp=self.do_emp, p=self.p,
+                                  dropout=self.dropout)
 
         if self.record_each==0:
             self.dictionary, self.precision, self.P_cum = return_fn
@@ -162,7 +167,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                   do_precision=False, n_iter=100, do_mask=True,
                        eta_homeo=0.01, alpha_homeo=0.02,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                       method='mp', C=0., nb_quant=100, do_sym=True, random_state=None):
+                       method='mp', C=0., nb_quant=100, do_sym=True, random_state=None, do_emp=False, p=0.,
+                  dropout=False):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -335,6 +341,19 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
 
     # cycle over all batches
+
+n = np.arange(n_iter)
+    eta_0 = 0.4
+    eta_end = eta
+    tau = 0.2 * n_iter
+    eta = (eta_0 - eta_end) * np.exp(-(n / tau)) + eta_end
+    
+    
+    sparse_who=np.zeros_like(dictionary[:,0])
+    tot=0
+    p=1/n_dictionary
+    uni=np.ones_like(dictionary[:,0])
+    
     for ii, this_X in zip(range(n_iter), batches):
         dt = (time.time() - t0)
         if verbose > 0:
@@ -343,8 +362,14 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                        % (ii, n_iter, dt, dt//60))
 
         # Sparse coding
-        sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
-                                  P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness)
+        if do_emp:
+            sparse_code, sparse_who, tot = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
+                                P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
+                                do_emp=do_emp, p=p, dropout=dropout, sparse_who=sparse_who, tot=tot)
+        else:
+            sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
+                                   P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
+                                   do_emp=do_emp, p=p, dropout=dropout)
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
@@ -361,25 +386,27 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         if do_mask:
             dictionary = dictionary * mask[np.newaxis, :]
 
-        if eta_homeo>0.:
-            if P_cum is None:
-                # Update and apply gain
-                mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
-                gain = mean_var**alpha_homeo
-                gain /= gain.mean()
-                dictionary /= gain[:, np.newaxis]
-            else:
-                if C==0.:
-                    corr = (this_X @ dictionary.T)
-                    C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
-                    P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
-                                                 code=sparse_code, eta_homeo=eta_homeo,
-                                                 C=P_cum[-1, :], nb_quant=nb_quant, do_sym=do_sym,
-                                                 verbose=verbose)
-                    P_cum[-1, :] = (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
+        if not do_emp:
+            if eta_homeo>0.:
+                if P_cum is None:
+                    # Update and apply gain
+                    if not do_emp:
+                        mean_var = update_gain(mean_var, sparse_code, eta_homeo, verbose=verbose)
+                        gain = mean_var**alpha_homeo
+                        gain /= gain.mean()
+                        dictionary /= gain[:, np.newaxis]
                 else:
-                    P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
-                                         nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
+                    if C==0.:
+                        corr = (this_X @ dictionary.T)
+                        C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
+                        P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
+                                                     code=sparse_code, eta_homeo=eta_homeo,
+                                                     C=P_cum[-1, :], nb_quant=nb_quant, do_sym=do_sym,
+                                                     verbose=verbose)
+                        P_cum[-1, :] = (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
+                    else:
+                        P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
+                                             nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         if record_each>0:
             if ii % int(record_each) == 0:
@@ -388,9 +415,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                           P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0_sparseness)
                 # calculation of relative entropy
-                p = np.count_nonzero(sparse_code_rec,axis=0)/ (sparse_code_rec.shape[1])
-                p /= p.sum()
-                rel_ent = np.sum(-p * np.log(p)) / np.log(sparse_code_rec.shape[1])
+                p_ = np.count_nonzero(sparse_code_rec,axis=0)/ (sparse_code_rec.shape[1])
+                p_ /= p_.sum()
+                rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
                 error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
 
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),

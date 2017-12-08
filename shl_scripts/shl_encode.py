@@ -5,7 +5,8 @@ import numpy as np
 import time
 
 def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
-                          P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0):
+                          P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0,
+                            do_emp=False, p=0., dropout=False, sparse_who=None, tot=0):
     """Generic sparse coding
 
     Each column of the result is the solution to a sparse coding problem.
@@ -109,13 +110,23 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
             copy_Xy=False).T
 
     elif algorithm == 'mp':
-        sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness, fit_tol=fit_tol,
-                            P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose)
+        if do_emp:
+            sparse_code, sparse_who, tot = mp(X, dictionary, precision, l0_sparseness=l0_sparseness, fit_tol=fit_tol,
+                            P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose, do_emp = do_emp, prob = p, dropout=dropout,
+                                            sparse_who=sparse_who, tot=tot)
+        else:
+            sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness, fit_tol=fit_tol,
+                                        P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose, do_emp=do_emp, prob=p,
+                                        dropout=dropout)
+
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
                          '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'
                          % algorithm)
-    return sparse_code
+    if do_emp:
+        return sparse_code, sparse_who, tot
+    else:
+        return sparse_code
 
 def get_rescaling(corr, nb_quant, do_sym=False, verbose=False):
     # if do_sym:
@@ -163,11 +174,17 @@ def quantile(P_cum, p_c, stick, do_fast=True):
 
     """
     if do_fast:
-        indices = (p_c * P_cum.shape[1]).astype(np.int)  # (floor) index of each p_c in the respective line of P_cum
-        p = p_c * P_cum.shape[1] - indices  # ratio between floor and ceil
-        floor = P_cum.ravel()[indices - (p_c == 1) + stick]  # floor, accounting for extremes, and moved on the raveled P_cum matrix
-        ceil = P_cum.ravel()[indices + 1 - (p_c == 0) - (p_c == 1) -
-                            (indices >= P_cum.shape[1] - 1) + stick]  # ceiling,  accounting for both extremes, and moved similarly
+        try:
+            indices = (p_c * P_cum.shape[1]).astype(np.int)  # (floor) index of each p_c in the respective line of P_cum
+            p = p_c * P_cum.shape[1] - indices  # ratio between floor and ceil
+            floor = P_cum.ravel()[indices - (p_c == 1) + stick]  # floor, accounting for extremes, and moved on the raveled P_cum matrix
+            ceil = P_cum.ravel()[indices + 1 - (p_c == 0) - (p_c == 1) -
+                                (indices >= P_cum.shape[1] - 1) + stick]  # ceiling,  accounting for both extremes, and moved similarly
+        except IndexError as e: # TODO : remove this debugging HACK
+            print (e)
+            print(P_cum.shape, np.prod(P_cum.shape), p_c, floor, p,
+                  indices - (p_c == 1) + stick,
+                  indices + 1 - (p_c == 0) - (p_c == 1) - (indices >= stick + P_cum.shape[1] - 1) + stick)
         return (1 - p) * floor + p * ceil
     else:
         code_bins = np.linspace(0., 1., P_cum.shape[1], endpoint=True)
@@ -176,7 +193,8 @@ def quantile(P_cum, p_c, stick, do_fast=True):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
         return q_i
 
-def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, do_fast=True, C=0., verbose=0):
+def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, do_fast=True, C=0., verbose=0,
+       do_emp=False, prob=0., dropout=False, sparse_who=None, tot=0):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -206,9 +224,17 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
         t0=time.time()
     if X.ndim == 1:
         X = X[:, np.newaxis]
+
     n_samples, n_pixels = X.shape
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
+
+    #if not sparse_who:
+    #if sparse_who is None:
+    sparse_who = np.zeros_like(sparse_code[0, :])
+    tot=0
+
+
     if not P_cum is None:
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
@@ -232,23 +258,51 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
             C = P_cum[-1, :]
             P_cum = P_cum[:-1, :]
 
+
+    if prob==0:
+        prob=1/dictionary.shape[0]
+
     # TODO: vectorize by doing all patches at the same time?
+    #tot=0
+
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
         #c_0 = corr_0[i_sample]
         #i_l0, SE = 0, SE_0
         for i_l0 in range(int(l0_sparseness)) :
         #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
-            q = rescaling(c, C=C, do_sym=do_sym)
-            if not P_cum is None:
-                q = quantile(P_cum, q, stick, do_fast=do_fast)
-            ind = np.argmax(q)
-            c_ind = alpha * c[ind] / Xcorr[ind, ind]
-            sparse_code[i_sample, ind] += c_ind
-            c -= c_ind * Xcorr[ind, :]
+            if do_emp:
+
+                c_good=c.copy()
+                if tot > 0:
+                    hist = sparse_who / tot
+                    c_good[hist > prob] = 0
+
+                ind = np.argmax(c_good)
+                #ind = np.argmax(c)
+                #c_ind = alpha * c[ind] / Xcorr[ind, ind]
+                c_ind = c[ind]
+                sparse_code[i_sample, ind] += c_ind
+                sparse_who[ind] = sparse_who[ind] + 1
+                tot = tot + 1
+                c -= c_ind * Xcorr[ind, :]
+
+
+            else:
+                q = rescaling(c, C=C, do_sym=do_sym)
+                if not P_cum is None:
+                    q = quantile(P_cum, q, stick, do_fast=do_fast)
+                ind = np.argmax(q)
+                c_ind = alpha * c[ind] / Xcorr[ind, ind]
+                sparse_code[i_sample, ind] += c_ind
+                c -= c_ind * Xcorr[ind, :]
             #SE -= c_ind**2 # pythagora
             #i_l0 += 1
     if verbose>0:
         duration=time.time()-t0
         print('coding duration : {0}'.format(duration))
-    return sparse_code
+
+    if do_emp:
+        return sparse_code, sparse_who, tot
+    else:
+        return sparse_code

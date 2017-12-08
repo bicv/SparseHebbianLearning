@@ -88,7 +88,10 @@ class SHL(object):
                  n_image=None, #200,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='data_cache',  # os.path.join(home, 'tmp/data_cache'),
+                 data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
+                 do_emp=True,
+                 p=0.,
+                 dropout=False
                  ):
         self.height = height
         self.width = width
@@ -122,6 +125,10 @@ class SHL(object):
         self.verbose = verbose
         # assigning and create a folder for caching data
         self.data_cache = data_cache
+        self.do_emp = do_emp
+        self.p = p
+        self.dropout = dropout
+
         if not self.data_cache is None:
             try:
                 os.mkdir(self.data_cache)
@@ -205,7 +212,9 @@ class SHL(object):
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol, do_mask=self.do_mask, do_precision=self.do_precision,
-                                         record_each=self.record_each)
+                                         record_each=self.record_each,
+                                         do_emp=self.do_emp,
+                                         p=self.p, dropout=self.dropout)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
