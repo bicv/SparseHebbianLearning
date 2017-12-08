@@ -79,7 +79,7 @@ class SHL(object):
                  n_iter=2**16,
                  eta=.015,
                  eta_homeo=.01, nb_quant=128, C=5., do_sym=False,
-                 alpha_homeo=0.,
+                 alpha_homeo=0.02,
                  max_patches=4096,
                  seed=42,
                  patch_norm=True,
@@ -271,16 +271,16 @@ class SHL(object):
             if 'plot_variance' in list_figures:
                 sparse_code = self.code(data, dico,
                                             fit_tol=self.fit_tol, l0_sparseness=self.l0_sparseness, matname=matname)
-                fig, ax = self.plot_variance(sparse_code, data=data, fname=fname)
+                fig, ax = self.plot_variance(sparse_code, fname=fname)
             if 'plot_variance_histogram' in list_figures:
                 sparse_code = self.code(data, dico, matname=matname)
-                fig, ax = self.plot_variance_histogram(sparse_code, data=data, fname=fname)
+                fig, ax = self.plot_variance_histogram(sparse_code, fname=fname)
             if 'time_plot_var' in list_figures:
-                fig, ax = self.time_plot(dico, variable='var', fname=fname);
+                fig, ax = self.time_plot(dico, variable='var', fname=fname)
             if 'time_plot_kurt' in list_figures:
-                fig, ax = self.time_plot(dico, variable='kurt', fname=fname);
+                fig, ax = self.time_plot(dico, variable='kurt', fname=fname)
             if 'time_plot_prob' in list_figures:
-                fig, ax = self.time_plot(dico, variable='prob_active', fname=fname);
+                fig, ax = self.time_plot(dico, variable='prob_active', fname=fname)
             if 'time_plot_error' in list_figures:
                 fig, ax = self.time_plot(dico, variable='error', fname=fname)
             if 'time_plot_entropy' in list_figures:

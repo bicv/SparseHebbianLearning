@@ -129,6 +129,21 @@ def get_rescaling(corr, nb_quant, do_sym=False, verbose=False):
     C_vec = sorted_coeffs[indices]
     return C_vec
 
+
+def rectify(code, do_sym=False, verbose=False):
+    """
+    See
+
+    - http://blog.invibe.net/posts/2017-11-07-meul-with-a-non-parametric-homeostasis.html
+
+    for a derivation of the following function.
+
+    """
+    if do_sym:
+        return np.abs(code)
+    else:
+        return code*(code>0)
+
 def rescaling(code, C=0., do_sym=False, verbose=False):
     """
     See
@@ -241,6 +256,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
             C = P_cum[-1, :]
             P_cum = P_cum[:-1, :]
 
+    if gain is None: gain = 1.
 
     # TODO: vectorize by doing all patches at the same time?
 
@@ -248,14 +264,14 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
         c = corr[i_sample, :].copy()
         #c_0 = corr_0[i_sample]
         #i_l0, SE = 0, SE_0
-        for i_l0 in range(int(l0_sparseness)) :
         #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
-            if not gain is None:
-                q = rescaling(c*gain, C=C, do_sym=do_sym)
-            else:
-                q = rescaling(c, C=C, do_sym=do_sym)
+        for i_l0 in range(int(l0_sparseness)) :
             if not P_cum is None:
+                q = rescaling(c, C=C, do_sym=do_sym)
                 q = quantile(P_cum, q, stick, do_fast=do_fast)
+            else:
+                q = rectify(c, do_sym=do_sym)*gain
+
             ind = np.argmax(q)
             c_ind = alpha * c[ind] / Xcorr[ind, ind]
             sparse_code[i_sample, ind] += c_ind

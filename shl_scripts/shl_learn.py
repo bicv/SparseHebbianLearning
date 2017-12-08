@@ -324,6 +324,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         gain = np.ones(n_dictionary)
         mean_var = np.ones(n_dictionary)
         P_cum = None
+        mean_measure = None
 
     import itertools
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
@@ -370,7 +371,10 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         if eta_homeo>0.:
             if P_cum is None:
                 # Update gain
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_emp=do_emp)
+                if mean_measure is None:
+                    mean_measure = update_measure(np.ones(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose, do_emp=do_emp)
+                else:
+                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_emp=do_emp)
                 gain = mean_measure**alpha_homeo
                 gain /= gain.mean()
                 #dictionary /= gain[:, np.newaxis]
@@ -484,7 +488,7 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_emp=False):
         # mu = 0.3
         # modulation_exp = torch.exp((1 - mu) * torch.log(Modulation) - mu * ((activation - target) / tau))
 
-    return gain
+    return mean_measure
 
 
 def update_P_cum(P_cum, code, eta_homeo, C, nb_quant=100, do_sym=True, verbose=False):
