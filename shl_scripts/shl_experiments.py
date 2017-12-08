@@ -74,8 +74,9 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
+                 do_mask=True,
                  l0_sparseness=15,
-                 n_iter=2**16   ,
+                 n_iter=2**16,
                  eta=.015,
                  eta_homeo=.01, nb_quant=128, C=5., do_sym=False,
                  alpha_homeo=0.,
@@ -107,6 +108,7 @@ class SHL(object):
         self.learning_algorithm = learning_algorithm
         self.fit_tol = fit_tol
         self.do_precision = do_precision
+        self.do_mask = do_mask
 
         self.l0_sparseness = l0_sparseness
         self.eta = eta
@@ -202,7 +204,7 @@ class SHL(object):
                                          eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
-                                         fit_tol=self.fit_tol, do_precision=self.do_precision,
+                                         fit_tol=self.fit_tol, do_mask=self.do_mask, do_precision=self.do_precision,
                                          record_each=self.record_each)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)

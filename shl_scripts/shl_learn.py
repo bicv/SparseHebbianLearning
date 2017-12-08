@@ -86,7 +86,7 @@ class SparseHebbianLearning:
                  eta=0.02, n_iter=40000,
                  eta_homeo=0.001, alpha_homeo=0.02,
                  batch_size=100,
-                 l0_sparseness=None, fit_tol=None, do_precision=None,
+                 l0_sparseness=None, fit_tol=None, do_precision=None, do_mask=True,
                  nb_quant=32, C=0., do_sym=True,
                  record_each=200, verbose=False, random_state=None):
         self.eta = eta
@@ -104,6 +104,7 @@ class SparseHebbianLearning:
         self.l0_sparseness = l0_sparseness
         self.fit_tol = fit_tol
         self.do_precision = do_precision
+        self.do_mask = do_mask
         self.record_each = record_each
         self.verbose = verbose
         self.random_state = random_state
@@ -128,7 +129,8 @@ class SparseHebbianLearning:
                                   self.eta, self.n_dictionary, self.l0_sparseness,
                                   n_iter=self.n_iter, eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
                                   method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
-                                  batch_size=self.batch_size, record_each=self.record_each,
+                                  batch_size=self.batch_size, record_each=self.record_each, do_precision=self.do_precision,
+                                  do_mask=self.do_mask,
                                   verbose=self.verbose, random_state=self.random_state)
 
         if self.record_each==0:
@@ -157,7 +159,7 @@ class SparseHebbianLearning:
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
 def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None,
-                  do_precision=False, n_iter=100,
+                  do_precision=False, n_iter=100, do_mask=True,
                        eta_homeo=0.01, alpha_homeo=0.02,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', C=0., nb_quant=100, do_sym=True, random_state=None):
@@ -249,6 +251,10 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     do_precision: boolean
         Switch to perform or not a precision-weighted learning.
 
+    do_mask: boolean
+        A switch to learn the filters just on a disk. This allows to control for potential
+        problems with the fact that images atre sampled on a square grid.
+
     record_each :
         if set to 0, it does nothing. Else it records every record_each step the
         statistics during the learning phase (variance and kurtosis of coefficients).
@@ -319,6 +325,15 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     import itertools
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
     batches = itertools.cycle(batches)
+
+    if do_mask:
+        N_X = N_Y = np.sqrt(n_pixels)
+        x , y = np.meshgrid(np.linspace(-1, 1, N_X), np.linspace(-1, 1, N_Y))
+        #R = np.sqrt(x ** 2 + y ** 2)
+        #mask = (((np.cos(np.pi * R) + 1) / 2 * (R < 1.)) ** (1/8)).ravel()
+        #mask[mask>0.1] = 1
+        mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
+
     # cycle over all batches
     for ii, this_X in zip(range(n_iter), batches):
         dt = (time.time() - t0)
@@ -343,6 +358,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         # homeostasis
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
+        if do_mask:
+            dictionary = dictionary * mask[np.newaxis, :]
 
         if eta_homeo>0.:
             if P_cum is None:

@@ -234,7 +234,6 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
     if not P_cum is None:
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
-        deshuffled = np.arange(n_dictionary)
         if C == 0.:
             C = P_cum[-1, :]
             P_cum = P_cum[:-1, :]
