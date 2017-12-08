@@ -79,7 +79,7 @@ class SHL(object):
                  n_iter=2**16,
                  eta=.015,
                  eta_homeo=.01, nb_quant=128, C=5., do_sym=False,
-                 alpha_homeo=0.02,
+                 alpha_homeo=0.2,
                  max_patches=4096,
                  seed=42,
                  patch_norm=True,
@@ -93,7 +93,7 @@ class SHL(object):
         self.height = height
         self.width = width
         self.datapath = datapath
-        do_HAPatch_size = patch_size
+        self.patch_size = patch_size
         self.n_dictionary = n_dictionary
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
