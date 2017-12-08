@@ -89,11 +89,11 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
-                 do_emp=True):
+                 do_HAP=True):
         self.height = height
         self.width = width
         self.datapath = datapath
-        self.patch_size = patch_size
+        do_HAPatch_size = patch_size
         self.n_dictionary = n_dictionary
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
@@ -122,7 +122,7 @@ class SHL(object):
         self.verbose = verbose
         # assigning and create a folder for caching data
         self.data_cache = data_cache
-        self.do_emp = do_emp
+        self.do_HAP = do_HAP
 
         if not self.data_cache is None:
             try:
@@ -208,7 +208,7 @@ class SHL(object):
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol, do_mask=self.do_mask, do_precision=self.do_precision,
                                          record_each=self.record_each,
-                                         do_emp=self.do_emp)
+                                         do_HAP=self.do_HAP)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 

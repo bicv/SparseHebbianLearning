@@ -89,7 +89,7 @@ class SparseHebbianLearning:
                  l0_sparseness=None, fit_tol=None, do_precision=None, do_mask=True,
                  nb_quant=32, C=0., do_sym=True,
                  record_each=200, verbose=False, random_state=None,
-                 do_emp=False):
+                 do_HAP=False):
         self.eta = eta
         self.dictionary = dictionary
         self.precision = precision
@@ -110,7 +110,7 @@ class SparseHebbianLearning:
         self.verbose = verbose
         self.random_state = random_state
         self.P_cum  = P_cum
-        self.do_emp = do_emp
+        self.do_HAP = do_HAP
 
     def fit(self, X, y=None):
         """Fit the model from data in X.
@@ -133,7 +133,7 @@ class SparseHebbianLearning:
                                   method=self.fit_algorithm, nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
                                   batch_size=self.batch_size, record_each=self.record_each,
                                   do_mask=self.do_mask,
-                                  verbose=self.verbose, random_state=self.random_state, do_emp=self.do_emp)
+                                  verbose=self.verbose, random_state=self.random_state, do_HAP=self.do_HAP)
 
         if self.record_each==0:
             self.dictionary, self.precision, self.P_cum = return_fn
@@ -164,7 +164,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                   do_precision=False, n_iter=100, do_mask=True,
                        eta_homeo=0.01, alpha_homeo=0.02,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                       method='mp', C=0., nb_quant=100, do_sym=True, random_state=None, do_emp=False):
+                       method='mp', C=0., nb_quant=100, do_sym=True, random_state=None, do_HAP=False):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -372,9 +372,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             if P_cum is None:
                 # Update gain
                 if mean_measure is None:
-                    mean_measure = update_measure(np.ones(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose, do_emp=do_emp)
+                    mean_measure = update_measure(np.ones(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose, do_HAP=do_HAP)
                 else:
-                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_emp=do_emp)
+                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=do_HAP)
                 gain = mean_measure**alpha_homeo
                 gain /= gain.mean()
                 #dictionary /= gain[:, np.newaxis]
@@ -425,7 +425,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     else:
         return dictionary, precision, P_cum, record
 
-def update_measure(mean_measure, code, eta_homeo, verbose=False, do_emp=False):
+def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     """Update the estimated variance of coefficients in place.
 
     Following the classical SparseNet algorithm from Olshausen, we
@@ -467,7 +467,7 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_emp=False):
     if eta_homeo>0.:
         n_dictionary, n_samples = code.shape
         #print (gain.shape) # assert gain.shape == n_dictionary
-        if do_emp:
+        if do_HAP:
             mean_measure_ = np.mean(code**2, axis=0)/np.mean(code**2)
 
         else:
