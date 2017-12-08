@@ -127,7 +127,6 @@ class SHL(object):
         self.data_cache = data_cache
         self.do_emp = do_emp
         self.p = p
-        self.dropout = dropout
 
         if not self.data_cache is None:
             try:
@@ -214,7 +213,7 @@ class SHL(object):
                                          fit_tol=self.fit_tol, do_mask=self.do_mask, do_precision=self.do_precision,
                                          record_each=self.record_each,
                                          do_emp=self.do_emp,
-                                         p=self.p, dropout=self.dropout)
+                                         p=self.p)
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
