@@ -380,7 +380,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 else:
                     mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=do_HAP)
                 gain = mean_measure**alpha_homeo
-                gain /= gain.mean()
+                #gain /= gain.mean()
                 #dictionary /= gain[:, np.newaxis]
             else:
                 if C==0.:
@@ -469,28 +469,12 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     if code.ndim == 1:
         code = code[:, np.newaxis]
     if eta_homeo>0.:
-        n_dictionary, n_samples = code.shape
-        #print (gain.shape) # assert gain.shape == n_dictionary
         if do_HAP:
             mean_measure_ = np.mean(code**2, axis=0)/np.mean(code**2)
-
         else:
             counts = np.count_nonzero(code, axis=0)
             mean_measure_ = counts / counts.sum()
-
         mean_measure = (1 - eta_homeo)*mean_measure + eta_homeo * mean_measure_
-
-        # n = np.arange(n_iter)
-        # eta_0 = 0.4
-        # eta_end = eta
-        # tau = 0.2 * n_iter
-        # eta = (eta_0 - eta_end) * np.exp(-(n / tau)) + eta_end
-
-        # activation = activation + nb_activ
-        # target = torch.mean(activation)
-        # tau = - (torch.max(activation) - target) / np.log(0.2)
-        # mu = 0.3
-        # modulation_exp = torch.exp((1 - mu) * torch.log(Modulation) - mu * ((activation - target) / tau))
 
     return mean_measure
 
