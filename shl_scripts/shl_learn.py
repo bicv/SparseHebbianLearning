@@ -381,17 +381,23 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 if mean_measure is None:
                     mean_measure = update_measure(np.ones(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose, do_HAP=do_HAP)
                 else:
-                 gain = mean_measure**alpha_homeo
-                gain /= gain.mean()
-                #dictionary /= gain[:, np.newaxis]
+                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo_, verbose=verbose, do_HAP=do_HAP)
+
+                tau=n_dictionary
+                gain=np.exp(-tau*mean_measure)
+                #gain = mean_measure**alpha_homeo
+                #gain /= gain.mean()
             else:
                 if C==0.:
                     corr = (this_X @ dictionary.T)
                     C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
                     P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
+                                                 code=sparse_code, eta_homeo=eta_homeo_,
                                                  C=P_cum[-1, :], nb_quant=nb_quant, do_sym=do_sym,
                                                  verbose=verbose)
+                    P_cum[-1, :] = (1 - eta_homeo_) * P_cum[-1, :] + eta_homeo_ * C_vec
                 else:
+                    P_cum = update_P_cum(P_cum, sparse_code, eta_homeo_,
                                          nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         if record_each>0:
@@ -472,7 +478,10 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
             mean_measure_ = np.mean(code**2, axis=0)/np.mean(code**2)
         else:
             counts = np.count_nonzero(code, axis=0)
+            #mean_measure_ = counts / counts.sum()
+            mean_measure = counts / counts.sum()
 
+        #mean_measure = (1 - eta_homeo)*mean_measure + eta_homeo * mean_measure_
 
     return mean_measure
 
