@@ -309,14 +309,14 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         #mask[mask>0.1] = 1
         mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
 
-    if do_mask:
-        X_train = X_train * mask[np.newaxis, :]
-
-
     # splits the whole dataset into batches
     n_batches = n_samples // batch_size
     X_train = X.copy()
+    if do_mask:
+        X_train = X_train * mask[np.newaxis, :]
+    # Modifies the sequence in-place by shuffling its contents; Multi-dimensional arrays are only shuffled along the first axis:
     np.random.shuffle(X_train)
+    # Splits into ``n_batches`` batches
     batches = np.array_split(X_train, n_batches)
 
     if alpha_homeo==0:
