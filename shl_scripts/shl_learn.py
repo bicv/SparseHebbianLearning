@@ -359,7 +359,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         residual = this_X - sparse_code @ dictionary
         residual /= n_batches # divide by the number of batches to get the average
         #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
-        dictionary += eta * (sparse_code.T @ residual)
+        eta_ = eta + (1 - eta) / (ii + 1)
+        dictionary += eta_ * (sparse_code.T @ residual)
 
         if do_precision:
             precision *= 1-eta
@@ -373,6 +374,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         dictionary /= norm[:, np.newaxis]
 
         if eta_homeo>0.:
+            eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
+
             if P_cum is None:
                 # Update gain
                 if mean_measure is None:
@@ -386,12 +389,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                     corr = (this_X @ dictionary.T)
                     C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
                     P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
-                                                 code=sparse_code, eta_homeo=eta_homeo,
                                                  C=P_cum[-1, :], nb_quant=nb_quant, do_sym=do_sym,
                                                  verbose=verbose)
-                    P_cum[-1, :] = (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
                 else:
-                    P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
                                          nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         if record_each>0:
@@ -468,28 +468,11 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     if code.ndim == 1:
         code = code[:, np.newaxis]
     if eta_homeo>0.:
-        n_dictionary, n_samples = code.shape
-        #print (gain.shape) # assert gain.shape == n_dictionary
         if do_HAP:
             mean_measure_ = np.mean(code**2, axis=0)/np.mean(code**2)
-
         else:
             counts = np.count_nonzero(code, axis=0)
-            mean_measure_ = counts / counts.sum()
 
-        mean_measure = (1 - eta_homeo)*mean_measure + eta_homeo * mean_measure_
-
-        # n = np.arange(n_iter)
-        # eta_0 = 0.4
-        # eta_end = eta
-        # tau = 0.2 * n_iter
-        # eta = (eta_0 - eta_end) * np.exp(-(n / tau)) + eta_end
-
-        # activation = activation + nb_activ
-        # target = torch.mean(activation)
-        # tau = - (torch.max(activation) - target) / np.log(0.2)
-        # mu = 0.3
-        # modulation_exp = torch.exp((1 - mu) * torch.log(Modulation) - mu * ((activation - target) / tau))
 
     return mean_measure
 
