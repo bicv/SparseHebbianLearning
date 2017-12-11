@@ -131,6 +131,7 @@ class SHL(object):
                 pass
 
         # creating a tag related to this process
+        # HELLO WORLD
         PID, HOST = os.getpid(), os.uname()[1]
         self.LOCK = '_lock' + '_pid-' + str(PID) + '_host-' + HOST
 
