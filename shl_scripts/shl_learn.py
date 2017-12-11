@@ -359,7 +359,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         residual = this_X - sparse_code @ dictionary
         residual /= n_batches # divide by the number of batches to get the average
         #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
-        dictionary += eta * (sparse_code.T @ residual)
+        eta_ = eta + (1 - eta) / (ii + 1)
+        dictionary += eta_ * (sparse_code.T @ residual)
 
         if do_precision:
             precision *= 1-eta
@@ -373,26 +374,27 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         dictionary /= norm[:, np.newaxis]
 
         if eta_homeo>0.:
+            eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
+
             if P_cum is None:
                 # Update gain
                 if mean_measure is None:
                     mean_measure = update_measure(np.ones(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose, do_HAP=do_HAP)
                 else:
-                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=do_HAP)
+                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo_, verbose=verbose, do_HAP=do_HAP)
                 gain = mean_measure**alpha_homeo
                 #gain /= gain.mean()
-                #dictionary /= gain[:, np.newaxis]
             else:
                 if C==0.:
                     corr = (this_X @ dictionary.T)
                     C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
                     P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
-                                                 code=sparse_code, eta_homeo=eta_homeo,
+                                                 code=sparse_code, eta_homeo=eta_homeo_,
                                                  C=P_cum[-1, :], nb_quant=nb_quant, do_sym=do_sym,
                                                  verbose=verbose)
-                    P_cum[-1, :] = (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
+                    P_cum[-1, :] = (1 - eta_homeo_) * P_cum[-1, :] + eta_homeo_ * C_vec
                 else:
-                    P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
+                    P_cum = update_P_cum(P_cum, sparse_code, eta_homeo_,
                                          nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         if record_each>0:
