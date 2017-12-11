@@ -301,6 +301,18 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
     # print(alpha_homeo, eta_homeo, alpha_homeo==0, eta_homeo==0, alpha_homeo==0 or eta_homeo==0, 'P_cum', P_cum)
 
+    if do_mask:
+        N_X = N_Y = np.sqrt(n_pixels)
+        x , y = np.meshgrid(np.linspace(-1, 1, N_X), np.linspace(-1, 1, N_Y))
+        #R = np.sqrt(x ** 2 + y ** 2)
+        #mask = (((np.cos(np.pi * R) + 1) / 2 * (R < 1.)) ** (1/8)).ravel()
+        #mask[mask>0.1] = 1
+        mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
+
+    if do_mask:
+        X_train = X_train * mask[np.newaxis, :]
+
+
     # splits the whole dataset into batches
     n_batches = n_samples // batch_size
     X_train = X.copy()
@@ -330,14 +342,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
     batches = itertools.cycle(batches)
 
-    if do_mask:
-        N_X = N_Y = np.sqrt(n_pixels)
-        x , y = np.meshgrid(np.linspace(-1, 1, N_X), np.linspace(-1, 1, N_Y))
-        #R = np.sqrt(x ** 2 + y ** 2)
-        #mask = (((np.cos(np.pi * R) + 1) / 2 * (R < 1.)) ** (1/8)).ravel()
-        #mask[mask>0.1] = 1
-        mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
-
     # cycle over all batches
     for ii, this_X in zip(range(n_iter), batches):
         dt = (time.time() - t0)
@@ -361,8 +365,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             precision *= 1-eta
             precision += eta * ((sparse_code**2).T @ (1./(residual**2+1.e-6)))
 
-        if do_mask:
-            dictionary = dictionary * mask[np.newaxis, :]
+        #if do_mask:
+        #    dictionary = dictionary * mask[np.newaxis, :]
 
         # homeostasis
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
