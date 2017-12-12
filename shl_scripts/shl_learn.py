@@ -387,8 +387,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 else:
                     mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=do_HAP)
 
-                tau=n_dictionary
-                gain = np.exp(-tau * mean_measure)
+                gain = np.exp(-(1/alpha_homeo) * mean_measure)
                 #gain = np.tanh(-(1/alpha_homeo) * (mean_measure-mean_measure.mean()))
 
                 #gain = mean_measure**alpha_homeo
