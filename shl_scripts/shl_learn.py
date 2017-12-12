@@ -83,8 +83,8 @@ class SparseHebbianLearning:
 
     """
     def __init__(self, fit_algorithm, dictionary=None, precision=None, P_cum=None, n_dictionary=None,
-                 eta=0.02, n_iter=40000,
-                 eta_homeo=0.001, alpha_homeo=0.02,
+                 eta=0.02, n_iter=10000,
+                 eta_homeo=1, alpha_homeo=0.001,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None, do_precision=None, do_mask=True,
                  nb_quant=32, C=0., do_sym=True,
@@ -374,7 +374,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         dictionary /= norm[:, np.newaxis]
 
         if eta_homeo>0.:
-            eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
+        #    eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
 
             if P_cum is None:
                 # Update gain
@@ -385,7 +385,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
                 tau=n_dictionary
                 gain = np.exp(-tau * mean_measure)
-                gain = np.tanh(-(1/alpha_homeo) * (mean_measure-mean_measure.mean()))
+                #gain = np.tanh(-(1/alpha_homeo) * (mean_measure-mean_measure.mean()))
 
                 #gain = mean_measure**alpha_homeo
                 #gain /= gain.mean()
@@ -480,10 +480,9 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
             mean_measure_ = np.mean(code**2, axis=0)/np.mean(code**2)
         else:
             counts = np.count_nonzero(code, axis=0)
-            #mean_measure_ = counts / counts.sum()
-            mean_measure = counts / counts.sum()
+            mean_measure_ = counts / counts.sum()
 
-        #mean_measure = (1 - eta_homeo)*mean_measure + eta_homeo * mean_measure_
+        mean_measure = (1 - eta_homeo)*mean_measure + eta_homeo * mean_measure_
 
     return mean_measure
 
