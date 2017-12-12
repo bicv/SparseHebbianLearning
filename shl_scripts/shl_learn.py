@@ -360,7 +360,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
-        rec_error[ii]=np.mean(np.sum(residual**2, axis=1))
+        rec_error[ii]=np.mean(np.mean(residual**2, axis=1))
         residual /= n_batches # divide by the number of batches to get the average
         #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
         eta_ = eta + (1 - eta) / (ii + 1)
