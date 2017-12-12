@@ -383,10 +383,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 else:
                     mean_measure = update_measure(mean_measure, sparse_code, eta_homeo_, verbose=verbose, do_HAP=do_HAP)
 
-                tau=n_dictionary
-                gain=np.exp(-tau*mean_measure)
-                #gain = mean_measure**alpha_homeo
-                #gain /= gain.mean()
+                gain /= gain.mean()
+                gain = mean_measure**(-alpha_homeo)
+
             else:
                 if C==0.:
                     corr = (this_X @ dictionary.T)
