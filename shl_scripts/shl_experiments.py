@@ -266,6 +266,8 @@ class SHL(object):
         if not dico == 'lock':
             if 'show_dico' in list_figures:
                 fig, ax = self.show_dico(dico, title=matname, fname=fname)
+            if 'plot_error' in list_figures:
+                fig, ax = self.plot_error(dico)
             if 'show_dico_in_order' in list_figures:
                 fig,ax = self.show_dico_in_order(dico, title=matname, fname=fname)
             if 'plot_variance' in list_figures:
@@ -308,6 +310,10 @@ class SHL(object):
     def show_dico(self, dico, data=None, title=None, fname=None, dpi=200):
         from shl_scripts.shl_tools import show_dico
         return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
+
+    def plot_error(self, dico):
+        from shl_scripts.shl_tools import plot_error
+        return plot_error(dico)
 
     def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200):
         from shl_scripts.shl_tools import show_dico_in_order

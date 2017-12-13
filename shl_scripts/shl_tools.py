@@ -319,8 +319,19 @@ def plot_proba_histogram(coding, verbose=False):
     ax.set_xlim(0, n_dictionary)
     return fig, ax
 
+def plot_error(dico):
+    fig = plt.figure(figsize=(16, 8))
+    ax = fig.add_subplot(111)
+    n = np.arange(dico.n_iter)
+    err = dico.rec_error
+    ax.plot(n,err)
+    ax.set_title('Reconstruction error')
+    ax.set_ylabel('MSE')
+    ax.set_xlabel('Iteration')
+    return fig, ax
+
 def plot_variance(shl_exp, sparse_code, fname=None):
-    n_dictionary = shl_exp.n_dictionary
+    n_dictionary = sparse_code.shape[1]
     Z = np.mean(sparse_code**2)
     fig = plt.figure(figsize=(16, 4))
     ax = fig.add_subplot(111)
