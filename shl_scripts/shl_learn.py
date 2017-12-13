@@ -341,13 +341,20 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
     import itertools
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
-    batches = itertools.cycle(batches)
+    #batches = itertools.cycle(batches)
 
     rec_error=np.zeros(n_iter)
 
+    idx_batches=np.random.randint(0, n_batches, n_iter)
+
     # cycle over all batches
-    for ii, this_X in zip(range(n_iter), batches):
+    #for ii, this_X in zip(range(n_iter), batches):
+
+    for ii in range(n_iter):
+
+        this_X = batches[idx_batches[ii]]
         dt = (time.time() - t0)
+
         if verbose > 0:
             if ii % int(n_iter//verbose + 1) == 0:
                 print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"

@@ -240,6 +240,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
 
     # starting Matching Pursuit
     if precision is None:
+
         corr = (X @ dictionary.T)
         Xcorr = (dictionary @ dictionary.T)
         #SE_0 = np.sum(X*2, axis=1)
