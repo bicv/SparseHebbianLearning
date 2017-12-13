@@ -378,20 +378,21 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         dictionary /= norm[:, np.newaxis]
 
         if eta_homeo>0.:
-        #    eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
+            eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
 
             if P_cum is None:
                 # Update gain
                 if mean_measure is None:
                     mean_measure = update_measure(np.ones(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose, do_HAP=do_HAP)
                 else:
-                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=do_HAP)
+                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo_, verbose=verbose, do_HAP=do_HAP)
 
+                
                 gain = np.exp(-(1/alpha_homeo) * mean_measure)
                 #gain = np.tanh(-(1/alpha_homeo) * (mean_measure-mean_measure.mean()))
-
-                #gain = mean_measure**alpha_homeo
                 #gain /= gain.mean()
+                #gain = mean_measure**(-alpha_homeo)
+
             else:
                 if C==0.:
                     corr = (this_X @ dictionary.T)
