@@ -350,6 +350,14 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     # cycle over all batches
     #for ii, this_X in zip(range(n_iter), batches):
 
+    l0_init = l0_sparseness
+    l0_end = n_dictionary // 8
+    n = np.arange(n_iter)
+
+    l0 = (l0_end - (l0_end - l0_init) / ((1 / n_iter) * n + 1)).astype(int)
+
+
+
     for ii in range(n_iter):
 
         this_X = batches[idx_batches[ii]]
@@ -362,7 +370,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
-                                   P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
+                                   P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0[ii],
                                    gain=gain)
 
         # Update dictionary
@@ -391,9 +399,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             if P_cum is None:
                 # Update gain
                 if mean_measure is None:
-                    mean_measure = update_measure(np.ones(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose, do_HAP=do_HAP)
+                    mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose, do_HAP=do_HAP)
                 else:
-                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo_, verbose=verbose, do_HAP=do_HAP)
+                    mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=do_HAP)
 
                 
                 gain = np.exp(-(1/alpha_homeo) * mean_measure)

@@ -261,10 +261,6 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
 
     # TODO: vectorize by doing all patches at the same time?
 
-    #tot = 0
-    #hist = np.zeros(n_dictionary)
-    #alpha_homeo = -((1 / n_dictionary) / np.log(0.5))
-
 
     for i_sample in range(n_samples):
         c = corr[i_sample, :].copy()
@@ -276,22 +272,14 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
                 q = rescaling(c, C=C, do_sym=do_sym)
                 q = quantile(P_cum, q, stick, do_fast=do_fast)
             else:
-                #if tot>0:
                 q = rectify(c, do_sym=do_sym)*gain
-                #    p = hist/tot
-                #    gain2 = np.exp(-(1/alpha_homeo) * p)
-                #    q = c*gain2
-                #else:
-                #    q = c.copy()
 
             ind = np.argmax(q)
             c_ind = alpha * c[ind] / Xcorr[ind, ind]
+
             sparse_code[i_sample, ind] += c_ind
             c -= c_ind * Xcorr[ind, :]
-            #SE -= c_ind**2 # pythagora
-            #i_l0 += 1
-            #hist[ind]=hist[ind]+1
-            #tot=tot+1
+
 
     if verbose>0:
         duration=time.time()-t0
