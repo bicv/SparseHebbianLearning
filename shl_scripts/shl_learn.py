@@ -384,6 +384,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
 
+
         if eta_homeo>0.:
             eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
 
