@@ -363,8 +363,10 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         dictionary += eta_ * (sparse_code.T @ residual)
 
         if do_precision:
-            precision *= 1-eta
-            precision += eta_ * ((sparse_code**2).T @ (1./(residual**2+1.e-6)))
+            variance = 1./(precision + 1.e-16)
+            variance *= 1-eta
+            variance += eta_ * sparse_code.T @ (residual**2)
+            precision = 1./(variance + 1.e-16)
 
         #if do_mask:
         #    dictionary = dictionary * mask[np.newaxis, :]
