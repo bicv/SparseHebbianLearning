@@ -120,11 +120,11 @@ class SparseHebbianLearning:
             Returns the instance itself.
         """
 
-        return_fn = dict_learning(X, self.dictionary, self.precision,
-                                  self.eta, self.n_dictionary, self.l0_sparseness,
+        return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.precision,
+                                  eta=self.eta, n_dictionary=self.n_dictionary, l0_sparseness=self.l0_sparseness,
                                   n_iter=self.n_iter, method=self.fit_algorithm, do_sym=self.do_sym,
                                   batch_size=self.batch_size, record_each=self.record_each, do_mask=self.do_mask,
-                                  verbose=self.verbose, homeo_method=self.homeo_method)
+                                  verbose=self.verbose, homeo_method=self.homeo_method, homeo_params=self.homeo_params)
 
         if self.record_each==0:
             self.dictionary, self.precision, self.P_cum, self.rec_error = return_fn
@@ -305,7 +305,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             alpha_homeo = -1*homeo_params['alpha_homeo']
         else:
             alpha_homeo = -((1/n_dictionary)/np.log(0.5))
-            homeo_params['alpha_homeo'] = alpha_homeo
 
     elif homeo_method == 'HAP':
 
@@ -313,13 +312,11 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             eta_homeo = homeo_params['eta_homeo']
         else:
             eta_homeo = 0.8
-            homeo_params['eta_homeo'] = eta_homeo
 
         if 'alpha_homeo' in homeo_params.keys():
             alpha_homeo = homeo_params['alpha_homeo']
         else:
             alpha_homeo = 0.02
-            homeo_params['alpha_homeo'] = alpha_homeo
 
     elif homeo_method == 'EMP':
 
@@ -327,13 +324,11 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             eta_homeo = homeo_params['eta_homeo']
         else:
             eta_homeo = 0.8
-            homeo_params['eta_homeo'] = eta_homeo
 
         if 'alpha_homeo' in homeo_params.keys():
             alpha_homeo = homeo_params['alpha_homeo']
         else:
             alpha_homeo = 0.01
-            homeo_params['alpha_homeo'] = alpha_homeo
 
     elif homeo_method == 'HEH':
 
@@ -341,32 +336,27 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             C = homeo_params['C']
         else:
             C = 0.
-            homeo_params['C'] = C
 
         if 'P_cum' in homeo_params.keys():
             P_cum = homeo_params['P_cum']
         else:
             P_cum = None
-            homeo_params['P_cum'] = P_cum
 
         if 'eta_homeo' in homeo_params.keys():
             eta_homeo = homeo_params['eta_homeo']
         else:
             eta_homeo = 0.01
-            homeo_params['eta_homeo'] = eta_homeo
 
         if 'nb_quant' in homeo_params.keys():
             nb_quant = homeo_params['nb_quant']
         else:
             nb_quant = 100
-            homeo_params['nb_quant'] = nb_quant
 
     else:
 
         raise ValueError('Homeostasis method must be "EXP", "HAP" '
                          '"EMP" or "HEH", got %s.'
                          % homeo_method)
-
 
     if do_mask:
         N_X = N_Y = np.sqrt(n_pixels)
