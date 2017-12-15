@@ -391,8 +391,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             precision *= 1-eta
             precision += eta * ((sparse_code**2).T @ (1./(residual**2+1.e-6)))
 
-        #if do_mask:
-        #    dictionary = dictionary * mask[np.newaxis, :]
 
         # homeostasis
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
