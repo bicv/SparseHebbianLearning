@@ -68,7 +68,7 @@ class SHL(object):
                  width=256, # of image
                  patch_size=(16, 16),
                  #datapath=os.path.join(home, 'quantic/science/BICV/SLIP/database/'), #'database/',
-                 datapath='/tmp/database/',
+                 datapath='database/',
                  name_database='kodakdb',
                  n_dictionary=18**2,
                  learning_algorithm='mp',
