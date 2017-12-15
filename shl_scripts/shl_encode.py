@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
-                          P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0, gain=None):
+                          P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0, gain=None, homeo_method='EXP'):
     """Generic sparse coding
 
     Each column of the result is the solution to a sparse coding problem.
@@ -110,7 +110,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
 
     elif algorithm == 'mp':
         sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness, fit_tol=fit_tol,
-                                        P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose, gain=gain)
+                                        P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose, gain=gain, homeo_method=homeo_method)
 
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
@@ -198,7 +198,8 @@ def quantile(P_cum, p_c, stick, do_fast=True):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
         return q_i
 
-def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None, do_fast=True, C=0., verbose=0, gain=None):
+def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None,
+       do_fast=True, C=0., verbose=0, gain=None, homeo_method='EXP'):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -233,7 +234,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
 
-    if not P_cum is None:
+    if homeo_method == 'P_cum':
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
     #if fit_tol is None: fit_tol = 0.
@@ -268,7 +269,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
         #i_l0, SE = 0, SE_0
         #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
         for i_l0 in range(int(l0_sparseness)) :
-            if not P_cum is None:
+            if homeo_method == 'HEH':
                 q = rescaling(c, C=C, do_sym=do_sym)
                 q = quantile(P_cum, q, stick, do_fast=do_fast)
             else:
