@@ -78,8 +78,7 @@ class SHL(object):
                  l0_sparseness=16,
                  n_iter=2**14,
                  eta=.05,
-                 eta_homeo=.05, nb_quant=128, C=5., do_sym=False,
-                 alpha_homeo=0.05,
+                 do_sym=False,
                  max_patches=4096,
                  seed=42,
                  patch_norm=True,
@@ -89,7 +88,8 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
-                 do_HAP=True):
+                 homeo_method='EXP',
+                 homeo_params={}):
         self.height = height
         self.width = width
         self.datapath = datapath
@@ -112,17 +112,13 @@ class SHL(object):
 
         self.l0_sparseness = l0_sparseness
         self.eta = eta
-        self.eta_homeo = eta_homeo
-        self.alpha_homeo = alpha_homeo
-        self.nb_quant = nb_quant
-        self.C = C
         self.do_sym = do_sym
-
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
         self.verbose = verbose
         # assigning and create a folder for caching data
         self.data_cache = data_cache
-        self.do_HAP = do_HAP
+        self.homeo_method = homeo_method
+        self.homeo_params = homeo_params
 
         if not self.data_cache is None:
             try:
@@ -199,16 +195,17 @@ class SHL(object):
             # Learn the dictionary from reference patches
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(dictionary=dictionary, precision=precision, P_cum=P_cum,
+            dico = SparseHebbianLearning(dictionary=dictionary, precision=precision,
                                          fit_algorithm=self.learning_algorithm,
-                                         nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
-                                         n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
-                                         eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
+                                         do_sym=self.do_sym,
+                                         n_dictionary=self.n_dictionary,
+                                         eta=self.eta, n_iter=self.n_iter,
                                          l0_sparseness=self.l0_sparseness,
                                          batch_size=self.batch_size, verbose=self.verbose,
-                                         fit_tol=self.fit_tol, do_mask=self.do_mask, do_precision=self.do_precision,
-                                         record_each=self.record_each,
-                                         do_HAP=self.do_HAP)
+                                         fit_tol=self.fit_tol, do_mask=self.do_mask,
+                                         do_precision=self.do_precision, record_each=self.record_each,
+                                         homeo_method=self.homeo_method, homeo_params=self.homeo_params)
+            
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
