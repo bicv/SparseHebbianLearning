@@ -152,11 +152,20 @@ class SHL(object):
                 print('Coding data with algorithm ', coding_algorithm,  end=' ')
                 t0 = time.time()
             from shl_scripts.shl_encode import sparse_encode
+            if 'C' in self.homeo_params.keys():
+                C = self.homeo_params['C']
+            else:
+                C = 0.
+            if 'P_cum' in self.homeo_params.keys():
+                P_cum = self.homeo_params['P_cum']
+            else:
+                P_cum = None
+
             sparse_code = sparse_encode(data, dico.dictionary, dico.precision,
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0, gain=None)
+                                        C=C, P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None, homeo_method=self.homeo_method)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
