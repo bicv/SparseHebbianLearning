@@ -287,8 +287,13 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
     else:
 
         line = np.arange(n_samples)
+        gain = gain[np.newaxis, :] * np.ones_like(corr)
         for i_l0 in range(int(l0_sparseness)):
-                q = rectify(corr, do_sym=do_sym) * gain[np.newaxis, :]
+                if do_sym:
+                    q = rectify(corr, do_sym=do_sym) * gain
+                else:
+                    q = corr * gain
+
                 ind = np.argmax(q, axis=1)
                 sparse_code[line, ind] = sparse_code[line, ind] + corr[line, ind]
                 corr = corr - (Xcorr[ind, :] * corr[line, ind][:, np.newaxis])
