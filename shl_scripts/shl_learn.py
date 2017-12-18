@@ -404,22 +404,16 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     # cycle over all batches
 
     #scheduling l0_sparseness
-    if l0_sparseness < n_dictionary//10:
-
+    if (l0_sparseness_end is None) or (l0_sparseness_end < l0_sparseness):
+        l0 = l0_sparseness * np.ones(n_iter)
+    else:
         l0_init = l0_sparseness
-        if l0_sparseness_end is None:
-            l0_end = n_dictionary // 10
-        else:
-            l0_end = l0_sparseness_end
+        l0_end = l0_sparseness_end
         tau = 0.5 * n_iter
         A = (l0_end - l0_init) / (np.exp(n_iter / tau) - 1)
         B = l0_init - A
         n = np.arange(n_iter)
         l0 = (A * np.exp(n / tau) + B).astype(int)
-
-    else:
-
-        l0 = l0_sparseness*np.ones(n_iter)
 
     for ii in range(n_iter):
 
