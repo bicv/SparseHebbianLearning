@@ -409,6 +409,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         l0_init = l0_sparseness
         if l0_sparseness_end is None:
             l0_end = n_dictionary // 10
+        else:
+            l0_end = l0_sparseness_end
         tau = 0.5 * n_iter
         A = (l0_end - l0_init) / (np.exp(n_iter / tau) - 1)
         B = l0_init - A
@@ -511,7 +513,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 from scipy.stats import kurtosis
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
-                                          P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0_sparseness, gain=gain, homeo_method=homeo_method)
+                                          P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0[ii], gain=gain, homeo_method=homeo_method)
                 # calculation of relative entropy
                 p_ = np.count_nonzero(sparse_code_rec,axis=0) / (sparse_code_rec.shape[1])
                 p_ /= p_.sum()
