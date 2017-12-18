@@ -89,7 +89,7 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
-                 homeo_method='EXP',
+                 homeo_method='HAP',
                  homeo_params={}):
         self.height = height
         self.width = width
