@@ -83,8 +83,8 @@ class SparseHebbianLearning:
 
     """
     def __init__(self, fit_algorithm, dictionary=None, precision=None, P_cum=None, n_dictionary=None,
-                 eta=0.02, n_iter=40000,
-                 eta_homeo=0.001, alpha_homeo=0.02,
+                 eta=0.02, n_iter=10000,
+                 eta_homeo=1, alpha_homeo=0.001,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None, do_precision=True, do_mask=True,
                  nb_quant=32, C=0., do_sym=True,
@@ -111,6 +111,7 @@ class SparseHebbianLearning:
         self.random_state = random_state
         self.P_cum  = P_cum
         self.do_HAP = do_HAP
+        self.rec_error = None
 
     def fit(self, X, y=None):
         """Fit the model from data in X.
@@ -136,9 +137,9 @@ class SparseHebbianLearning:
                                   verbose=self.verbose, random_state=self.random_state, do_HAP=self.do_HAP)
 
         if self.record_each==0:
-            self.dictionary, self.precision, self.P_cum = return_fn
+            self.dictionary, self.precision, self.P_cum, self.rec_error = return_fn
         else:
-            self.dictionary, self.precision, self.P_cum, self.record = return_fn
+            self.dictionary, self.precision, self.P_cum, self.record, self.rec_error = return_fn
 
     def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None):
         """Fit the model from data in X.
@@ -342,6 +343,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
     batches = itertools.cycle(batches)
 
+    rec_error=np.zeros(n_iter)
+
     # cycle over all batches
     for ii, this_X in zip(range(n_iter), batches):
         dt = (time.time() - t0)
@@ -357,9 +360,12 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
-        residual /= n_batches # divide by the number of batches to get the average TODO : fix this? the above line is not a sum over all batches...
+
+        rec_error[ii]=np.mean(np.mean(residual**2, axis=1))
+
         #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
         eta_ = eta + (1 - eta) / (ii + 1)
+        residual /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
         dictionary += eta_ * (sparse_code.T @ residual)
 
         if do_precision:
@@ -385,8 +391,11 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 else:
                     mean_measure = update_measure(mean_measure, sparse_code, eta_homeo_, verbose=verbose, do_HAP=do_HAP)
 
-                gain /= gain.mean()
-                gain = mean_measure**(-alpha_homeo)
+                
+                gain = np.exp(-(1/alpha_homeo) * mean_measure)
+                #gain = np.tanh(-(1/alpha_homeo) * (mean_measure-mean_measure.mean()))
+                #gain /= gain.mean()
+                #gain = mean_measure**(-alpha_homeo)
 
             else:
                 if C==0.:
@@ -431,9 +440,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         print('done (total time: % 3is, % 4.1fmn)' % (dt, dt / 60))
 
     if record_each==0:
-        return dictionary, precision, P_cum
+        return dictionary, precision, P_cum, rec_error
     else:
-        return dictionary, precision, P_cum, record
+        return dictionary, precision, P_cum, record, rec_error
 
 def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     """Update the estimated variance of coefficients in place.
