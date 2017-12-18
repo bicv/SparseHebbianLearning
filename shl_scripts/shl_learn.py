@@ -85,7 +85,7 @@ class SparseHebbianLearning:
     def __init__(self, fit_algorithm, dictionary=None, precision=None, n_dictionary=None,
                  eta=0.02, n_iter=10000,
                  batch_size=100,
-                 l0_sparseness=None, fit_tol=None, do_precision=None, do_mask=True, do_sym=True,
+                 l0_sparseness=None, l0_sparseness_end=None, fit_tol=None, do_precision=None, do_mask=True, do_sym=True,
                  record_each=200, verbose=False, homeo_method='EXP', homeo_params={}):
         self.eta = eta
         self.dictionary = dictionary
@@ -96,6 +96,7 @@ class SparseHebbianLearning:
         self.do_sym = do_sym
         self.batch_size = batch_size
         self.l0_sparseness = l0_sparseness
+        self.l0_sparseness_end = l0_sparseness_end
         self.fit_tol = fit_tol
         self.do_precision = do_precision
         self.do_mask = do_mask
@@ -121,7 +122,7 @@ class SparseHebbianLearning:
         """
 
         return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.precision,
-                                  eta=self.eta, n_dictionary=self.n_dictionary, l0_sparseness=self.l0_sparseness,
+                                  eta=self.eta, n_dictionary=self.n_dictionary, l0_sparseness=self.l0_sparseness, l0_sparseness_end=self.l0_sparseness_end,
                                   n_iter=self.n_iter, method=self.fit_algorithm, do_sym=self.do_sym,
                                   batch_size=self.batch_size, record_each=self.record_each, do_mask=self.do_mask,
                                   verbose=self.verbose, homeo_method=self.homeo_method, homeo_params=self.homeo_params)
@@ -151,7 +152,7 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, self.precision, algorithm=algorithm, P_cum=self.P_cum,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
-def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None,
+def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, l0_sparseness_end=None, fit_tol=None,
                   do_precision=False, n_iter=100, do_mask=True,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', do_sym=True, homeo_method='EXP', homeo_params={}):
@@ -406,12 +407,14 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     if l0_sparseness < n_dictionary//10:
 
         l0_init = l0_sparseness
-        l0_end = n_dictionary // 10
+        if l0_sparseness_end is None:
+            l0_end = n_dictionary // 10
         tau = 0.5 * n_iter
         A = (l0_end - l0_init) / (np.exp(n_iter / tau) - 1)
         B = l0_init - A
         n = np.arange(n_iter)
         l0 = (A * np.exp(n / tau) + B).astype(int)
+
     else:
 
         l0 = l0_sparseness*np.ones(n_iter)

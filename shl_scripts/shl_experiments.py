@@ -76,6 +76,7 @@ class SHL(object):
                  do_precision=False,
                  do_mask=True,
                  l0_sparseness=16,
+                 l0_sparseness_end=None,
                  n_iter=2**14,
                  eta=.05,
                  do_sym=False,
@@ -111,6 +112,7 @@ class SHL(object):
         self.do_mask = do_mask
 
         self.l0_sparseness = l0_sparseness
+        self.l0_sparseness_end = l0_sparseness_end
         self.eta = eta
         self.do_sym = do_sym
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
@@ -210,6 +212,7 @@ class SHL(object):
                                          n_dictionary=self.n_dictionary,
                                          eta=self.eta, n_iter=self.n_iter,
                                          l0_sparseness=self.l0_sparseness,
+                                         l0_sparseness_end=self.l0_sparseness_end,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol, do_mask=self.do_mask,
                                          do_precision=self.do_precision, record_each=self.record_each,
