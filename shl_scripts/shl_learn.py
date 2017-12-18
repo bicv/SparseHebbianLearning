@@ -455,7 +455,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
             if mean_measure is None:
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
-                                 do_HAP=False)
+                                 do_HAP=True)
             else:
                 mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=False)
 
@@ -463,23 +463,34 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
         elif homeo_method == 'HAP':
 
-            eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
+            #eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
 
             if mean_measure is None:
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
                                  do_HAP=True)
             else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo_, verbose=verbose, do_HAP=True)
+                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
 
-            gain = mean_measure**(-alpha_homeo)#???????
+            gain = mean_measure**(-alpha_homeo)#
                 # gain /= gain.mean()
-                # gain = mean_measure**(-alpha_homeo)
+
+        elif homeo_method == 'Olshausen':
+
+            #eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
+
+            if mean_measure is None:
+                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
+                                 do_HAP=False)
+            else:
+                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
+
+            gain = mean_measure**(-alpha_homeo)
 
         elif homeo_method == 'EMP':
 
             if mean_measure is None:
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
-                                 do_HAP=False)
+                                 do_HAP=True)
             else:
                 mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=False)
 
@@ -492,17 +503,17 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 corr = (this_X @ dictionary.T)
                 C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
                 P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
-                                             code=sparse_code, eta_homeo=eta_homeo_,
+                                             code=sparse_code, eta_homeo=eta_homeo,
                                              C=P_cum[-1, :], nb_quant=nb_quant, do_sym=do_sym,
                                              verbose=verbose)
-                P_cum[-1, :] = (1 - eta_homeo_) * P_cum[-1, :] + eta_homeo_ * C_vec
+                P_cum[-1, :] = (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
             else:
-                P_cum = update_P_cum(P_cum, sparse_code, eta_homeo_,
+                P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
                                      nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         else:
 
-            raise ValueError('Homeostasis method must be "EXP", "HAP" '
+            raise ValueError('Homeostasis method must be "EXP", "HAP", "Olshausen" '
                              '"EMP" or "HEH", got %s.'
                              % homeo_method)
 
@@ -571,6 +582,9 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     verbose:
         Degree of output the procedure will print.
 
+    do_HAP: boolean
+        Switch to compute the variance (if False) or the activation probability (if True)
+
     Returns
     -------
     gain: array of shape (n_dictionary)
@@ -580,7 +594,7 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     if code.ndim == 1:
         code = code[:, np.newaxis]
     if eta_homeo>0.:
-        if do_HAP:
+        if not do_HAP:
             mean_measure_ = np.mean(code**2, axis=0)/np.mean(code**2)
         else:
             counts = np.count_nonzero(code, axis=0)
