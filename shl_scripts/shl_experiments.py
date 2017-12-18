@@ -73,7 +73,7 @@ class SHL(object):
                  n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 do_precision=True,
+                 do_precision=False,
                  do_mask=True,
                  l0_sparseness=16,
                  n_iter=2**14,
