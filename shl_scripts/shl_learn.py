@@ -286,6 +286,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     #if not precision is None: do_precision = True
     if do_precision:
         precision = np.ones((n_dictionary, n_pixels))
+    else:
+        precision = None
 
     if verbose == 1:
         print('[dict_learning]', end=' ')
@@ -294,7 +296,12 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
     #initializing parameters
 
-    if homeo_method == 'EXP':
+    elif homeo_method == 'None':
+
+        eta_homeo = 0.
+        alpha_homeo = 0.
+
+    elif homeo_method == 'EXP':
 
         if 'eta_homeo' in homeo_params.keys():
             eta_homeo = homeo_params['eta_homeo']
@@ -355,7 +362,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
     else:
 
-        raise ValueError('Homeostasis method must be "EXP", "HAP" '
+        raise ValueError('Homeostasis method must be "None", "EXP", "HAP" '
                          '"EMP" or "HEH", got %s.'
                          % homeo_method)
 
@@ -451,7 +458,11 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
 
-        if homeo_method == 'EXP':
+
+        if homeo_method == 'None':
+            pass
+
+        elif homeo_method == 'EXP':
 
             if mean_measure is None:
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
@@ -513,7 +524,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
         else:
 
-            raise ValueError('Homeostasis method must be "EXP", "HAP", "Olshausen" '
+            raise ValueError('Homeostasis method must be "EXP", "None", "HAP", "Olshausen" '
                              '"EMP" or "HEH", got %s.'
                              % homeo_method)
 
