@@ -432,15 +432,19 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
+
         rec_error[ii]=np.mean(np.mean(residual**2, axis=1))
-        residual /= n_batches # divide by the number of batches to get the average
+
         #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
         eta_ = eta + (1 - eta) / (ii + 1)
+        residual /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
         dictionary += eta_ * (sparse_code.T @ residual)
 
         if do_precision:
-            precision *= 1-eta
-            precision += eta * ((sparse_code**2).T @ (1./(residual**2+1.e-6)))
+            variance = 1./(precision + 1.e-16)
+            variance *= 1-eta
+            variance += eta_ * sparse_code.T @ (residual**2)
+            precision = 1./(variance + 1.e-16)
 
 
         # homeostasis

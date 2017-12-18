@@ -116,7 +116,6 @@ def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
 
     return coeff
 
-
 def compute_RMSE(data, dico):
     """
     Compute the Root Mean Square Error between the image and it's encoded representation
@@ -179,9 +178,23 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, fname=None, dp
         ax = fig.add_subplot(np.ceil(np.sqrt(dim_graph)), np.ceil(np.sqrt(dim_graph)), i + 1)
         dico_to_display = dico.dictionary[indices[i]]
         cmax = np.max(np.abs(dico_to_display))
-        ax.imshow(dico_to_display.reshape((dim_patch,dim_patch)),
-                     cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
-                     interpolation='nearest')
+        if not dico.precision is None:
+            dico_to_display = dico_to_display.reshape((dim_patch, dim_patch))/cmax
+            precision_to_display = dico.precision[indices[i]].reshape((dim_patch,dim_patch))
+            precision_cmax = np.max(precision_to_display)
+
+            image = np.dstack((.5 + .5*dico_to_display, .5 + .5*dico_to_display, .5 + .5*dico_to_display))
+            image *= np.dstack((np.ones_like(precision_to_display), precision_to_display/precision_cmax, np.ones_like(precision_to_display)))
+            ax.imshow(image, interpolation='nearest')
+            # DEBUG:
+            #ax.imshow(precision_to_display/precision_cmax,
+            #             cmap=plt.cm.gray_r, vmin=0, vmax=+precision_cmax,
+            #             interpolation='nearest')
+
+        else:
+            ax.imshow(dico_to_display.reshape((dim_patch,dim_patch)),
+                         cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
+                         interpolation='nearest')
         ax.set_xticks(())
         ax.set_yticks(())
     if title is not None:
