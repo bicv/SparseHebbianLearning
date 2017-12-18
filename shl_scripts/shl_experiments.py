@@ -89,7 +89,7 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
-                 homeo_method='HAP',
+                 homeo_method='EXP',
                  homeo_params={}):
         self.height = height
         self.width = width
@@ -162,6 +162,11 @@ class SHL(object):
                 P_cum = self.homeo_params['P_cum']
             else:
                 P_cum = None
+
+            if self.l0_sparseness_end is not None:
+                l0_sparseness = self.l0_sparseness_end
+            else:
+                l0_sparseness = self.l0_sparseness
 
             sparse_code = sparse_encode(data, dico.dictionary, dico.precision,
                                         fit_tol=fit_tol,
