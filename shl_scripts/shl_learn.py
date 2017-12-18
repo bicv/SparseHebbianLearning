@@ -86,7 +86,7 @@ class SparseHebbianLearning:
                  eta=0.02, n_iter=10000,
                  eta_homeo=1, alpha_homeo=0.001,
                  batch_size=100,
-                 l0_sparseness=None, fit_tol=None, do_precision=None, do_mask=True,
+                 l0_sparseness=None, fit_tol=None, do_precision=True, do_mask=True,
                  nb_quant=32, C=0., do_sym=True,
                  record_each=200, verbose=False, random_state=None,
                  do_HAP=False):
@@ -162,7 +162,7 @@ class SparseHebbianLearning:
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
 def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, fit_tol=None,
-                  do_precision=False, n_iter=100, do_mask=True,
+                  do_precision=True, n_iter=100, do_mask=True,
                        eta_homeo=0.01, alpha_homeo=0.02,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', C=0., nb_quant=100, do_sym=True, random_state=None, do_HAP=False):
@@ -360,15 +360,19 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
+
         rec_error[ii]=np.mean(np.mean(residual**2, axis=1))
-        residual /= n_batches # divide by the number of batches to get the average
+
         #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
         eta_ = eta + (1 - eta) / (ii + 1)
+        residual /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
         dictionary += eta_ * (sparse_code.T @ residual)
 
         if do_precision:
-            precision *= 1-eta
-            precision += eta * ((sparse_code**2).T @ (1./(residual**2+1.e-6)))
+            variance = 1./(precision + 1.e-16)
+            variance *= 1-eta
+            variance += eta_ * sparse_code.T @ (residual**2)
+            precision = 1./(variance + 1.e-16)
 
         #if do_mask:
         #    dictionary = dictionary * mask[np.newaxis, :]
