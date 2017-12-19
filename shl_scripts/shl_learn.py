@@ -468,7 +468,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
                                  do_HAP=True)
             else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=False)
+                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
 
             gain = np.exp(-(1 / alpha_homeo) * mean_measure)
 
@@ -493,7 +493,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
                                  do_HAP=False)
             else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
+                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=False)
 
             gain = mean_measure**(-alpha_homeo)
 
@@ -503,7 +503,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
                                  do_HAP=True)
             else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=False)
+                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
 
             p_threshold = (1/n_dictionary)*(1+alpha_homeo)
             gain = 1*(mean_measure < p_threshold)
