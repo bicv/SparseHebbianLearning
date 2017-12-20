@@ -348,7 +348,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         if 'C' in homeo_params.keys():
             C = homeo_params['C']
         else:
-            C = 0.
+            C = 5.
 
         if 'P_cum' in homeo_params.keys():
             P_cum = homeo_params['P_cum']

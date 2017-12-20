@@ -75,7 +75,7 @@ class SHL(object):
                  l0_sparseness_end=None,
                  one_over_F=True,
                  n_iter=2**12,
-                 eta=.005,
+                 eta=.025,
                  do_sym=False,
                  max_patches=4096,
                  seed=42,
