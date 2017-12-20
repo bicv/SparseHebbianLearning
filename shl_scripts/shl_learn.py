@@ -331,7 +331,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         else:
             alpha_homeo = -((1/n_dictionary)/np.log(0.5))
 
-    elif homeo_method=='HAP':
+    elif homeo_method in ['HAP', 'Olshausen', 'EMP']:
+
 
         if 'eta_homeo' in homeo_params.keys():
             eta_homeo = homeo_params['eta_homeo']
@@ -342,19 +343,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             alpha_homeo = homeo_params['alpha_homeo']
         else:
             alpha_homeo = 0.02
-
-
-    elif homeo_method=='EMP':
-
-        if 'eta_homeo' in homeo_params.keys():
-            eta_homeo = homeo_params['eta_homeo']
-        else:
-            eta_homeo = 0.8
-
-        if 'alpha_homeo' in homeo_params.keys():
-            alpha_homeo = homeo_params['alpha_homeo']
-        else:
-            alpha_homeo = 0.01
 
     elif homeo_method=='HEH':
 
