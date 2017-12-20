@@ -306,19 +306,19 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     else:
         precision = None
 
-    if verbose == 1:
+    if verbose==1:
         print('[dict_learning]', end=' ')
 
     # print(alpha_homeo, eta_homeo, alpha_homeo==0, eta_homeo==0, alpha_homeo==0 or eta_homeo==0, 'P_cum', P_cum)
 
     #initializing parameters
 
-    elif homeo_method == 'None':
+    if homeo_method=='None':
 
         eta_homeo = 0.
         alpha_homeo = 0.
 
-    elif homeo_method == 'EXP':
+    elif homeo_method=='EXP':
 
         if 'eta_homeo' in homeo_params.keys():
             eta_homeo = homeo_params['eta_homeo']
@@ -331,7 +331,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         else:
             alpha_homeo = -((1/n_dictionary)/np.log(0.5))
 
-    elif homeo_method == 'HAP':
+    elif homeo_method=='HAP':
 
         if 'eta_homeo' in homeo_params.keys():
             eta_homeo = homeo_params['eta_homeo']
@@ -343,7 +343,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         else:
             alpha_homeo = 0.02
 
-    elif homeo_method == 'EMP':
+
+    elif homeo_method=='EMP':
 
         if 'eta_homeo' in homeo_params.keys():
             eta_homeo = homeo_params['eta_homeo']
@@ -355,7 +356,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         else:
             alpha_homeo = 0.01
 
-    elif homeo_method == 'HEH':
+    elif homeo_method=='HEH':
 
         if 'C' in homeo_params.keys():
             C = homeo_params['C']
@@ -405,7 +406,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         # do the equalitarian homeostasis
         if P_cum is None:
             P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
-            if C == 0.:
+            if C==0.:
                 # initialize the rescaling vector
                 from shl_scripts.shl_encode import get_rescaling
                 corr = (batches[0] @ dictionary.T)
@@ -445,7 +446,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         dt = (time.time() - t0)
 
         if verbose > 0:
-            if ii % int(n_iter//verbose + 1) == 0:
+            if ii % int(n_iter//verbose + 1)==0:
                 print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
                        % (ii, n_iter, dt, dt//60))
 
@@ -476,10 +477,10 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         dictionary /= norm[:, np.newaxis]
 
 
-        if homeo_method == 'None':
+        if homeo_method=='None':
             pass
 
-        elif homeo_method == 'EXP':
+        elif homeo_method=='EXP':
 
             if mean_measure is None:
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
@@ -489,7 +490,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
             gain = np.exp(-(1 / alpha_homeo) * mean_measure)
 
-        elif homeo_method == 'HAP':
+        elif homeo_method=='HAP':
 
             #eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
 
@@ -502,7 +503,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             gain = mean_measure**(-alpha_homeo)#
                 # gain /= gain.mean()
 
-        elif homeo_method == 'Olshausen':
+        elif homeo_method=='Olshausen':
 
             #eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
 
@@ -514,7 +515,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
             gain = mean_measure**(-alpha_homeo)
 
-        elif homeo_method == 'EMP':
+        elif homeo_method=='EMP':
 
             if mean_measure is None:
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
@@ -525,9 +526,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             p_threshold = (1/n_dictionary)*(1+alpha_homeo)
             gain = 1*(mean_measure < p_threshold)
 
-        elif homeo_method == 'HEH':
+        elif homeo_method=='HEH':
 
-            if C == 0.:
+            if C==0.:
                 corr = (this_X @ dictionary.T)
                 C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
                 P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
@@ -546,7 +547,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                              % homeo_method)
 
         if record_each>0:
-            if ii % int(record_each) == 0:
+            if ii % int(record_each)==0:
                 from scipy.stats import kurtosis
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
@@ -567,7 +568,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
     if verbose > 1:
         print('Learning code...', end=' ')
-    elif verbose == 1:
+    elif verbose==1:
         print('|', end=' ')
 
     if verbose > 1:
@@ -619,7 +620,7 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
         Updated value of the dictionary' norm.
 
     """
-    if code.ndim == 1:
+    if code.ndim==1:
         code = code[:, np.newaxis]
     if eta_homeo>0.:
         if not do_HAP:

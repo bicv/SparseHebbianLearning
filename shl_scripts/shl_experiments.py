@@ -12,7 +12,7 @@ Learning filters from natural images using sparse coding
 ========================================================
 
 * When imposing a code representing patches from natural images to be sparse,
-one observes the formation of filters ressembling the receptive field of simple
+one observes the formation of filters resembling the receptive field of simple
 cells in primates primary visual cortex.  This was first proposed in the
 framework of the SparseNet algorithm from Bruno Olshausen
 (http://redwood.berkeley.edu/bruno/sparsenet/).
@@ -29,7 +29,9 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
         Journal = {Neural Computation},
         Volume = {22},
         Number = {7},
-        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
+        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, 
+        Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, 
+        Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
         Month = {July},
         }
 
@@ -37,15 +39,10 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
 """
 
 import time
-import os
 
 toolbar_width = 40
 
-# import matplotlib
-
 import numpy as np
-# see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
-from SLIP import Image
 
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -232,7 +229,7 @@ class SHL(object):
             fmatname = os.path.join(self.data_cache, matname) + '_dico.pkl'
             import pickle
             if not(os.path.isfile(fmatname)):
-                time.sleep(np.random.rand()*0.1)
+                time.sleep(np.random.rand()*0.01)
                 if not(os.path.isfile(fmatname + '_lock')):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
@@ -261,6 +258,7 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
                 if not dictionary is None or not P_cum is None:
+                    if self.verbose: print("resuming the learning on : {0}".format(fmatname))
                     if not (os.path.isfile(fmatname + '_lock')):
                         touch(fmatname + '_lock')
                         touch(fmatname + self.LOCK)

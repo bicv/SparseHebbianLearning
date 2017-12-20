@@ -25,8 +25,16 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
     series a random patches.
 
     """
+    if verbose:
+        import sys
+        # setup toolbar
+        sys.stdout.write('Extracting data...')
+        sys.stdout.flush()
+        sys.stdout.write("\b" * (toolbar_width + 1))  # return to start of line, after '['
+        t0 = time.time()
     if matname is None:
         # Load natural images and extract patches
+        # see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
         from SLIP import Image
         slip = Image({'N_X':height, 'N_Y':width,
                 'white_n_learning' : 0,
@@ -39,14 +47,6 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 'datapath': datapath,
                 'do_mask': True,
                 'N_image': n_image})
-
-        if verbose:
-            import sys
-            # setup toolbar
-            sys.stdout.write('Extracting data...')
-            sys.stdout.flush()
-            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
-            t0 = time.time()
         import os
         imagelist = slip.make_imagelist(name_database=name_database)
         for filename, croparea in imagelist:
@@ -68,12 +68,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 # update the bar
                 sys.stdout.write(filename + ", ")
                 sys.stdout.flush()
-        if verbose:
-            dt = time.time() - t0
-            sys.stdout.write("\n")
-            sys.stdout.write("Data is of shape : "+ str(data.shape))
-            sys.stdout.write(' - done in %.2fs.' % dt)
-            sys.stdout.flush()
+
     else:
         import os
         fmatname = os.path.join(data_cache, matname)
@@ -82,7 +77,6 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 touch(fmatname + '_data' + '_lock')
                 try:
                     if verbose: print('No cache found {}: Extracting data...'.format(fmatname + '_data'), end=' ')
-                    print(datapath)
                     data = get_data(height=height, width=width, n_image=n_image,
                                     patch_size=patch_size, datapath=datapath,
                                     name_database=name_database, max_patches=max_patches,
@@ -99,8 +93,13 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 return 'lock'
         else:
             if verbose: print("loading the data called : {0}".format(fmatname + '_data'))
-            # Une seule fois mp ici
             data = np.load(fmatname + '_data.npy')
+    if verbose:
+        dt = time.time() - t0
+        sys.stdout.write("Data is of shape : " + str(data.shape))
+        sys.stdout.write(' - done in %.2fs.' % dt)
+        sys.stdout.write("\n")
+        sys.stdout.flush()
     return data
 
 def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
