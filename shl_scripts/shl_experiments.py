@@ -136,7 +136,7 @@ class SHL(object):
                     patch_size=self.patch_size, datapath=self.datapath,
                     max_patches=self.max_patches, verbose=self.verbose,
                     data_cache=self.data_cache, seed=self.seed,
-                    patch_norm=self.patch_norm,
+                    do_mask=self.do_mask, patch_norm=self.patch_norm,
                     name_database=self.name_database, matname=matname)
 
 
@@ -166,7 +166,7 @@ class SHL(object):
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        C=C, P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None, homeo_method=self.homeo_method)
+                                        C=C, P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None, homeo_method='None')# TODO: check that in the end we just do the simple coding instead of using self.homeo_method)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
@@ -213,7 +213,7 @@ class SHL(object):
                                          l0_sparseness=self.l0_sparseness, one_over_F=self.one_over_F,
                                          l0_sparseness_end=self.l0_sparseness_end,
                                          batch_size=self.batch_size, verbose=self.verbose,
-                                         fit_tol=self.fit_tol, do_mask=self.do_mask,
+                                         fit_tol=self.fit_tol,
                                          do_precision=self.do_precision, record_each=self.record_each,
                                          homeo_method=self.homeo_method, homeo_params=self.homeo_params)
             

@@ -85,7 +85,7 @@ class SparseHebbianLearning:
     def __init__(self, fit_algorithm, dictionary=None, precision=None, n_dictionary=None,
                  eta=0.02, n_iter=10000,
                  batch_size=100, one_over_F=True,
-                 l0_sparseness=None, l0_sparseness_end=None, fit_tol=None, do_precision=None, do_mask=True, do_sym=True,
+                 l0_sparseness=None, l0_sparseness_end=None, fit_tol=None, do_precision=None, do_sym=True,
                  record_each=200, verbose=False, homeo_method='EXP', homeo_params={}):
         self.eta = eta
         self.dictionary = dictionary
@@ -99,7 +99,6 @@ class SparseHebbianLearning:
         self.l0_sparseness_end = l0_sparseness_end
         self.fit_tol = fit_tol
         self.do_precision = do_precision
-        self.do_mask = do_mask
         self.record_each = record_each
         self.verbose = verbose
         self.rec_error = None
@@ -125,7 +124,7 @@ class SparseHebbianLearning:
         return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.precision,
                                   eta=self.eta, n_dictionary=self.n_dictionary, l0_sparseness=self.l0_sparseness, l0_sparseness_end=self.l0_sparseness_end,
                                   n_iter=self.n_iter, method=self.fit_algorithm, do_sym=self.do_sym, one_over_F=self.one_over_F,
-                                  batch_size=self.batch_size, record_each=self.record_each, do_mask=self.do_mask,
+                                  batch_size=self.batch_size, record_each=self.record_each,
                                   verbose=self.verbose, homeo_method=self.homeo_method, homeo_params=self.homeo_params)
 
         if self.record_each==0:
@@ -167,7 +166,7 @@ def ovf_dictionary(n_dictionary, n_pixels):
     return dictionary
 
 def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, l0_sparseness_end=None, fit_tol=None,
-                  do_precision=False, n_iter=100, do_mask=True, one_over_F=True,
+                  do_precision=False, n_iter=100, one_over_F=True,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', do_sym=True, homeo_method='EXP', homeo_params={}):
     """
@@ -372,16 +371,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                          '"EMP" or "HEH", got %s.'
                          % homeo_method)
 
-    if do_mask:
-        N_X = N_Y = np.sqrt(n_pixels)
-        x , y = np.meshgrid(np.linspace(-1, 1, N_X), np.linspace(-1, 1, N_Y))
-        mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
-
     # splits the whole dataset into batches
     n_batches = n_samples // batch_size
     X_train = X.copy()
-    if do_mask:
-        X_train = X_train * mask[np.newaxis, :]
     # Modifies the sequence in-place by shuffling its contents; Multi-dimensional arrays are only shuffled along the first axis:
     np.random.shuffle(X_train)
     # Splits into ``n_batches`` batches

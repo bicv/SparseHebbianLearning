@@ -15,8 +15,8 @@ def touch(filename):
 
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
-            datapath='database/', name_database='serre07_distractors',
-            max_patches=1024, seed=None, patch_norm=True, verbose=0,
+            datapath='database/', name_database='kodakdb',
+            max_patches=1024, seed=None, do_mask=True, patch_norm=True, verbose=0,
             data_cache='/tmp/data_cache', matname=None):
     """
     Extract data:
@@ -48,6 +48,11 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 'do_mask': True,
                 'N_image': n_image})
         import os
+
+        if do_mask:
+            x, y = np.meshgrid(np.linspace(-1, 1, patch_size[0]), np.linspace(-1, 1, patch_size[1]))
+            mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
+
         imagelist = slip.make_imagelist(name_database=name_database)
         for filename, croparea in imagelist:
             # whitening
@@ -55,10 +60,15 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             image = slip.whitening(image)
             # Extract all reference patches and ravel them
             data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))
+
             data_ = data_.reshape(data_.shape[0], -1)
             data_ -= np.mean(data_, axis=0)
             if patch_norm:
                 data_ /= np.std(data_, axis=0)
+
+            if do_mask:
+                data_ = data_ * mask[np.newaxis, :]
+
             # collect everything as a matrix
             try:
                 data = np.vstack((data, data_))
