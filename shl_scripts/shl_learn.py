@@ -84,7 +84,7 @@ class SparseHebbianLearning:
     """
     def __init__(self, fit_algorithm, dictionary=None, precision=None, n_dictionary=None,
                  eta=0.02, n_iter=10000,
-                 batch_size=100,
+                 batch_size=100, one_over_F=True,
                  l0_sparseness=None, l0_sparseness_end=None, fit_tol=None, do_precision=None, do_mask=True, do_sym=True,
                  record_each=200, verbose=False, homeo_method='EXP', homeo_params={}):
         self.eta = eta
@@ -105,6 +105,7 @@ class SparseHebbianLearning:
         self.rec_error = None
         self.homeo_method = homeo_method
         self.homeo_params = homeo_params
+        self.one_over_F = one_over_F
 
     def fit(self, X, y=None):
         """Fit the model from data in X.
@@ -123,7 +124,7 @@ class SparseHebbianLearning:
 
         return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.precision,
                                   eta=self.eta, n_dictionary=self.n_dictionary, l0_sparseness=self.l0_sparseness, l0_sparseness_end=self.l0_sparseness_end,
-                                  n_iter=self.n_iter, method=self.fit_algorithm, do_sym=self.do_sym,
+                                  n_iter=self.n_iter, method=self.fit_algorithm, do_sym=self.do_sym, one_over_F=self.one_over_F,
                                   batch_size=self.batch_size, record_each=self.record_each, do_mask=self.do_mask,
                                   verbose=self.verbose, homeo_method=self.homeo_method, homeo_params=self.homeo_params)
 
@@ -152,8 +153,21 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, self.precision, algorithm=algorithm, P_cum=self.P_cum,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
+def ovf_dictionary(n_dictionary, n_pixels):
+
+    fx,fy=np.meshgrid(np.linspace(-1,1,np.sqrt(n_pixels).astype(int)),np.linspace(-1,1,np.sqrt(n_pixels).astype(int)))
+    spectra=1/np.sqrt(fx**2+fy**2)
+    dictionary=np.zeros((n_dictionary,n_pixels))
+    for i in range(n_dictionary):
+        phase = np.random.uniform(0, 2 * np.pi, (np.sqrt(n_pixels).astype(int), np.sqrt(n_pixels).astype(int)))
+        patch=np.abs(np.fft.ifft2(spectra*np.exp(1j*phase)))
+        patch-=np.mean(patch)
+        dictionary[i,:]=patch.ravel()
+
+    return dictionary
+
 def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, l0_sparseness_end=None, fit_tol=None,
-                  do_precision=False, n_iter=100, do_mask=True,
+                  do_precision=False, n_iter=100, do_mask=True, one_over_F=True,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
                        method='mp', do_sym=True, homeo_method='EXP', homeo_params={}):
     """
@@ -277,11 +291,14 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     n_samples, n_pixels = X.shape
 
     if dictionary is None:
-        dictionary = np.random.randn(n_dictionary, n_pixels)
+
+        if not one_over_F:
+            dictionary = np.random.randn(n_dictionary, n_pixels)
+        else:
+            dictionary = ovf_dictionary(n_dictionary,n_pixels)
 
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
     dictionary /= norm[:, np.newaxis]
-    norm = np.sqrt(np.sum(dictionary**2, axis=1))
 
     #if not precision is None: do_precision = True
     if do_precision:
