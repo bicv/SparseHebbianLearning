@@ -142,7 +142,7 @@ def rectify(code, do_sym=False, verbose=False):
     if do_sym:
         return np.abs(code)
     else:
-        return code*(code>0)
+        return code
 
 def rescaling(code, C=0., do_sym=False, verbose=False):
     """
@@ -290,11 +290,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
         gain = gain[np.newaxis, :] * np.ones_like(corr)
         for i_l0 in range(int(l0_sparseness)):
 
-                if do_sym:
-                    q = rectify(corr, do_sym=do_sym) * gain
-                else:
-                    q = corr * gain
-
+                q = rectify(corr, do_sym=do_sym) * gain
                 ind = np.argmax(q, axis=1)
                 sparse_code[line, ind] = sparse_code[line, ind] + corr[line, ind]
                 corr = corr - (Xcorr[ind, :] * corr[line, ind][:, np.newaxis])

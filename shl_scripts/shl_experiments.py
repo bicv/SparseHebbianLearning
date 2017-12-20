@@ -76,6 +76,7 @@ class SHL(object):
                  do_mask=True,
                  l0_sparseness=16,
                  l0_sparseness_end=None,
+                 one_over_F=True,
                  n_iter=2**14,
                  eta=.05,
                  do_sym=False,
@@ -120,6 +121,7 @@ class SHL(object):
         self.data_cache = data_cache
         self.homeo_method = homeo_method
         self.homeo_params = homeo_params
+        self.one_over_F = one_over_F
 
         if not self.data_cache is None:
             try:
@@ -211,7 +213,7 @@ class SHL(object):
                                          do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary,
                                          eta=self.eta, n_iter=self.n_iter,
-                                         l0_sparseness=self.l0_sparseness,
+                                         l0_sparseness=self.l0_sparseness, one_over_F=self.one_over_F,
                                          l0_sparseness_end=self.l0_sparseness_end,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol, do_mask=self.do_mask,
