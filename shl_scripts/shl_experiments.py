@@ -74,8 +74,8 @@ class SHL(object):
                  l0_sparseness=16,
                  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**14,
-                 eta=.05,
+                 n_iter=2**12,
+                 eta=.005,
                  do_sym=False,
                  max_patches=4096,
                  seed=42,
@@ -87,7 +87,7 @@ class SHL(object):
                  verbose=0,
                  data_cache='data_cache',
                  homeo_method='HAP',
-                 homeo_params={}):
+                 homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02)):
         self.height = height
         self.width = width
         self.datapath = datapath
@@ -304,29 +304,29 @@ class SHL(object):
 
         return dico
 
-    def plot_variance(self, sparse_code, fname=None):
+    def plot_variance(self, sparse_code, fname=None, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_variance
-        return plot_variance(self, sparse_code, fname=fname)
+        return plot_variance(self, sparse_code, fname=fname, fig=fig, ax=ax)
 
-    def plot_variance_histogram(self, sparse_code, fname=None):
+    def plot_variance_histogram(self, sparse_code, fname=None, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_variance_histogram
-        return plot_variance_histogram(self, sparse_code, fname=fname)
+        return plot_variance_histogram(self, sparse_code, fname=fname, fig=fig, ax=ax)
 
-    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1):
+    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1, fig=None, ax=None):
         from shl_scripts.shl_tools import time_plot
-        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample)
+        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample, fig=fig, ax=ax)
 
-    def show_dico(self, dico, data=None, title=None, fname=None, dpi=200):
+    def show_dico(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico
-        return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
+        return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
 
-    def plot_error(self, dico):
+    def plot_error(self, dico, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_error
-        return plot_error(dico)
+        return plot_error(dico, fig=fig, ax=ax)
 
-    def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200):
+    def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico_in_order
-        return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
+        return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
 
 if __name__ == '__main__':
 
