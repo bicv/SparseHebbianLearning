@@ -66,8 +66,7 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_size=(16, 16),
-                 #datapath=os.path.join(home, 'quantic/science/BICV/SLIP/database/'), #'database/',
+                 patch_size=(24, 24),
                  datapath='database/',
                  name_database='kodakdb',
                  n_dictionary=18**2,
@@ -83,13 +82,13 @@ class SHL(object):
                  max_patches=4096,
                  seed=42,
                  patch_norm=True,
-                 batch_size=128,
+                 batch_size=512,
                  record_each=128,
-                 n_image=None, #200,
+                 n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
-                 homeo_method='EXP',
+                 data_cache='data_cache',
+                 homeo_method='HAP',
                  homeo_params={}):
         self.height = height
         self.width = width
@@ -134,10 +133,6 @@ class SHL(object):
 
     def get_data(self, matname=None):
         from shl_scripts.shl_tools import get_data
-        # height=256, width=256, n_image=200, patch_size=(12,12),
-        #     datapath='database/', name_database='serre07_distractors',
-        #     max_patches=1024, seed=None, patch_norm=True, verbose=0,
-        #     data_cache='/tmp/data_cache', matname=None
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.datapath,
                     max_patches=self.max_patches, verbose=self.verbose,
