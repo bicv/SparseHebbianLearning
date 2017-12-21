@@ -241,8 +241,8 @@ class SHL(object):
                                                matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
-                    except AttributeError:
-                        print('Attribute Error')
+                    except ImportError: #Exception as e:
+                        print('Error', e)
                     finally:
                         try:
                             os.remove(fmatname + self.LOCK)
