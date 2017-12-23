@@ -15,8 +15,8 @@ def touch(filename):
 
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
-            datapath='database/', name_database='serre07_distractors',
-            max_patches=1024, seed=None, patch_norm=True, verbose=0,
+            datapath='database/', name_database='kodakdb',
+            max_patches=1024, seed=None, do_mask=True, patch_norm=True, verbose=0,
             data_cache='/tmp/data_cache', matname=None):
     """
     Extract data:
@@ -25,8 +25,16 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
     series a random patches.
 
     """
+    if verbose:
+        import sys
+        # setup toolbar
+        sys.stdout.write('Extracting data...')
+        sys.stdout.flush()
+        sys.stdout.write("\b" * (toolbar_width + 1))  # return to start of line, after '['
+        t0 = time.time()
     if matname is None:
         # Load natural images and extract patches
+        # see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
         from SLIP import Image
         slip = Image({'N_X':height, 'N_Y':width,
                 'white_n_learning' : 0,
@@ -39,15 +47,12 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 'datapath': datapath,
                 'do_mask': True,
                 'N_image': n_image})
-
-        if verbose:
-            import sys
-            # setup toolbar
-            sys.stdout.write('Extracting data...')
-            sys.stdout.flush()
-            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
-            t0 = time.time()
         import os
+
+        if do_mask:
+            x, y = np.meshgrid(np.linspace(-1, 1, patch_size[0]), np.linspace(-1, 1, patch_size[1]))
+            mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
+
         imagelist = slip.make_imagelist(name_database=name_database)
         for filename, croparea in imagelist:
             # whitening
@@ -55,10 +60,15 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             image = slip.whitening(image)
             # Extract all reference patches and ravel them
             data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))
+
             data_ = data_.reshape(data_.shape[0], -1)
             data_ -= np.mean(data_, axis=0)
             if patch_norm:
                 data_ /= np.std(data_, axis=0)
+
+            if do_mask:
+                data_ = data_ * mask[np.newaxis, :]
+
             # collect everything as a matrix
             try:
                 data = np.vstack((data, data_))
@@ -68,12 +78,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 # update the bar
                 sys.stdout.write(filename + ", ")
                 sys.stdout.flush()
-        if verbose:
-            dt = time.time() - t0
-            sys.stdout.write("\n")
-            sys.stdout.write("Data is of shape : "+ str(data.shape))
-            sys.stdout.write(' - done in %.2fs.' % dt)
-            sys.stdout.flush()
+
     else:
         import os
         fmatname = os.path.join(data_cache, matname)
@@ -82,7 +87,6 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 touch(fmatname + '_data' + '_lock')
                 try:
                     if verbose: print('No cache found {}: Extracting data...'.format(fmatname + '_data'), end=' ')
-                    print(datapath)
                     data = get_data(height=height, width=width, n_image=n_image,
                                     patch_size=patch_size, datapath=datapath,
                                     name_database=name_database, max_patches=max_patches,
@@ -99,8 +103,13 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                 return 'lock'
         else:
             if verbose: print("loading the data called : {0}".format(fmatname + '_data'))
-            # Une seule fois mp ici
             data = np.load(fmatname + '_data.npy')
+    if verbose:
+        dt = time.time() - t0
+        sys.stdout.write("Data is of shape : " + str(data.shape))
+        sys.stdout.write(' - done in %.2fs.' % dt)
+        sys.stdout.write("\n")
+        sys.stdout.flush()
     return data
 
 def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
@@ -158,12 +167,15 @@ def show_dico_in_order(shl_exp, dico, data=None, title=None, fname=None, dpi=200
     """
     return show_dico(shl_exp, dico=dico, data=data, order=True, title=title, fname=fname, dpi=dpi, **kwargs)
 
-def show_dico(shl_exp, dico,  data=None, order=False, title=None, fname=None, dpi=200, **kwargs):
+def show_dico(shl_exp, dico,  data=None, order=False, title=None, fname=None, dpi=200, fig=None, ax=None):
     """
     display the dictionary in a random order
     """
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
-    fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
+    if fig is None:
+        fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
+    if ax is None:
+        ax = fig.add_subplot(111)
 
     dim_graph = dico.dictionary.shape[0]
     if order:
@@ -202,7 +214,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, fname=None, dp
     if not fname is None: fig.savefig(fname, dpi=dpi)
     return fig, ax
 
-def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):
+def plot_coeff_distribution(dico, data, title=None, algorithm=None, fname=None, fig=None, ax=None):
     """
     Plot the coeff distribution of a given dictionary
     """
@@ -215,8 +227,12 @@ def plot_coeff_distribution(dico, data, title=None,algorithm=None,fname=None):
     import pandas as pd
     import seaborn as sns
     df = pd.DataFrame(res_lst, columns=['Coeff'])
-    fig = plt.figure(figsize=(6, 4))
-    ax = fig.add_subplot(111)
+    if fig is None:
+        fig = plt.figure(figsize=(16, 4))
+    if ax is None:
+        ax = fig.add_subplot(111)
+
+
     with sns.axes_style("white"):
         ax = sns.distplot(df['Coeff'], kde=False)#, fit=gamma,  fit_kws={'clip':(0., 5.)})
     if title is not None:
@@ -242,7 +258,7 @@ def bins_step(mini, maxi, nb_step):
     out.append(a)
     return out
 
-def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None):
+def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None, fig=None, ax=None):
     """
     plot the coefficient distribution of the filter which is selected the more,
     and the one which is selected the less
@@ -275,7 +291,7 @@ def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None):
     return fig, ax
 
 ## To adapt with shl_exp
-def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
+def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None, fig=None, ax=None):
     """
     Overlay of 2 histogram, the histogram of the variance of the coefficient,
     and the corresponding gaussian one
@@ -294,8 +310,11 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     Q=np.random.normal(mom1,mom2,dico.dictionary.shape[0])
     df1=pd.DataFrame(Q, columns=['Q'])
 
-    fig = plt.figure(figsize=(6, 4))
-    ax = fig.add_subplot(111)
+    if fig is None:
+        fig = plt.figure(figsize=(16, 4))
+    if ax is None:
+        ax = fig.add_subplot(111)
+
     #bins=[0, 10, 20, 30, 40, 50, 100]
     mini=min(np.min(P_norm),np.min(Q))
     maxi=max(np.max(P_norm),np.max(Q))
@@ -314,7 +333,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None):
     #print(mom1,mom2)
     return fig, ax
 
-def plot_proba_histogram(coding, verbose=False):
+def plot_proba_histogram(coding, verbose=False, fig=None, ax=None):
     n_dictionary=coding.shape[1]
 
     p = np.count_nonzero(coding, axis=0)/coding.shape[1]
@@ -323,8 +342,11 @@ def plot_proba_histogram(coding, verbose=False):
     rel_ent = np.sum( -p * np.log(p)) / np.log(n_dictionary)
     if verbose: print('Entropy / Entropy_max=', rel_ent )
 
-    fig = plt.figure(figsize=(16, 4))
-    ax = fig.add_subplot(111)
+    if fig is None:
+        fig = plt.figure(figsize=(16, 4))
+    if ax is None:
+        ax = fig.add_subplot(111)
+
     ax.bar(np.arange(n_dictionary), p*n_dictionary)
     ax.set_title('distribution of the selection probability - entropy= ' + str(rel_ent)  )
     ax.set_ylabel('pdf')
@@ -332,9 +354,11 @@ def plot_proba_histogram(coding, verbose=False):
     ax.set_xlim(0, n_dictionary)
     return fig, ax
 
-def plot_error(dico):
-    fig = plt.figure(figsize=(16, 8))
-    ax = fig.add_subplot(111)
+def plot_error(dico, fig=None, ax=None):
+    if fig is None:
+        fig = plt.figure(figsize=(16, 4))
+    if ax is None:
+        ax = fig.add_subplot(111)
     n = np.arange(dico.n_iter)
     err = dico.rec_error
     ax.plot(n,err)
@@ -343,11 +367,13 @@ def plot_error(dico):
     ax.set_xlabel('Iteration')
     return fig, ax
 
-def plot_variance(shl_exp, sparse_code, fname=None):
+def plot_variance(shl_exp, sparse_code, fname=None, fig=None, ax=None):
+    if fig is None:
+        fig = plt.figure(figsize=(16, 4))
+    if ax is None:
+        ax = fig.add_subplot(111)
     n_dictionary = sparse_code.shape[1]
     Z = np.mean(sparse_code**2)
-    fig = plt.figure(figsize=(16, 4))
-    ax = fig.add_subplot(111)
     ax.bar(np.arange(n_dictionary), np.mean(sparse_code**2, axis=0)/Z)#, yerr=np.std(code**2/Z, axis=0))
     ax.set_title('Variance of coefficients')
     ax.set_ylabel('Variance')
@@ -356,9 +382,11 @@ def plot_variance(shl_exp, sparse_code, fname=None):
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
-def plot_variance_histogram(shl_exp, sparse_code, fname=None):
-    fig = plt.figure(figsize=(16, 4))
-    ax = fig.add_subplot(111)
+def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None):
+    if fig is None:
+        fig = plt.figure(figsize=(16, 4))
+    if ax is None:
+        ax = fig.add_subplot(111)
     variance = np.mean(sparse_code**2, axis=0)
     ax.hist(variance, bins=np.linspace(0, variance.max(), 20, endpoint=True))
     ax.set_title('distribution of the mean variance of coefficients')
@@ -369,9 +397,11 @@ def plot_variance_histogram(shl_exp, sparse_code, fname=None):
     return fig, ax
 
 
-def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05, fig=None, ax=None, c='g'):
-    if fig is None: fig = plt.figure(figsize=(16, 8))
-    if ax is None: ax = fig.add_subplot(111)
+def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05, c='g', fig=None, ax=None):
+    if fig is None:
+        fig = plt.figure(figsize=(16, 8))
+    if ax is None:
+        ax = fig.add_subplot(111)
     coefficients = np.linspace(0, 1, P_cum.shape[1])
     ax.plot(coefficients, np.ones_like(coefficients), '--')
     ax.plot(coefficients, P_cum.T, c=c, alpha=alpha)
@@ -385,10 +415,12 @@ def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05, fig=None, ax=None,
 
 #import seaborn as sns
 #import pandas as pd
-def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True', ylabel='MP'):
+def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True', ylabel='MP', fig=None, ax=None):
+    if fig is None:
+        fig = plt.figure(figsize=(16, 16))
+    if ax is None:
+        ax = fig.add_subplot(111)
 
-    fig = plt.figure(figsize=(16, 16))
-    ax = fig.add_subplot(111)
     a_min = np.min((sparse_vector.min(), my_sparse_code.min()))
     a_max = np.max((sparse_vector.max(), my_sparse_code.max()))
     ax.plot(np.array([a_min, a_max]), np.array([a_min, a_max]), 'k--', lw=2)
@@ -401,7 +433,12 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True
     return fig, ax
 
 
-def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, fname=None):
+def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, fname=None, fig=None, ax=None):
+    if fig is None:
+        fig = plt.figure(figsize=(16, 4))
+    if ax is None:
+        ax = fig.add_subplot(111)
+
     try:
         df_variable = dico.record[variable]
         learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
@@ -410,8 +447,6 @@ def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, fname=None
             A[ii, :] = df_variable[ind]
 
         #print(learning_time, A[:, :-N_nosample].shape)
-        fig = plt.figure(figsize=(12, 4))
-        ax = fig.add_subplot(111)
         ax.plot(learning_time, A[:, :-N_nosample], '-', lw=1, alpha=alpha)
         ax.set_ylabel(variable)
         ax.set_xlabel('Learning step')
@@ -424,8 +459,6 @@ def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, fname=None
         return fig, ax
 
     except AttributeError:
-        fig = plt.figure(figsize=(12, 1))
-        ax = fig.add_subplot(111)
         ax.set_title('record not available')
         ax.set_ylabel(variable)
         ax.set_xlabel('Learning step')

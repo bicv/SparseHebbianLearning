@@ -154,8 +154,8 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
 
     """
     if isinstance(C, (np.float, int)):
-        if C==0.: print('WARNING! C is equal to zero!')
-        elif C==np.inf: return C
+        if C == 0.: print('WARNING! C is equal to zero!')
+        elif C == np.inf: return C
         if do_sym:
             return 1.-np.exp(-np.abs(code)/C)
         else:
@@ -234,14 +234,13 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
 
-    if homeo_method == 'P_cum':
+    if homeo_method == 'HEH':
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
     #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
     if precision is None:
-
         corr = (X @ dictionary.T)
         Xcorr = (dictionary @ dictionary.T)
         #SE_0 = np.sum(X*2, axis=1)
@@ -261,12 +260,6 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
     if gain is None: gain = np.ones(n_dictionary)
 
     # TODO: vectorize by doing all patches at the same time?
-
-
-
-
-
-
 
     if homeo_method == 'HEH':
         for i_sample in range(n_samples):

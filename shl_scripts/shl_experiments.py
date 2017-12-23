@@ -12,7 +12,7 @@ Learning filters from natural images using sparse coding
 ========================================================
 
 * When imposing a code representing patches from natural images to be sparse,
-one observes the formation of filters ressembling the receptive field of simple
+one observes the formation of filters resembling the receptive field of simple
 cells in primates primary visual cortex.  This was first proposed in the
 framework of the SparseNet algorithm from Bruno Olshausen
 (http://redwood.berkeley.edu/bruno/sparsenet/).
@@ -29,7 +29,9 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
         Journal = {Neural Computation},
         Volume = {22},
         Number = {7},
-        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
+        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, 
+        Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, 
+        Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
         Month = {July},
         }
 
@@ -37,15 +39,10 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
 """
 
 import time
-import os
 
 toolbar_width = 40
 
-# import matplotlib
-
 import numpy as np
-# see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
-from SLIP import Image
 
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -66,8 +63,7 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_size=(16, 16),
-                 #datapath=os.path.join(home, 'quantic/science/BICV/SLIP/database/'), #'database/',
+                 patch_size=(24, 24),
                  datapath='database/',
                  name_database='kodakdb',
                  n_dictionary=18**2,
@@ -78,20 +74,20 @@ class SHL(object):
                  l0_sparseness=16,
                  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**14,
-                 eta=.05,
+                 n_iter=2**12,
+                 eta=.025,
                  do_sym=False,
                  max_patches=4096,
                  seed=42,
                  patch_norm=True,
-                 batch_size=128,
+                 batch_size=512,
                  record_each=128,
-                 n_image=None, #200,
+                 n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
-                 homeo_method='EXP',
-                 homeo_params={}):
+                 data_cache='data_cache',
+                 homeo_method='HAP',
+                 homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02)):
         self.height = height
         self.width = width
         self.datapath = datapath
@@ -136,15 +132,11 @@ class SHL(object):
 
     def get_data(self, matname=None):
         from shl_scripts.shl_tools import get_data
-        # height=256, width=256, n_image=200, patch_size=(12,12),
-        #     datapath='database/', name_database='serre07_distractors',
-        #     max_patches=1024, seed=None, patch_norm=True, verbose=0,
-        #     data_cache='/tmp/data_cache', matname=None
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=self.patch_size, datapath=self.datapath,
                     max_patches=self.max_patches, verbose=self.verbose,
                     data_cache=self.data_cache, seed=self.seed,
-                    patch_norm=self.patch_norm,
+                    do_mask=self.do_mask, patch_norm=self.patch_norm,
                     name_database=self.name_database, matname=matname)
 
 
@@ -174,7 +166,7 @@ class SHL(object):
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        C=C, P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None, homeo_method=self.homeo_method)
+                                        C=C, P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None, homeo_method='None')# TODO: check that in the end we just do the simple coding instead of using self.homeo_method)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
@@ -221,7 +213,7 @@ class SHL(object):
                                          l0_sparseness=self.l0_sparseness, one_over_F=self.one_over_F,
                                          l0_sparseness_end=self.l0_sparseness_end,
                                          batch_size=self.batch_size, verbose=self.verbose,
-                                         fit_tol=self.fit_tol, do_mask=self.do_mask,
+                                         fit_tol=self.fit_tol,
                                          do_precision=self.do_precision, record_each=self.record_each,
                                          homeo_method=self.homeo_method, homeo_params=self.homeo_params)
             
@@ -237,7 +229,7 @@ class SHL(object):
             fmatname = os.path.join(self.data_cache, matname) + '_dico.pkl'
             import pickle
             if not(os.path.isfile(fmatname)):
-                time.sleep(np.random.rand()*0.1)
+                time.sleep(np.random.rand()*0.01)
                 if not(os.path.isfile(fmatname + '_lock')):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
@@ -266,6 +258,7 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
                 if not dictionary is None or not P_cum is None:
+                    if self.verbose: print("resuming the learning on : {0}".format(fmatname))
                     if not (os.path.isfile(fmatname + '_lock')):
                         touch(fmatname + '_lock')
                         touch(fmatname + self.LOCK)
@@ -311,29 +304,29 @@ class SHL(object):
 
         return dico
 
-    def plot_variance(self, sparse_code, fname=None):
+    def plot_variance(self, sparse_code, fname=None, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_variance
-        return plot_variance(self, sparse_code, fname=fname)
+        return plot_variance(self, sparse_code, fname=fname, fig=fig, ax=ax)
 
-    def plot_variance_histogram(self, sparse_code, fname=None):
+    def plot_variance_histogram(self, sparse_code, fname=None, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_variance_histogram
-        return plot_variance_histogram(self, sparse_code, fname=fname)
+        return plot_variance_histogram(self, sparse_code, fname=fname, fig=fig, ax=ax)
 
-    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1):
+    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1, fig=None, ax=None):
         from shl_scripts.shl_tools import time_plot
-        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample)
+        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample, fig=fig, ax=ax)
 
-    def show_dico(self, dico, data=None, title=None, fname=None, dpi=200):
+    def show_dico(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico
-        return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
+        return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
 
-    def plot_error(self, dico):
+    def plot_error(self, dico, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_error
-        return plot_error(dico)
+        return plot_error(dico, fig=fig, ax=ax)
 
-    def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200):
+    def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico_in_order
-        return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
+        return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
 
 if __name__ == '__main__':
 
