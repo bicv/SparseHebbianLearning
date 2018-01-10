@@ -79,7 +79,7 @@ class SHL(object):
                  do_sym=False,
                  max_patches=4096,
                  seed=42,
-                 patch_norm=True,
+                 patch_norm=False,
                  batch_size=512,
                  record_each=128,
                  n_image=None,

@@ -16,7 +16,7 @@ def touch(filename):
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='kodakdb',
-            max_patches=1024, seed=None, do_mask=True, patch_norm=True, verbose=0,
+            max_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
             data_cache='/tmp/data_cache', matname=None):
     """
     Extract data:

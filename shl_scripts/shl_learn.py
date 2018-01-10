@@ -336,7 +336,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         if 'eta_homeo' in homeo_params.keys():
             eta_homeo = homeo_params['eta_homeo']
         else:
-            eta_homeo = 0.8
+            eta_homeo = 0.01
 
         if 'alpha_homeo' in homeo_params.keys():
             alpha_homeo = homeo_params['alpha_homeo']
