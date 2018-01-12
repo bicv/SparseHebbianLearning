@@ -29,8 +29,8 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
         Journal = {Neural Computation},
         Volume = {22},
         Number = {7},
-        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, 
-        Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, 
+        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images,
+        Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit,
         Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
         Month = {July},
         }
@@ -75,19 +75,23 @@ class SHL(object):
                  l0_sparseness_end=None,
                  one_over_F=True,
                  n_iter=2**12,
-                 eta=.025,
+                 # Standard
+                 #eta=.01,
+                 # ADAM https://arxiv.org/pdf/1412.6980.pdf
+                 eta=dict(alpha=.01, beta1=.9, beta2=.999, epsilon=1.e-8),
+                 homeo_method='HAP',
+                 homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
                  do_sym=False,
                  max_patches=4096,
                  seed=42,
-                 patch_norm=True,
+                 patch_norm=False,
                  batch_size=512,
                  record_each=128,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  data_cache='data_cache',
-                 homeo_method='HAP',
-                 homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02)):
+                ):
         self.height = height
         self.width = width
         self.datapath = datapath
@@ -216,7 +220,7 @@ class SHL(object):
                                          fit_tol=self.fit_tol,
                                          do_precision=self.do_precision, record_each=self.record_each,
                                          homeo_method=self.homeo_method, homeo_params=self.homeo_params)
-            
+
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
 
@@ -241,8 +245,8 @@ class SHL(object):
                                                matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
-                    except AttributeError:
-                        print('Attribute Error')
+                    except ImportError: #Exception as e:
+                        print('Error', e)
                     finally:
                         try:
                             os.remove(fmatname + self.LOCK)

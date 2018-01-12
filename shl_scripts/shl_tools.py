@@ -16,7 +16,7 @@ def touch(filename):
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='kodakdb',
-            max_patches=1024, seed=None, do_mask=True, patch_norm=True, verbose=0,
+            max_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
             data_cache='/tmp/data_cache', matname=None):
     """
     Extract data:
@@ -58,14 +58,14 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             # whitening
             image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)
             image = slip.whitening(image)
+
             # Extract all reference patches and ravel them
             data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))
+            data_ -= np.mean(data_)
+            if patch_norm:
+                data_ /= np.std(data_)
 
             data_ = data_.reshape(data_.shape[0], -1)
-            data_ -= np.mean(data_, axis=0)
-            if patch_norm:
-                data_ /= np.std(data_, axis=0)
-
             if do_mask:
                 data_ = data_ * mask[np.newaxis, :]
 
