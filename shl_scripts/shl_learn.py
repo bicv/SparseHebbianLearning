@@ -18,7 +18,7 @@ class SparseHebbianLearning:
     n_dictionary : int,
         Number of dictionary elements to extract
 
-    eta : float
+    eta : float or dict
         Gives the learning parameter for the homeostatic gain.
 
     n_iter : int,
@@ -82,17 +82,19 @@ class SparseHebbianLearning:
     http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.html
 
     """
-    def __init__(self, fit_algorithm, dictionary=None, precision=None, n_dictionary=None,
-                 eta=0.02, n_iter=10000,
-                 batch_size=100, one_over_F=True,
-                 l0_sparseness=None, l0_sparseness_end=None, fit_tol=None, do_precision=None, do_sym=True,
-                 record_each=200, verbose=False, homeo_method='EXP', homeo_params={}):
-        self.eta = eta
+    def __init__(self, fit_algorithm, dictionary=None, precision=None,
+                 n_dictionary=None, eta=0.02, n_iter=10000,
+                 batch_size=100,
+                 l0_sparseness=None, l0_sparseness_end=None, fit_tol=None,
+                 do_precision=None, do_sym=True,
+                 record_each=200, verbose=False,
+                 homeo_method='EXP', homeo_params={}, one_over_F=True):
+        self.fit_algorithm = fit_algorithm
         self.dictionary = dictionary
         self.precision = precision
         self.n_dictionary = n_dictionary
+        self.eta = eta
         self.n_iter = n_iter
-        self.fit_algorithm = fit_algorithm
         self.do_sym = do_sym
         self.batch_size = batch_size
         self.l0_sparseness = l0_sparseness
@@ -120,7 +122,6 @@ class SparseHebbianLearning:
         self : object
             Returns the instance itself.
         """
-
         return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.precision,
                                   eta=self.eta, n_dictionary=self.n_dictionary, l0_sparseness=self.l0_sparseness, l0_sparseness_end=self.l0_sparseness_end,
                                   n_iter=self.n_iter, method=self.fit_algorithm, do_sym=self.do_sym, one_over_F=self.one_over_F,
@@ -209,8 +210,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     n_dictionary : int,
         Number of dictionary atoms to extract.
 
-    eta : float
-        Gives the learning parameter for the homeostatic gain.
+    eta : float or dict
+        Gives the learning parameter for the dictionary.
 
     n_iter : int,
         total number of iterations to perform
@@ -290,7 +291,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     n_samples, n_pixels = X.shape
 
     if dictionary is None:
-
         if not one_over_F:
             dictionary = np.random.randn(n_dictionary, n_pixels)
         else:
@@ -311,6 +311,12 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     # print(alpha_homeo, eta_homeo, alpha_homeo==0, eta_homeo==0, alpha_homeo==0 or eta_homeo==0, 'P_cum', P_cum)
 
     #initializing parameters
+    if isinstance(eta, np.float):
+        print('dooh!')
+        do_adam = False
+    else:
+        do_adam = True
+        moment = energy = np.zeros_like(dictionary)
 
     if homeo_method=='None':
 
@@ -441,9 +447,19 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         rec_error[ii]=np.mean(np.mean(residual**2, axis=1))
 
         #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
-        eta_ = eta + (1 - eta) / (ii + 1)
         residual /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
-        dictionary += eta_ * (sparse_code.T @ residual)
+        gradient = - sparse_code.T @ residual
+        if do_adam:
+            #  biased first moment estimate
+            moment = eta['beta1'] * moment + (1 - eta['beta1']) * gradient
+            # biased second raw moment estimate
+            energy = eta['beta2'] * energy + (1 - eta['beta2']) * (gradient**2)
+            dictionary -= eta['alpha'] * (moment / (1-eta['beta1']**(ii+1)))  / (np.sqrt(energy / (1-eta['beta2']**(ii+1))) + eta['epsilon'])
+
+        else:
+            eta_ = eta + (1 - eta) / (ii + 1)
+
+            dictionary -= eta_ * gradient
 
         if do_precision:
             variance = 1./(precision + 1.e-16)
