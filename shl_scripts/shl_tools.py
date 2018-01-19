@@ -433,7 +433,7 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True
     return fig, ax
 
 
-def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, fname=None, fig=None, ax=None):
+def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, color=None, label=None, fname=None, fig=None, ax=None):
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:
@@ -447,21 +447,22 @@ def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, fname=None
             A[ii, :] = df_variable[ind]
 
         #print(learning_time, A[:, :-N_nosample].shape)
-        ax.plot(learning_time, A[:, :-N_nosample], '-', lw=1, alpha=alpha)
+        ax.plot(learning_time, A[:, :-N_nosample], '-', lw=1, alpha=alpha, color=color, label=label)
         ax.set_ylabel(variable)
         ax.set_xlabel('Learning step')
         ax.set_xlim(0, dico.n_iter)
         #if variable=='entropy' :
         #    ax.set_ylim(0.95)
-        #else :
-        #    ax.set_ylim(0)
-        if not fname is None: fig.savefig(fname, dpi=200)
-        return fig, ax
+        #else
+        #print('label', label)
+        #if not label is None: ax.legend(loc='best')
+        if variable=='error' :
+            ax.set_ylim(0)
 
     except AttributeError:
         ax.set_title('record not available')
         ax.set_ylabel(variable)
         ax.set_xlabel('Learning step')
         ax.set_xlim(0, dico.n_iter)
-        if not fname is None: fig.savefig(fname, dpi=200)
-        return fig, ax
+    if not fname is None: fig.savefig(fname, dpi=200)
+    return fig, ax

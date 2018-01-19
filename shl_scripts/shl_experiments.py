@@ -13,7 +13,7 @@ Learning filters from natural images using sparse coding
 
 * When imposing a code representing patches from natural images to be sparse,
 one observes the formation of filters resembling the receptive field of simple
-cells in primates primary visual cortex.  This was first proposed in the
+cells in primates primary visual cortex. This was first proposed in the
 framework of the SparseNet algorithm from Bruno Olshausen
 (http://redwood.berkeley.edu/bruno/sparsenet/).
 
@@ -298,6 +298,8 @@ class SHL(object):
                 fig, ax = self.time_plot(dico, variable='prob_active', fname=fname)
             if 'time_plot_error' in list_figures:
                 fig, ax = self.time_plot(dico, variable='error', fname=fname)
+            if 'time_plot_qerror' in list_figures:
+                fig, ax = self.time_plot(dico, variable='qerror', fname=fname)
             if 'time_plot_entropy' in list_figures:
                 fig, ax = self.time_plot(dico, variable='entropy', fname=fname)
             try:
@@ -316,9 +318,9 @@ class SHL(object):
         from shl_scripts.shl_tools import plot_variance_histogram
         return plot_variance_histogram(self, sparse_code, fname=fname, fig=fig, ax=ax)
 
-    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1, fig=None, ax=None):
+    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1, color=None, label=None, fig=None, ax=None):
         from shl_scripts.shl_tools import time_plot
-        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample, fig=fig, ax=ax)
+        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample, color=color, label=label, fig=fig, ax=ax)
 
     def show_dico(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico
