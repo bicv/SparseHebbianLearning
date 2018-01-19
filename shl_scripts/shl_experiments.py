@@ -78,7 +78,7 @@ class SHL(object):
                  # Standard
                  #eta=.01,
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
-                 eta=dict(alpha=.01, beta1=.9, beta2=.999, epsilon=1.e-8),
+                 eta=dict(alpha=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
                  homeo_method='HAP',
                  homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
                  do_sym=False,
@@ -90,7 +90,7 @@ class SHL(object):
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='data_cache',
+                 data_cache='/tmp/data_cache',
                 ):
         self.height = height
         self.width = width
