@@ -476,7 +476,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         if homeo_method=='None':
             pass
 
-        elif homeo_method=='EXP':
+        elif homeo_method in ['EXP', 'HAP', 'EMP']:
 
             if mean_measure is None:
                 mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
@@ -484,20 +484,16 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             else:
                 mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
 
-            gain = np.exp(-(1 / alpha_homeo) * mean_measure)
+            if homeo_method=='EXP':
+                gain = np.exp(-(1 / alpha_homeo) * mean_measure)
 
-        elif homeo_method=='HAP':
+            elif homeo_method=='HAP':
+                gain = mean_measure**(-alpha_homeo)#
+                    # gain /= gain.mean()
 
-            #eta_homeo_ = eta_homeo + (1 - eta_homeo) / (ii + 1)
-
-            if mean_measure is None:
-                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
-                                 do_HAP=True)
-            else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
-
-            gain = mean_measure**(-alpha_homeo)#
-                # gain /= gain.mean()
+            elif homeo_method=='EMP':
+                p_threshold = (1/n_dictionary)*(1+alpha_homeo)
+                gain = 1*(mean_measure < p_threshold)
 
         elif homeo_method=='Olshausen':
 
@@ -510,17 +506,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=False)
 
             gain = mean_measure**(-alpha_homeo)
-
-        elif homeo_method=='EMP':
-
-            if mean_measure is None:
-                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1, verbose=verbose,
-                                 do_HAP=True)
-            else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
-
-            p_threshold = (1/n_dictionary)*(1+alpha_homeo)
-            gain = 1*(mean_measure < p_threshold)
 
         elif homeo_method=='HEH':
 
