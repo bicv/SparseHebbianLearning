@@ -215,7 +215,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, fname=None, dp
     return fig, ax
 
 
-def show_data(data, fname=None, dpi=200, fig=None, axs=None):
+def show_data(data, fname=None, dpi=200, cmax=None, fig=None, axs=None):
     """
     display the data in a line
 
@@ -229,7 +229,7 @@ def show_data(data, fname=None, dpi=200, fig=None, axs=None):
     # if ax is None:
     #     ax = fig.add_subplot(111)
 
-    cmax = np.max(np.abs(data))
+    if cmax is None: cmax = np.max(np.abs(data))
     for j in range(max_patches):
         axs[j].imshow(data[j, :].reshape((N_pix, N_pix)),
                          cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
