@@ -160,7 +160,7 @@ def ovf_dictionary(n_dictionary, n_pixels):
     dictionary=np.zeros((n_dictionary, n_pixels))
     for i in range(n_dictionary):
         phase = np.random.uniform(0, 2 * np.pi, (N_f, N_f))
-        patch=np.real(np.fft.ifft2(spectra*np.exp(1j*phase)))
+        patch=np.real(np.fft.ifft2(np.fft.fftshift(spectra*np.exp(1j*phase))))
         #patch-=np.mean(patch)
         dictionary[i, :] = patch.ravel()
 
