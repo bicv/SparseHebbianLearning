@@ -74,11 +74,11 @@ class SHL(object):
                  l0_sparseness=16,
                  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**12,
+                 n_iter=2**10,
                  # Standard
-                 #eta=.01,
+                 eta=.01,
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
-                 eta=dict(alpha=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
+                 #eta=dict(alpha=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
                  homeo_method='HAP',
                  homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
                  do_sym=False,
