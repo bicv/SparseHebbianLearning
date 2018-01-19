@@ -294,7 +294,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         if not one_over_F:
             dictionary = np.random.randn(n_dictionary, n_pixels)
         else:
-            dictionary = ovf_dictionary(n_dictionary,n_pixels)
+            dictionary = ovf_dictionary(n_dictionary, n_pixels)
 
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
     dictionary /= norm[:, np.newaxis]
@@ -439,7 +439,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                    P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0[ii],
-                                   gain=gain, homeo_method=homeo_method)
+                                   gain=gain)
 
         # Update dictionary
         residual = this_X - sparse_code @ dictionary
@@ -532,7 +532,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 from scipy.stats import kurtosis
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
-                                          P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0[ii], gain=gain, homeo_method=homeo_method)
+                                          P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0[ii], gain=gain)
                 # calculation of relative entropy
                 p_ = np.count_nonzero(sparse_code_rec,axis=0) / (sparse_code_rec.shape[1])
                 p_ /= p_.sum()

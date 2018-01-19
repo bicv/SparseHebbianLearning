@@ -5,7 +5,8 @@ import numpy as np
 import time
 
 def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
-                          P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0, gain=None, homeo_method='EXP'):
+                  P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0,
+                  gain=None):
     """Generic sparse coding
 
     Each column of the result is the solution to a sparse coding problem.
@@ -109,9 +110,9 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
             copy_Xy=False).T
 
     elif algorithm == 'mp':
-        sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness, fit_tol=fit_tol,
-                                        P_cum=P_cum, C=C, do_sym=do_sym, verbose=verbose, gain=gain, homeo_method=homeo_method)
-
+        sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness,
+                         fit_tol=fit_tol, P_cum=P_cum, C=C, do_sym=do_sym,
+                         verbose=verbose, gain=gain)
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
                          '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'
@@ -198,8 +199,8 @@ def quantile(P_cum, p_c, stick, do_fast=True):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
         return q_i
 
-def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., do_sym=True, P_cum=None,
-       do_fast=True, C=0., verbose=0, gain=None, homeo_method='EXP'):
+def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1., do_sym=True, P_cum=None,
+       do_fast=True, C=5., verbose=0, gain=None):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -233,11 +234,11 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
     n_samples, n_pixels = X.shape
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
-
-    if homeo_method == 'HEH':
-        nb_quant = P_cum.shape[1]
-        stick = np.arange(n_dictionary)*nb_quant
-    #if fit_tol is None: fit_tol = 0.
+    #
+    # if homeo_method == 'HEH':
+    #     nb_quant = P_cum.shape[1]
+    #     stick = np.arange(n_dictionary)*nb_quant
+    # #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
     if precision is None:
@@ -245,6 +246,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
         Xcorr = (dictionary @ dictionary.T)
         #SE_0 = np.sum(X*2, axis=1)
     else:
+        print('dooh')
         corr = (X @ (precision*dictionary).T)
         Xcorr = (dictionary @ (precision*dictionary).T)
         #SE_0 = np.sum(X*2, axis=1)
@@ -254,12 +256,13 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
         if C == 0.:
+            print('C=0 dooh')
             C = P_cum[-1, :]
             P_cum = P_cum[:-1, :]
 
     if gain is None: gain = np.ones(n_dictionary)
 
-    if homeo_method == 'HEH':
+    if not P_cum is None:
         for i_sample in range(n_samples):
             c = corr[i_sample, :].copy()
             #c_0 = corr_0[i_sample]
@@ -270,7 +273,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
                 q = quantile(P_cum, q, stick, do_fast=do_fast)
 
                 ind = np.argmax(q)
-                c_ind = alpha * c[ind] / Xcorr[ind, ind]
+                c_ind = alpha_MP * c[ind] / Xcorr[ind, ind]
 
                 sparse_code[i_sample, ind] += c_ind
                 c -= c_ind * Xcorr[ind, :]
@@ -282,7 +285,6 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
                 ind = np.argmax(q, axis=1)
                 sparse_code[line, ind] = sparse_code[line, ind] + corr[line, ind]
                 corr = corr - (Xcorr[ind, :] * corr[line, ind][:, np.newaxis])
-
 
     if verbose>0:
         duration=time.time()-t0
