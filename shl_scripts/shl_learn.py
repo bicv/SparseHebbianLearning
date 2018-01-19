@@ -86,7 +86,7 @@ class SparseHebbianLearning:
                  n_dictionary=None, eta=0.02, n_iter=10000,
                  batch_size=100,
                  l0_sparseness=None, l0_sparseness_end=None, fit_tol=None,
-                 do_precision=None, do_sym=True,
+                 do_precision=None, do_sym=False,
                  record_each=200, verbose=False,
                  homeo_method='EXP', homeo_params={}, one_over_F=True):
         self.fit_algorithm = fit_algorithm
@@ -166,10 +166,11 @@ def ovf_dictionary(n_dictionary, n_pixels):
 
     return dictionary
 
-def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_dictionary=2, l0_sparseness=10, l0_sparseness_end=None, fit_tol=None,
+def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
+                    n_dictionary=2, l0_sparseness=10, l0_sparseness_end=None, fit_tol=None,
                   do_precision=False, n_iter=100, one_over_F=True,
                        batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                       method='mp', do_sym=True, homeo_method='EXP', homeo_params={}):
+                       method='mp', do_sym=False, homeo_method='HEH', homeo_params={}):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -322,13 +323,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             do_adam = True
             moment = energy = np.zeros_like(dictionary)
 
-    # default homeostasis parameters
-    P_cum = None
-    C = None
-    mean_measure = None
-    gain = np.ones(n_dictionary)
-    #mean_var = np.ones(n_dictionary)
-
     if homeo_method=='None':
         eta_homeo = 0.
         alpha_homeo = 0.
@@ -346,9 +340,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     #     else:
     #         alpha_homeo = -((1/n_dictionary)/np.log(0.5))
 
-elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
+    elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
         eta_homeo = homeo_params['eta_homeo']
-        alpha_homeo = homeo_params['alpha_homeo']
 
         # if 'eta_homeo' in homeo_params.keys():
         #     eta_homeo = homeo_params['eta_homeo']
@@ -360,14 +353,12 @@ elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
         # else:
         #     alpha_homeo = 0.02
 
-        if homeo_method=='EXP':
-            alpha_homeo = -1*homeo_params['alpha_homeo']
-        elif homeo_method=='HEH':
+        if homeo_method=='HEH':
             C = homeo_params['C']
             P_cum = homeo_params['P_cum']
             nb_quant = homeo_params['nb_quant']
 
-            gain=None
+            gain = None
             # do the equalitarian homeostasis
             if P_cum is None:
                 P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
@@ -378,6 +369,17 @@ elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
                     C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
                     # and stack it to P_cum array for convenience
                     P_cum = np.vstack((P_cum, C_vec))
+        else:
+            # default homeostasis parameters
+            mean_measure = None
+            gain = np.ones(n_dictionary)
+
+            P_cum = None
+            C = 0.
+            alpha_homeo = homeo_params['alpha_homeo']
+            if homeo_method=='EXP':
+                alpha_homeo = -1*homeo_params['alpha_homeo']
+
     #
     # elif homeo_method=='HEH':
     #
@@ -422,7 +424,7 @@ elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
 
     # cycle over all batches
 
-    #scheduling l0_sparseness
+    #scheduling l0_sparseness TODO : evaluate if this makes the learning faster
     if (l0_sparseness_end is None) or (l0_sparseness_end < l0_sparseness):
         l0 = l0_sparseness * np.ones(n_iter)
     else:
@@ -435,14 +437,14 @@ elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
         l0 = (A * np.exp(n / tau) + B).astype(int)
 
     for ii in range(n_iter):
-
-        this_X = batches[idx_batches[ii]]
         dt = (time.time() - t0)
 
         if verbose > 0:
             if ii % int(n_iter//verbose + 1)==0:
                 print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
                        % (ii, n_iter, dt, dt//60))
+
+        this_X = batches[idx_batches[ii]]
 
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
@@ -518,6 +520,7 @@ elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
         elif homeo_method=='HEH':
 
             if C==0.: #auto-scaling
+                print('dooh C = 0')
                 corr = (this_X @ dictionary.T)
                 C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
                 P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
@@ -625,7 +628,7 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     return mean_measure
 
 
-def update_P_cum(P_cum, code, eta_homeo, C, nb_quant=100, do_sym=True, verbose=False):
+def update_P_cum(P_cum, code, eta_homeo, C, nb_quant=100, do_sym=False, verbose=False):
     """Update the estimated modulation function in place.
 
     Parameters
@@ -659,7 +662,7 @@ def update_P_cum(P_cum, code, eta_homeo, C, nb_quant=100, do_sym=True, verbose=F
         P_cum = (1 - eta_homeo)*P_cum + eta_homeo * P_cum_
     return P_cum
 
-def get_P_cum(code, C, nb_quant=100, do_sym=True, verbose=False):
+def get_P_cum(code, C, nb_quant=100, do_sym=False, verbose=False):
     from shl_scripts.shl_encode import rescaling
     p_c = rescaling(code, C, do_sym=do_sym, verbose=verbose)
 

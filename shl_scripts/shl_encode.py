@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
-                  P_cum=None, l0_sparseness=10, C=0., do_sym=True, verbose=0,
+                  P_cum=None, l0_sparseness=10, C=0., do_sym=False, verbose=0,
                   gain=None):
     """Generic sparse coding
 
@@ -199,7 +199,7 @@ def quantile(P_cum, p_c, stick, do_fast=True):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
         return q_i
 
-def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1., do_sym=True, P_cum=None,
+def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1., do_sym=False, P_cum=None,
        do_fast=True, C=5., verbose=0, gain=None):
     """
     Matching Pursuit

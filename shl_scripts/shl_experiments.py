@@ -66,18 +66,18 @@ class SHL(object):
                  patch_size=(16, 16),
                  datapath='database/',
                  name_database='kodakdb',
-                 n_dictionary=18**2,
+                 n_dictionary=24**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
                  do_mask=True,
-                 l0_sparseness=30,
+                 l0_sparseness=100,
                  l0_sparseness_end=None,
                  one_over_F=True,
                  n_iter=2**12,
                  # Standard
                  #eta=.01, # or equivalently
-                 eta = dict(eta=.01, beta1=0),
+                 eta = dict(eta=.05, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
                  #eta=dict(eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
                  homeo_method='HAP',
@@ -171,7 +171,7 @@ class SHL(object):
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        C=C, P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None, homeo_method='None')# TODO: check that in the end we just do the simple coding instead of using self.homeo_method)
+                                        C=C, P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
