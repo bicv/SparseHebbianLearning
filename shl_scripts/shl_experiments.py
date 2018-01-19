@@ -71,7 +71,7 @@ class SHL(object):
                  fit_tol=None,
                  do_precision=False,
                  do_mask=True,
-                 l0_sparseness=100,
+                 l0_sparseness=50,
                  l0_sparseness_end=None,
                  one_over_F=True,
                  n_iter=2**12,
