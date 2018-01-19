@@ -154,15 +154,15 @@ class SparseHebbianLearning:
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
 def ovf_dictionary(n_dictionary, n_pixels):
-
-    fx,fy=np.meshgrid(np.linspace(-1,1,np.sqrt(n_pixels).astype(int)),np.linspace(-1,1,np.sqrt(n_pixels).astype(int)))
-    spectra=1/np.sqrt(fx**2+fy**2)
-    dictionary=np.zeros((n_dictionary,n_pixels))
+    N_f = np.sqrt(n_pixels).astype(int)
+    fx, fy = np.meshgrid(np.linspace(-1, 1, N_f), np.linspace(-1, 1, N_f))
+    spectra = 1/np.sqrt(fx**2+fy**2) # FIX : may be infinite!
+    dictionary=np.zeros((n_dictionary, n_pixels))
     for i in range(n_dictionary):
-        phase = np.random.uniform(0, 2 * np.pi, (np.sqrt(n_pixels).astype(int), np.sqrt(n_pixels).astype(int)))
-        patch=np.abs(np.fft.ifft2(spectra*np.exp(1j*phase)))
-        patch-=np.mean(patch)
-        dictionary[i,:]=patch.ravel()
+        phase = np.random.uniform(0, 2 * np.pi, (N_f, N_f))
+        patch=np.real(np.fft.ifft2(spectra*np.exp(1j*phase)))
+        #patch-=np.mean(patch)
+        dictionary[i, :] = patch.ravel()
 
     return dictionary
 
@@ -509,7 +509,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
         elif homeo_method=='HEH':
 
-            if C==0.:
+            if C==0.: #auto-scaling
                 corr = (this_X @ dictionary.T)
                 C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
                 P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
@@ -538,11 +538,13 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
                 p_ /= p_.sum()
                 rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
                 error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
+                qerror = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
 
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
                                             'var':np.mean(sparse_code_rec**2, axis=0),
                                             'error':error,
+                                            'qerror':qerror,
                                             'entropy':rel_ent}],
                                             index=[ii])
                 record = pd.concat([record, record_one])
