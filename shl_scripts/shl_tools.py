@@ -214,6 +214,32 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, fname=None, dp
     if not fname is None: fig.savefig(fname, dpi=dpi)
     return fig, ax
 
+
+def show_data(data, fname=None, dpi=200, fig=None, axs=None):
+    """
+    display the data in a line
+
+    """
+    max_patches, n_pixels = data.shape
+    N_pix = np.sqrt(n_pixels).astype(int)
+    # subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
+    if fig is None:
+        fig = plt.figure(figsize=(15, 3))#, subplotpars=subplotpars
+        fig, axs = plt.subplots(1, max_patches, figsize=(15, 2))
+    # if ax is None:
+    #     ax = fig.add_subplot(111)
+
+    cmax = np.max(np.abs(data))
+    for j in range(max_patches):
+        axs[j].imshow(data[j, :].reshape((N_pix, N_pix)),
+                         cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
+                         interpolation='nearest')
+        axs[j].set_xticks(())
+        axs[j].set_yticks(())
+
+    if not fname is None: fig.savefig(fname, dpi=dpi)
+    return fig, axs
+
 def plot_coeff_distribution(dico, data, title=None, algorithm=None, fname=None, fig=None, ax=None):
     """
     Plot the coeff distribution of a given dictionary
