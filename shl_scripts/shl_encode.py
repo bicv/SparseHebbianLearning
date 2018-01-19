@@ -259,8 +259,6 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
 
     if gain is None: gain = np.ones(n_dictionary)
 
-    # TODO: vectorize by doing all patches at the same time?
-
     if homeo_method == 'HEH':
         for i_sample in range(n_samples):
             c = corr[i_sample, :].copy()
@@ -276,13 +274,10 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha=1., 
 
                 sparse_code[i_sample, ind] += c_ind
                 c -= c_ind * Xcorr[ind, :]
-
     else:
-
         line = np.arange(n_samples)
         gain = gain[np.newaxis, :] * np.ones_like(corr)
         for i_l0 in range(int(l0_sparseness)):
-
                 q = rectify(corr, do_sym=do_sym) * gain
                 ind = np.argmax(q, axis=1)
                 sparse_code[line, ind] = sparse_code[line, ind] + corr[line, ind]
