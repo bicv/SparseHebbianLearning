@@ -312,64 +312,94 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
 
     #initializing parameters
     if isinstance(eta, np.float):
-        print('dooh!')
+        print('dooh!', eta)
         do_adam = False
     else:
-        do_adam = True
-        moment = energy = np.zeros_like(dictionary)
+        if eta['beta1'] == 0:
+            do_adam = False
+            eta = eta['eta']
+        else:
+            do_adam = True
+            moment = energy = np.zeros_like(dictionary)
+
+    # default homeostasis parameters
+    P_cum = None
+    C = None
+    mean_measure = None
+    gain = np.ones(n_dictionary)
+    #mean_var = np.ones(n_dictionary)
 
     if homeo_method=='None':
-
         eta_homeo = 0.
         alpha_homeo = 0.
 
-    elif homeo_method=='EXP':
+    # elif homeo_method=='EXP':
+    #
+    #     if 'eta_homeo' in homeo_params.keys():
+    #         eta_homeo = homeo_params['eta_homeo']
+    #     else:
+    #         eta_homeo = 0.8
+    #         homeo_params['eta_homeo'] = eta_homeo
+    #
+    #     if 'alpha_homeo' in homeo_params.keys():
+    #         alpha_homeo = -1*homeo_params['alpha_homeo']
+    #     else:
+    #         alpha_homeo = -((1/n_dictionary)/np.log(0.5))
 
-        if 'eta_homeo' in homeo_params.keys():
-            eta_homeo = homeo_params['eta_homeo']
-        else:
-            eta_homeo = 0.8
-            homeo_params['eta_homeo'] = eta_homeo
+elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
+        eta_homeo = homeo_params['eta_homeo']
+        alpha_homeo = homeo_params['alpha_homeo']
 
-        if 'alpha_homeo' in homeo_params.keys():
+        # if 'eta_homeo' in homeo_params.keys():
+        #     eta_homeo = homeo_params['eta_homeo']
+        # else:
+        #     eta_homeo = 0.01
+        #
+        # if 'alpha_homeo' in homeo_params.keys():
+        #     alpha_homeo = homeo_params['alpha_homeo']
+        # else:
+        #     alpha_homeo = 0.02
+
+        if homeo_method=='EXP':
             alpha_homeo = -1*homeo_params['alpha_homeo']
-        else:
-            alpha_homeo = -((1/n_dictionary)/np.log(0.5))
-
-    elif homeo_method in ['HAP', 'Olshausen', 'EMP']:
-
-
-        if 'eta_homeo' in homeo_params.keys():
-            eta_homeo = homeo_params['eta_homeo']
-        else:
-            eta_homeo = 0.01
-
-        if 'alpha_homeo' in homeo_params.keys():
-            alpha_homeo = homeo_params['alpha_homeo']
-        else:
-            alpha_homeo = 0.02
-
-    elif homeo_method=='HEH':
-
-        if 'C' in homeo_params.keys():
+        elif homeo_method=='HEH':
             C = homeo_params['C']
-        else:
-            C = 5.
-
-        if 'P_cum' in homeo_params.keys():
             P_cum = homeo_params['P_cum']
-        else:
-            P_cum = None
-
-        if 'eta_homeo' in homeo_params.keys():
-            eta_homeo = homeo_params['eta_homeo']
-        else:
-            eta_homeo = 0.01
-
-        if 'nb_quant' in homeo_params.keys():
             nb_quant = homeo_params['nb_quant']
-        else:
-            nb_quant = 100
+
+            gain=None
+            # do the equalitarian homeostasis
+            if P_cum is None:
+                P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
+                if C==0.:
+                    # initialize the rescaling vector
+                    from shl_scripts.shl_encode import get_rescaling
+                    corr = (batches[0] @ dictionary.T)
+                    C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
+                    # and stack it to P_cum array for convenience
+                    P_cum = np.vstack((P_cum, C_vec))
+    #
+    # elif homeo_method=='HEH':
+    #
+    #     if 'C' in homeo_params.keys():
+    #         C = homeo_params['C']
+    #     else:
+    #         C = 5.
+    #
+    #     if 'P_cum' in homeo_params.keys():
+    #         P_cum = homeo_params['P_cum']
+    #     else:
+    #         P_cum = None
+    #
+    #     if 'eta_homeo' in homeo_params.keys():
+    #         eta_homeo = homeo_params['eta_homeo']
+    #     else:
+    #         eta_homeo = 0.01
+    #
+    #     if 'nb_quant' in homeo_params.keys():
+    #         nb_quant = homeo_params['nb_quant']
+    #     else:
+    #         nb_quant = 100
 
     else:
 
@@ -385,28 +415,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
     # Splits into ``n_batches`` batches
     batches = np.array_split(X_train, n_batches)
 
-
-    if homeo_method=='HEH':
-
-        gain=None
-        # do the equalitarian homeostasis
-        if P_cum is None:
-            P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
-            if C==0.:
-                # initialize the rescaling vector
-                from shl_scripts.shl_encode import get_rescaling
-                corr = (batches[0] @ dictionary.T)
-                C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
-                # and stack it to P_cum array for convenience
-                P_cum = np.vstack((P_cum, C_vec))
-    else:
-
-        # do the classical homeostasis
-        P_cum = None
-        C = None
-        mean_measure = None
-        gain = np.ones(n_dictionary)
-        #mean_var = np.ones(n_dictionary)
 
 
     rec_error=np.zeros(n_iter)
@@ -454,7 +462,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02, n_di
             moment = eta['beta1'] * moment + (1 - eta['beta1']) * gradient
             # biased second raw moment estimate
             energy = eta['beta2'] * energy + (1 - eta['beta2']) * (gradient**2)
-            dictionary -= eta['alpha'] * (moment / (1-eta['beta1']**(ii+1)))  / (np.sqrt(energy / (1-eta['beta2']**(ii+1))) + eta['epsilon'])
+            dictionary -= eta['eta'] * (moment / (1-eta['beta1']**(ii+1)))  / (np.sqrt(energy / (1-eta['beta2']**(ii+1))) + eta['epsilon'])
 
         else:
             eta_ = eta + (1 - eta) / (ii + 1)
