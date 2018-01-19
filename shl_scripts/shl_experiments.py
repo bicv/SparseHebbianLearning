@@ -63,7 +63,7 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_size=(24, 24),
+                 patch_size=(16, 16),
                  datapath='database/',
                  name_database='kodakdb',
                  n_dictionary=18**2,
@@ -71,14 +71,15 @@ class SHL(object):
                  fit_tol=None,
                  do_precision=False,
                  do_mask=True,
-                 l0_sparseness=16,
+                 l0_sparseness=30,
                  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**10,
+                 n_iter=2**12,
                  # Standard
-                 eta=.01,
+                 #eta=.01, # or equivalently
+                 eta = dict(eta=.01, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
-                 #eta=dict(alpha=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
+                 #eta=dict(eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
                  homeo_method='HAP',
                  homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
                  do_sym=False,

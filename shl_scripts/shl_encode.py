@@ -51,7 +51,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
     #n_samples, n_pixels = X.shape
 
     if algorithm == 'lasso_lars':
-        alpha = float(regularization) / n_pixels  # account for scaling
+        alpha = 0.01, #float(regularization) / n_pixels  # account for scaling
 
         from sklearn.linear_model import LassoLars
 
