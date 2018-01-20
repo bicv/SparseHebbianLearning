@@ -87,7 +87,7 @@ class SHL(object):
                  seed=42,
                  patch_norm=False,
                  batch_size=512,
-                 record_each=128,
+                 record_each=256,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,

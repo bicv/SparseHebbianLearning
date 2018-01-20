@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
-                  P_cum=None, l0_sparseness=10, C=0., do_sym=False, verbose=0,
+                  P_cum=None, l0_sparseness=10, C=5., do_sym=False, verbose=0,
                   gain=None):
     """Generic sparse coding
 
@@ -145,7 +145,7 @@ def rectify(code, do_sym=False, verbose=False):
     else:
         return code
 
-def rescaling(code, C=0., do_sym=False, verbose=False):
+def rescaling(code, C=5., do_sym=False, verbose=False):
     """
     See
 
@@ -164,6 +164,16 @@ def rescaling(code, C=0., do_sym=False, verbose=False):
     elif isinstance(C, np.ndarray):
         code_bins = np.linspace(0., 1., C.size, endpoint=True)
         return np.interp(code, C, code_bins, left=0., right=1.) * (code > 0.)
+
+def inv_rescaling(log_code, C=5.):
+    """
+    Inverting the rescaling
+
+    """
+    if np.sum(log_code>1) + np.sum(log_code<0) > 0.: print('WARNING! out of range values!')
+    code = -C*np.log(1.-log_code)
+    code[log_code==1.] = 1.
+    return code
 
 def quantile(P_cum, p_c, stick, do_fast=True):
     """
@@ -198,6 +208,14 @@ def quantile(P_cum, p_c, stick, do_fast=True):
         for i in range(P_cum.shape[0]):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
         return q_i
+
+def inv_quantile(P_cum, coded, do_fast=False):
+    code_bins = np.linspace(0., 1., P_cum.shape[1], endpoint=True)
+    log_code = np.zeros_like(coded)
+    i = 0
+    for i in range(P_cum.shape[0]):
+        log_code[:, i] = np.interp(coded[:, i], P_cum[i, :], code_bins, left=0., right=1.)
+    return log_code
 
 def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1., do_sym=False, P_cum=None,
        do_fast=True, C=5., verbose=0, gain=None):
@@ -256,13 +274,10 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
         if C == 0.:
-            print('C=0 dooh')
+            print('C=5 dooh')
             C = P_cum[-1, :]
             P_cum = P_cum[:-1, :]
 
-    if gain is None: gain = np.ones(n_dictionary)
-
-    if not P_cum is None:
         for i_sample in range(n_samples):
             c = corr[i_sample, :].copy()
             #c_0 = corr_0[i_sample]
@@ -278,6 +293,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
                 sparse_code[i_sample, ind] += c_ind
                 c -= c_ind * Xcorr[ind, :]
     else:
+        if gain is None: gain = np.ones(n_dictionary)
         line = np.arange(n_samples)
         gain = gain[np.newaxis, :] * np.ones_like(corr)
         for i_l0 in range(int(l0_sparseness)):

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
 from shl_scripts.shl_encode import sparse_encode
+from shl_scripts.shl_encode import quantile, rescaling
+from shl_scripts.shl_encode import inv_quantile, inv_rescaling
 import time
 import numpy as np
 
@@ -326,7 +328,13 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
     if homeo_method=='None':
         eta_homeo = 0.
         alpha_homeo = 0.
+        # default homeostasis parameters
+        mean_measure = None
+        gain = np.ones(n_dictionary)
 
+        P_cum = None
+        C = 5.
+        nb_quant = 100
     # elif homeo_method=='EXP':
     #
     #     if 'eta_homeo' in homeo_params.keys():
@@ -375,7 +383,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
             gain = np.ones(n_dictionary)
 
             P_cum = None
-            C = 0.
+            C = 5.
+            nb_quant = 100
             alpha_homeo = homeo_params['alpha_homeo']
             if homeo_method=='EXP':
                 alpha_homeo = -1*homeo_params['alpha_homeo']
@@ -544,12 +553,21 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                           P_cum=P_cum, do_sym=do_sym, C=C, l0_sparseness=l0[ii], gain=gain)
+                if P_cum is None:
+                    P_cum_ = get_P_cum(sparse_code_rec, C=C, nb_quant=nb_quant)
+                else:
+                    P_cum_ = P_cum.copy()
                 # calculation of relative entropy
                 p_ = np.count_nonzero(sparse_code_rec,axis=0) / (sparse_code_rec.shape[1])
                 p_ /= p_.sum()
                 rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
                 error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
-                qerror = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
+
+                P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
+                stick = np.arange(n_dictionary)*nb_quant
+                q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
+                q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
+                qerror = np.linalg.norm(X_train[indx, :] - q_sparse_code @ dictionary)/record_num_batches
 
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
