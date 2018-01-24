@@ -6,6 +6,7 @@ import numpy as np
 from shl_scripts.shl_encode import sparse_encode
 import matplotlib
 import matplotlib.pyplot as plt
+from SLIP import Image
 
 toolbar_width = 40
 
@@ -13,8 +14,7 @@ toolbar_width = 40
 def touch(filename):
     open(filename, 'w').close()
 
-def whitening(image, height=256, width=256):
-    from SLIP import Image
+def whitening(image, height=256, width=256, seed=None):
     slip = Image({'N_X':height, 'N_Y':width,
             'white_n_learning' : 0,
             'seed': seed,
@@ -27,13 +27,15 @@ def whitening(image, height=256, width=256):
     return slip.whitening(image)
 
 
-def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256):
+def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
     N_f = np.sqrt(n_pixels).astype(int)
     fx, fy = np.meshgrid(np.linspace(-1, 1, height), np.linspace(-1, 1, width))
     spectra = 1/np.sqrt(fx**2+fy**2) # FIX : may be infinite!
-    phase = np.random.uniform(0, 2 * np.pi, (N_f, N_f))
+    phase = np.random.uniform(0, 2 * np.pi, (height, width))
     image = np.real(np.fft.ifft2(np.fft.fftshift(spectra*np.exp(1j*phase))))
+    image = whitening(image, height=height, width=height)
 
+    slip = Image({'N_X':height, 'N_Y':width, 'do_mask': False})
     dictionary = slip.extract_patches_2d(image, (N_f, N_f), N_patches=n_dictionary)
     dictionary -= np.mean(dictionary)
     #dictionary /= np.std(dictionary)
@@ -62,7 +64,6 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
     if matname is None:
         # Load natural images and extract patches
         # see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
-        from SLIP import Image
         slip = Image({'N_X':height, 'N_Y':width,
                 'datapath': datapath,
                 'do_mask': True,
@@ -480,36 +481,42 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True
     return fig, ax
 
 
-def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, color=None, label=None, fname=None, fig=None, ax=None):
+def time_plot(shl_exp, dico, variable='kurt', N_nosample=0, alpha=.6, color=None, label=None, fname=None, fig=None, ax=None):
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:
         ax = fig.add_subplot(111)
 
-    try:
-        df_variable = dico.record[variable]
-        learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
+    # try:
+    df_variable = dico.record[variable]
+    learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
+    if df_variable.ndim==1:
+        A = np.zeros((len(df_variable.index)))
+        for ii, ind in enumerate(df_variable.index):
+            A[ii] = df_variable[ind]
+    else:
         A = np.zeros((len(df_variable.index), dico.n_dictionary))
         for ii, ind in enumerate(df_variable.index):
             A[ii, :] = df_variable[ind]
+        A = A[:, :-N_nosample]
 
-        #print(learning_time, A[:, :-N_nosample].shape)
-        ax.plot(learning_time, A[:, :-N_nosample], '-', lw=1, alpha=alpha, color=color, label=label)
-        ax.set_ylabel(variable)
-        ax.set_xlabel('Learning step')
-        ax.set_xlim(0, dico.n_iter)
-        #if variable=='entropy' :
-        #    ax.set_ylim(0.95)
-        #else
-        #print('label', label)
-        #if not label is None: ax.legend(loc='best')
-        if variable in ['error', 'qerror']:
-            ax.set_ylim(0)
+    # print(learning_time, A[:, :-N_nosample].shape, df_variable[ind])
+    ax.plot(learning_time, A, '-', lw=1, alpha=alpha, color=color, label=label)
+    ax.set_ylabel(variable)
+    ax.set_xlabel('Learning step')
+    ax.set_xlim(0, dico.n_iter)
+    #if variable=='entropy' :
+    #    ax.set_ylim(0.95)
+    #else
+    #print('label', label)
+    #if not label is None: ax.legend(loc='best')
+    if variable in ['error', 'qerror']:
+        ax.set_ylim(0)
 
-    except AttributeError:
-        ax.set_title('record not available')
-        ax.set_ylabel(variable)
-        ax.set_xlabel('Learning step')
-        ax.set_xlim(0, dico.n_iter)
+    # except ImportError:
+    #     ax.set_title('record not available')
+    #     ax.set_ylabel(variable)
+    #     ax.set_xlabel('Learning step')
+    #     ax.set_xlim(0, shl_exp.n_iter)
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax

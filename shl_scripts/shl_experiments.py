@@ -73,7 +73,7 @@ class SHL(object):
                  do_mask=True,
                  l0_sparseness=30,
                 #  l0_sparseness_end=None,
-                 one_over_F=False,
+                 one_over_F=True,
                  n_iter=2**10,
                  # Standard
                  #eta=.01, # or equivalently
