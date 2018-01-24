@@ -77,9 +77,9 @@ class SHL(object):
                  n_iter=2**10,
                  # Standard
                  #eta=.01, # or equivalently
-                 eta = dict(eta=.05, beta1=0),
+                 #eta = dict(eta=.05, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
-                 #eta=dict(eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
+                 eta=dict(eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
                  homeo_method = 'HEH',
                  homeo_params = dict(eta_homeo=0.05, C=5., nb_quant=256, P_cum=None),
                 #  homeo_method='HAP',
