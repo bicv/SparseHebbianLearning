@@ -154,18 +154,6 @@ class SparseHebbianLearning:
         return sparse_encode(X, self.dictionary, self.precision, algorithm=algorithm, P_cum=self.P_cum,
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
-def ovf_dictionary(n_dictionary, n_pixels):
-    N_f = np.sqrt(n_pixels).astype(int)
-    fx, fy = np.meshgrid(np.linspace(-1, 1, N_f), np.linspace(-1, 1, N_f))
-    spectra = 1/np.sqrt(fx**2+fy**2) # FIX : may be infinite!
-    dictionary=np.zeros((n_dictionary, n_pixels))
-    for i in range(n_dictionary):
-        phase = np.random.uniform(0, 2 * np.pi, (N_f, N_f))
-        patch=np.real(np.fft.ifft2(np.fft.fftshift(spectra*np.exp(1j*phase))))
-        #patch-=np.mean(patch)
-        dictionary[i, :] = patch.ravel()
-
-    return dictionary
 
 def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                   n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
@@ -296,6 +284,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
         if not one_over_F:
             dictionary = np.random.randn(n_dictionary, n_pixels)
         else:
+            from shl_scripts.shl_tools import ovf_dictionary
             dictionary = ovf_dictionary(n_dictionary, n_pixels)
 
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
@@ -565,8 +554,10 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                     P_cum_ = P_cum.copy()
 
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
-                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
-                                          P_cum=P_cum_, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness, gain=gain)
+                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision,
+                                            algorithm=method, fit_tol=fit_tol,
+                                             P_cum=P_cum_, C=C, do_sym=do_sym,
+                                             l0_sparseness=l0_sparseness, gain=None)
 
                 # calculation of relative entropy
                 p_ = np.count_nonzero(sparse_code_rec,axis=0) / (sparse_code_rec.shape[1])

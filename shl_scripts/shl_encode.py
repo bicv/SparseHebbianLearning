@@ -268,9 +268,8 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         Xcorr = (dictionary @ (precision*dictionary).T)
         #SE_0 = np.sum(X*2, axis=1)
 
-    if not P_cum is None:
+    if gain is None:
         # COMP
-        # assert(gain is None) TODO : check this
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
         # if C == 0.:
@@ -293,10 +292,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
                 sparse_code[i_sample, ind] += c_ind
                 c -= c_ind * Xcorr[ind, :]
     else:
-        if gain is None:
-            gain = 1
-        else:
-            gain = gain[np.newaxis, :] * np.ones_like(corr)
+        gain = gain[np.newaxis, :] * np.ones_like(corr)
         line = np.arange(n_samples)
         for i_l0 in range(int(l0_sparseness)):
                 q = rectify(corr, do_sym=do_sym) * gain
