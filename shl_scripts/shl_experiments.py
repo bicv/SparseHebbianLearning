@@ -73,15 +73,15 @@ class SHL(object):
                  do_mask=True,
                  l0_sparseness=30,
                 #  l0_sparseness_end=None,
-                 one_over_F=True,
+                 one_over_F=False,
                  n_iter=2**10,
                  # Standard
                  #eta=.01, # or equivalently
-                 eta = dict(eta=.1, beta1=0),
+                 eta = dict(eta=.05, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
                  #eta=dict(eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
                  homeo_method = 'HEH',
-                 homeo_params = dict(eta_homeo=0.05, alpha_homeo=0.02, C=5., nb_quant=128, P_cum=None),
+                 homeo_params = dict(eta_homeo=0.05, C=5., nb_quant=256, P_cum=None),
                 #  homeo_method='HAP',
                 #  homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
                  do_sym=False,
@@ -89,7 +89,7 @@ class SHL(object):
                  seed=42,
                  patch_norm=False,
                  batch_size=512,
-                 record_each=256,
+                 record_each=128,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,

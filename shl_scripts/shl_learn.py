@@ -168,10 +168,10 @@ def ovf_dictionary(n_dictionary, n_pixels):
     return dictionary
 
 def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
-                    n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
+                  n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
                   do_precision=False, n_iter=100, one_over_F=True,
-                       batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                       method='mp', do_sym=False, homeo_method='HEH', homeo_params={}):
+                  batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
+                  method='mp', do_sym=False, homeo_method='HEH', homeo_params={}):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -315,7 +315,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
 
     #initializing parameters
     if isinstance(eta, np.float):
-        print('dooh!', eta)
         do_adam = False
     else:
         if eta['beta1'] == 0:
@@ -332,9 +331,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
         mean_measure = None
         gain = np.ones(n_dictionary)
 
-        P_cum = None
-        C = 5.
-        nb_quant = 100
+        # P_cum = None
+        # C = 5.
+        # nb_quant = 100
     # elif homeo_method=='EXP':
     #
     #     if 'eta_homeo' in homeo_params.keys():
@@ -368,8 +367,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
             # we do not use a gain
             gain = None
             # but instead do the equalitarian homeostasis
-            if P_cum is None:
-                P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
+            # if P_cum is None:
+            #     P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
                 # if C==0.:
                 #     # initialize the rescaling vector
                 #     from shl_scripts.shl_encode import get_rescaling
@@ -382,9 +381,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
             mean_measure = None
             gain = np.ones(n_dictionary)
 
-            P_cum = None
+            # P_cum = None
             C = 5.
-            nb_quant = 100
+            nb_quant = 256
             alpha_homeo = homeo_params['alpha_homeo']
             # if homeo_method=='EXP':
             #     alpha_homeo = -1*homeo_params['alpha_homeo']
@@ -417,6 +416,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
         raise ValueError('Homeostasis method must be "None", "EXP", "HAP" '
                          '"EMP" or "HEH", got %s.'
                          % homeo_method)
+    if P_cum is None:
+        P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
 
     # splits the whole dataset into batches
     n_batches = n_samples // batch_size
@@ -494,6 +495,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
             variance += eta * sparse_code.T @ (residual**2)
             precision = 1./(variance + 1.e-16)
 
+        P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
+                             nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         # homeostasis
         # 1/ first, we normalise filters
@@ -505,6 +508,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
             pass
 
         elif homeo_method=='HEH':
+            pass
             # compute histogram
             # if C==0.: #auto-scaling
             #     print('dooh C = 0')
@@ -516,8 +520,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
             #                                  verbose=verbose)
             #     P_cum[-1, :] = (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
             # else:
-            P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
-                                 nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
+            # P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
+            #                      nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
         elif homeo_method in ['EXP', 'HAP', 'EMP']:
             # compute statistics on the activation probability
             if mean_measure is None:
@@ -535,7 +539,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
 
             elif homeo_method=='EMP':
                 p_threshold = (1/n_dictionary)*(1+alpha_homeo)
-                gain = 1*(mean_measure < p_threshold)
+                gain = 1. * (mean_measure < p_threshold)
 
         elif homeo_method=='Olshausen':
             # compute statistics on the variance of coefficients
@@ -554,32 +558,36 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
 
         if record_each>0:
             if ii % int(record_each)==0:
-                indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
-                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
-                                          P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness, gain=gain)
-
                 if P_cum is None:
-                    P_cum_ = get_P_cum(sparse_code_rec, C=C, nb_quant=nb_quant)
+                    print('dooh P_cum is None')
+                    P_cum_ = get_P_cum(sparse_code, C=C, nb_quant=nb_quant)
                 else:
                     P_cum_ = P_cum.copy()
+
+                indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
+                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision, algorithm=method, fit_tol=fit_tol,
+                                          P_cum=P_cum_, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness, gain=gain)
+
                 # calculation of relative entropy
                 p_ = np.count_nonzero(sparse_code_rec,axis=0) / (sparse_code_rec.shape[1])
                 p_ /= p_.sum()
                 rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
-                error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
+                # relative error
+                SD = np.linalg.norm(X_train[indx, :])/record_num_batches
+                error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
 
                 stick = np.arange(n_dictionary)*nb_quant
                 q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
                 P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
                 q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
-                qerror = np.linalg.norm(X_train[indx, :] - q_sparse_code @ dictionary)/record_num_batches
-
+                qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
+                # print('qerror', qerror/SD, qerror, SD)
                 from scipy.stats import kurtosis
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
                                             'var':np.mean(sparse_code_rec**2, axis=0),
-                                            'error':error,
-                                            'qerror':qerror,
+                                            'error':error/SD,
+                                            'qerror':qerror/SD,
                                             'entropy':rel_ent}],
                                             index=[ii])
                 record = pd.concat([record, record_one])
@@ -685,7 +693,7 @@ def update_P_cum(P_cum, code, eta_homeo, C, nb_quant=100, do_sym=False, verbose=
         P_cum = (1 - eta_homeo)*P_cum + eta_homeo * P_cum_
     return P_cum
 
-def get_P_cum(code, C, nb_quant=100, do_sym=False, verbose=False):
+def get_P_cum(code, C, nb_quant=256, do_sym=False, verbose=False):
     from shl_scripts.shl_encode import rescaling
     p_c = rescaling(code, C, do_sym=do_sym, verbose=verbose)
 

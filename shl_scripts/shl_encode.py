@@ -163,14 +163,14 @@ def rescaling(code, C=5., do_sym=False, verbose=False):
     #     code_bins = np.linspace(0., 1., C.size, endpoint=True)
     #     return np.interp(code, C, code_bins, left=0., right=1.) * (code > 0.)
 
-def inv_rescaling(log_code, C=5.):
+def inv_rescaling(r, C=5.):
     """
     Inverting the rescaling
 
     """
-    if np.sum(log_code>1) + np.sum(log_code<0) > 0.: print('WARNING! out of range values!')
-    code = -C*np.log(1.-log_code)
-    code[log_code==1.] = 1.
+    if np.sum(r>=1) + np.sum(r<0) > 0.: print('WARNING! out of range values!')
+    code = -C*np.log(1.-r)
+    #code[r==1.] = 100#np.inf
     return code
 
 def quantile(P_cum, p_c, stick, do_fast=True):
@@ -207,13 +207,14 @@ def quantile(P_cum, p_c, stick, do_fast=True):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
         return q_i
 
-def inv_quantile(P_cum, coded, do_fast=False):
-    code_bins = np.linspace(0., 1., P_cum.shape[1], endpoint=True)
-    log_code = np.zeros_like(coded)
+def inv_quantile(P_cum, q, do_fast=False):
+    n_dictionary, nb_quant = P_cum.shape
+    code_bins = np.linspace(0., 1., nb_quant, endpoint=True)
+    r = np.zeros_like(q)
     i = 0
-    for i in range(P_cum.shape[0]):
-        log_code[:, i] = np.interp(coded[:, i], P_cum[i, :], code_bins, left=0., right=1.)
-    return log_code
+    for i in range(n_dictionary):
+        r[:, i] = np.interp(q[:, i], P_cum[i, :], code_bins, left=0., right=1.-.5/nb_quant)
+    return r
 
 def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1., do_sym=False, P_cum=None,
        do_fast=True, C=5., verbose=0, gain=None):
@@ -267,14 +268,15 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         Xcorr = (dictionary @ (precision*dictionary).T)
         #SE_0 = np.sum(X*2, axis=1)
 
-
     if not P_cum is None:
+        # COMP
+        # assert(gain is None) TODO : check this
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
-        if C == 0.:
-            print('C=5 dooh')
-            C = P_cum[-1, :]
-            P_cum = P_cum[:-1, :]
+        # if C == 0.:
+        #     print('C=5 dooh')
+        #     C = P_cum[-1, :]
+        #     P_cum = P_cum[:-1, :]
 
         for i_sample in range(n_samples):
             c = corr[i_sample, :].copy()
@@ -282,8 +284,8 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
             #i_l0, SE = 0, SE_0
             #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
             for i_l0 in range(int(l0_sparseness)) :
-                q = rescaling(c, C=C, do_sym=do_sym)
-                q = quantile(P_cum, q, stick, do_fast=do_fast)
+                r = rescaling(c, C=C, do_sym=do_sym)
+                q = quantile(P_cum, r, stick, do_fast=do_fast)
 
                 ind = np.argmax(q)
                 c_ind = alpha_MP * c[ind] / Xcorr[ind, ind]
@@ -291,13 +293,15 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
                 sparse_code[i_sample, ind] += c_ind
                 c -= c_ind * Xcorr[ind, :]
     else:
-        if gain is None: gain = np.ones(n_dictionary)
+        if gain is None:
+            gain = 1
+        else:
+            gain = gain[np.newaxis, :] * np.ones_like(corr)
         line = np.arange(n_samples)
-        gain = gain[np.newaxis, :] * np.ones_like(corr)
         for i_l0 in range(int(l0_sparseness)):
                 q = rectify(corr, do_sym=do_sym) * gain
                 ind = np.argmax(q, axis=1)
-                sparse_code[line, ind] = sparse_code[line, ind] + corr[line, ind]
+                sparse_code[line, ind] += corr[line, ind]
                 corr = corr - (Xcorr[ind, :] * corr[line, ind][:, np.newaxis])
 
     if verbose>0:
