@@ -66,18 +66,18 @@ class SHL(object):
                  patch_size=(16, 16),
                  datapath='database/',
                  name_database='kodakdb',
-                 n_dictionary=24**2,
+                 n_dictionary=18**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
                  do_mask=True,
-                 l0_sparseness=50,
+                 l0_sparseness=30,
                  l0_sparseness_end=None,
                  one_over_F=True,
                  n_iter=2**12,
                  # Standard
                  #eta=.01, # or equivalently
-                 eta = dict(eta=.05, beta1=0),
+                 eta = dict(eta=.025, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
                  #eta=dict(eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
                  homeo_method='HAP',
@@ -246,7 +246,7 @@ class SHL(object):
                                                matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
-                    except ImportError: #Exception as e:
+                    except Exception as e:
                         print('Error', e)
                     finally:
                         try:
