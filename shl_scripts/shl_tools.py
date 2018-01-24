@@ -13,6 +13,33 @@ toolbar_width = 40
 def touch(filename):
     open(filename, 'w').close()
 
+def whitening(image, height=256, width=256):
+    from SLIP import Image
+    slip = Image({'N_X':height, 'N_Y':width,
+            'white_n_learning' : 0,
+            'seed': seed,
+            'white_N' : .07,
+            'white_N_0' : .0, # olshausen = 0.
+            'white_f_0' : .4, # olshausen = 0.2
+            'white_alpha' : 1.4,
+            'white_steepness' : 4.,
+            'do_mask': True})
+    return slip.whitening(image)
+
+
+def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256):
+    N_f = np.sqrt(n_pixels).astype(int)
+    fx, fy = np.meshgrid(np.linspace(-1, 1, height), np.linspace(-1, 1, width))
+    spectra = 1/np.sqrt(fx**2+fy**2) # FIX : may be infinite!
+    phase = np.random.uniform(0, 2 * np.pi, (N_f, N_f))
+    image = np.real(np.fft.ifft2(np.fft.fftshift(spectra*np.exp(1j*phase))))
+
+    dictionary = slip.extract_patches_2d(image, (N_f, N_f), N_patches=n_dictionary)
+    dictionary -= np.mean(dictionary)
+    #dictionary /= np.std(dictionary)
+    dictionary = dictionary.reshape(dictionary.shape[0], -1)
+
+    return dictionary
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='kodakdb',
@@ -37,13 +64,6 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
         # see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
         from SLIP import Image
         slip = Image({'N_X':height, 'N_Y':width,
-                'white_n_learning' : 0,
-                'seed': seed,
-                'white_N' : .07,
-                'white_N_0' : .0, # olshausen = 0.
-                'white_f_0' : .4, # olshausen = 0.2
-                'white_alpha' : 1.4,
-                'white_steepness' : 4.,
                 'datapath': datapath,
                 'do_mask': True,
                 'N_image': n_image})
@@ -57,7 +77,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
         for filename, croparea in imagelist:
             # whitening
             image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)
-            image = slip.whitening(image)
+            image = whitening(image, height=height, width=width)
 
             # Extract all reference patches and ravel them
             data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))
@@ -483,7 +503,7 @@ def time_plot(shl_exp, dico, variable='kurt', N_nosample=1, alpha=.3, color=None
         #else
         #print('label', label)
         #if not label is None: ax.legend(loc='best')
-        if variable=='error' :
+        if variable in ['error', 'qerror']:
             ax.set_ylim(0)
 
     except AttributeError:
