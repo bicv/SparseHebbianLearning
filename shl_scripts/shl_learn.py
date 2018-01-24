@@ -563,9 +563,9 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                 rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
                 error = np.linalg.norm(X_train[indx, :] - sparse_code_rec @ dictionary)/record_num_batches
 
-                P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
                 stick = np.arange(n_dictionary)*nb_quant
                 q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
+                P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
                 q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
                 qerror = np.linalg.norm(X_train[indx, :] - q_sparse_code @ dictionary)/record_num_batches
 
