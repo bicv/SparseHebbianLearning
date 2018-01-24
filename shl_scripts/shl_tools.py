@@ -381,6 +381,7 @@ def plot_proba_histogram(coding, verbose=False, fig=None, ax=None):
     return fig, ax
 
 def plot_error(dico, fig=None, ax=None):
+    # TODO : show SE as a function of l0
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:

@@ -72,16 +72,18 @@ class SHL(object):
                  do_precision=False,
                  do_mask=True,
                  l0_sparseness=30,
-                 l0_sparseness_end=None,
+                #  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**12,
+                 n_iter=2**10,
                  # Standard
                  #eta=.01, # or equivalently
-                 eta = dict(eta=.025, beta1=0),
+                 eta = dict(eta=.1, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
                  #eta=dict(eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
-                 homeo_method='HAP',
-                 homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
+                 homeo_method = 'HEH',
+                 homeo_params = dict(eta_homeo=0.05, alpha_homeo=0.02, C=5., nb_quant=128, P_cum=None),
+                #  homeo_method='HAP',
+                #  homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
                  do_sym=False,
                  max_patches=4096,
                  seed=42,
@@ -114,7 +116,7 @@ class SHL(object):
         self.do_mask = do_mask
 
         self.l0_sparseness = l0_sparseness
-        self.l0_sparseness_end = l0_sparseness_end
+        # self.l0_sparseness_end = l0_sparseness_end
         self.eta = eta
         self.do_sym = do_sym
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
@@ -145,7 +147,7 @@ class SHL(object):
                     name_database=self.name_database, matname=matname)
 
 
-    def code(self, data, dico, coding_algorithm='mp', matname=None, fit_tol=None, l0_sparseness=None):
+    def code(self, data, dico, coding_algorithm='mp', matname=None, P_cum=None, fit_tol=None, l0_sparseness=None):
         if l0_sparseness is None:
             l0_sparseness = self.l0_sparseness
         if matname is None:
@@ -153,25 +155,25 @@ class SHL(object):
                 print('Coding data with algorithm ', coding_algorithm,  end=' ')
                 t0 = time.time()
             from shl_scripts.shl_encode import sparse_encode
-            if 'C' in self.homeo_params.keys():
-                C = self.homeo_params['C']
-            else:
-                C = 0.
-            if 'P_cum' in self.homeo_params.keys():
-                P_cum = self.homeo_params['P_cum']
-            else:
-                P_cum = None
-
-            if self.l0_sparseness_end is not None:
-                l0_sparseness = self.l0_sparseness_end
-            else:
-                l0_sparseness = self.l0_sparseness
+            # if 'C' in self.homeo_params.keys():
+            #     C = self.homeo_params['C']
+            # else:
+            #     C = 0.
+            # if 'P_cum' in self.homeo_params.keys():
+            #     P_cum = self.homeo_params['P_cum']
+            # else:
+            #     P_cum = None
+            #
+            # if self.l0_sparseness_end is not None:
+            #     l0_sparseness = self.l0_sparseness_end
+            # else:
+            #     l0_sparseness = self.l0_sparseness
 
             sparse_code = sparse_encode(data, dico.dictionary, dico.precision,
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        C=C, P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None)
+                                        P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None)
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
@@ -216,7 +218,7 @@ class SHL(object):
                                          n_dictionary=self.n_dictionary,
                                          eta=self.eta, n_iter=self.n_iter,
                                          l0_sparseness=self.l0_sparseness, one_over_F=self.one_over_F,
-                                         l0_sparseness_end=self.l0_sparseness_end,
+                                        #  l0_sparseness_end=self.l0_sparseness_end,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol,
                                          do_precision=self.do_precision, record_each=self.record_each,
@@ -246,7 +248,7 @@ class SHL(object):
                                                matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
-                    except Exception as e:
+                    except ImportError as e:
                         print('Error', e)
                     finally:
                         try:
