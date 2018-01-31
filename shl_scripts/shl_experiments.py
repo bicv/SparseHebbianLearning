@@ -359,7 +359,9 @@ class SHL_set(object):
         return  self.tag + ' - {}={}'.format(variable, value)
 
     def scan(self, N_scan=None, vtype='eta', variable='eta', list_figures=[], base=10,
-                display='', display_variable='qerror'):
+                display='', display_variable='qerror',
+                alpha=.6, color=None, label=None, fname=None, fig=None, ax=None):
+
         if N_scan is None: N_scan = self.N_scan
         if vtype=='eta':
             median = self.shl.eta[variable]
@@ -371,8 +373,14 @@ class SHL_set(object):
 
         if display == 'dynamic':
             fig_error, ax_error = None, None
-
-        for value in np.logspace(-1, 1, N_scan, base=base)*median:
+        elif display == 'final':
+            results = []
+            if fig is None:
+                fig = plt.figure(figsize=(16, 4))
+            if ax is None:
+                ax = fig.add_subplot(111)
+        vvalue = np.logspace(-1, 1, N_scan, base=base)*median
+        for value in vvalue:
             if variable in ['n_iter']:
                 value = int(value)
             shl = SHL(**deepcopy(self.opts))
@@ -390,12 +398,28 @@ class SHL_set(object):
             if display == 'dynamic':
                 fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
                         fig=fig_error, ax=ax_error, label='%s=%.3f' % (variable, value))
+            elif display == 'final':
+                try:
+                    df_variable = dico.record[display_variable]
+                    # learning_time = np.array(df_variable.index)
+                    results.append(df_variable[df_variable.index[-1]])
+                except Exception as e:
+                    print('error', e, ' with', dico)
             else:
                 if len(list_figures)>0: plt.show()
 
         if display == 'dynamic':
             ax_error.legend()
             return fig_error, ax_error
+        elif display == 'final':
+            ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
+            ax.set_ylabel(display_variable)
+            ax.set_xlabel(variable)
+            # ax.set_xlim(0, dico.n_iter)
+            if variable in ['error', 'qerror']:
+                ax.set_ylim(0)
+            ax.set_xscale('log')
+            return fig, ax
 
 
 if __name__ == '__main__':
