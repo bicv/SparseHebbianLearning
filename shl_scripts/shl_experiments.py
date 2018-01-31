@@ -39,10 +39,9 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
 """
 
 import time
-
 toolbar_width = 40
-
 import numpy as np
+import matplotlib.pyplot as plt
 
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -175,9 +174,9 @@ class SHL(object):
                                         algorithm=self.learning_algorithm,
                                         P_cum=None, do_sym=self.do_sym, verbose=0,
                                         gain=np.ones(self.n_dictionary))
-            if self.verbose:
-                dt = time.time() - t0
-                print('done in %.2fs.' % dt)
+            # if self.verbose:
+            #     dt = time.time() - t0
+            #     print('done in %.2fs.' % dt)
         else:
             fmatname = os.path.join(self.data_cache, matname) + '_coding.npy'
             if not(os.path.isfile(fmatname)):
@@ -337,6 +336,66 @@ class SHL(object):
     def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico_in_order
         return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
+
+from copy import deepcopy
+class SHL_set(object):
+    """
+
+    Base class to define a set of SHL experiments:
+        - initialization
+        - coding and learning
+        - visualization
+        - quantitative analysis
+
+    """
+    def __init__(self, opts, tag, data_matname='data', N_scan=7):
+        self.opts = opts
+        self.tag = tag
+        self.N_scan = N_scan
+        self.shl = SHL(**deepcopy(opts))
+        self.data = self.shl.get_data(matname='data')
+
+    def matname(self, variable, value):
+        return  self.tag + ' - {}={}'.format(variable, value)
+
+    def scan(self, vtype='eta', variable='eta', list_figures=[], base=10,
+                display='', display_variable='qerror'):
+        if vtype=='eta':
+            median = self.shl.eta[variable]
+        elif vtype=='homeo_params':
+            median = self.shl.homeo_params[variable]
+        else:
+            median = self.shl.__dict__[variable]
+
+
+        if display == 'dynamic':
+            fig_error, ax_error = None, None
+
+        for value in np.logspace(-1, 1, self.N_scan, base=base)*median:
+            if variable in ['n_iter']:
+                value = int(value)
+            shl = SHL(**deepcopy(self.opts))
+            if vtype=='eta':
+                print(value, shl.eta[variable], self.shl.eta[variable])
+                shl.eta[variable] = value #.update(eta=eta)
+                print('post', value, shl.eta[variable], self.shl.eta[variable])
+            elif vtype=='homeo_params':
+                shl.homeo_params[variable] = value
+            else:
+                shl.__dict__[variable] = value
+            dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
+                        list_figures=list_figures)
+
+            if display == 'dynamic':
+                fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
+                        fig=fig_error, ax=ax_error, label='%s=%.3f' % (variable, value))
+            else:
+                if len(list_figures)>0: plt.show()
+
+        if display == 'dynamic':
+            ax_error.legend()
+            return fig_error, ax_error
+
 
 if __name__ == '__main__':
 
