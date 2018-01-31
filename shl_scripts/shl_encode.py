@@ -106,7 +106,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
         sparse_code = orthogonal_mp_gram(
             Gram=gram, Xy=cov, n_nonzero_coefs=l0_sparseness,
             tol=None, norms_squared=row_norms(X, squared=True),
-            copy_Xy=False)
+            copy_Xy=False).T
 
     elif algorithm == 'mp':
         sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness,

@@ -370,6 +370,7 @@ class SHL_set(object):
         else:
             median = self.shl.__dict__[variable]
 
+        vvalue = np.logspace(-1., 1., N_scan, base=base)*median
 
         if display == 'dynamic':
             fig_error, ax_error = None, None
@@ -379,9 +380,9 @@ class SHL_set(object):
                 fig = plt.figure(figsize=(16, 4))
             if ax is None:
                 ax = fig.add_subplot(111)
-        vvalue = np.logspace(-1, 1, N_scan, base=base)*median
+
         for value in vvalue:
-            if variable in ['n_iter']:
+            if variable in ['n_iter', 'nb_quant']:
                 value = int(value)
             shl = SHL(**deepcopy(self.opts))
             if vtype=='eta':
@@ -415,12 +416,29 @@ class SHL_set(object):
             ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
             ax.set_ylabel(display_variable)
             ax.set_xlabel(variable)
-            # ax.set_xlim(0, dico.n_iter)
+            # ax.set_xlim(vvalue.min(), vvalue.max())
             if display_variable in ['error', 'qerror']:
                 ax.set_ylim(0, 1)
             ax.set_xscale('log')
             return fig, ax
-
+#  TODO: n_jobs > 1
+# from joblib import Parallel, delayed
+#
+# def run(C, list_figures, data, homeo_params):
+#     matname = tag + ' - C={}'.format(C)
+#     homeo_params.update(C=C)
+#     opts.update(homeo_params=homeo_params)
+#     shl = SHL(**deepcopy(opts))
+#     dico = shl.learn_dico(data=data, matname=matname, list_figures=list_figures)
+#     return dico
+#
+#
+# Cs = np.linspace(1, 10, 5)
+# if not n_jobs==1: out = Parallel(n_jobs=n_jobs, verbose=15)(delayed(run)(C, [], data, homeo_params) for C in Cs)
+#
+# for C in Cs:
+#     dico = run(C, list_figures=list_figures, data=data, homeo_params=homeo_params)
+#     plt.show()
 
 if __name__ == '__main__':
 
