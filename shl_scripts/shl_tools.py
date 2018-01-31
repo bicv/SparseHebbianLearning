@@ -491,11 +491,14 @@ def time_plot(shl_exp, dico, variable='kurt', N_nosample=0, alpha=.6, color=None
     # try:
     df_variable = dico.record[variable]
     learning_time = np.array(df_variable.index) #np.arange(0, dico.n_iter, dico.record_each)
-    if df_variable.ndim==1:
+    # if df_variable.ndim==1:
+    #     print(df_variable.index, variable, df_variable.ndim)
+    try:
         A = np.zeros((len(df_variable.index)))
         for ii, ind in enumerate(df_variable.index):
+            # print(df_==variable[ind].shape)
             A[ii] = df_variable[ind]
-    else:
+    except:
         A = np.zeros((len(df_variable.index), dico.n_dictionary))
         for ii, ind in enumerate(df_variable.index):
             A[ii, :] = df_variable[ind]
