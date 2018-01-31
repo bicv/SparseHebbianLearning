@@ -358,8 +358,9 @@ class SHL_set(object):
     def matname(self, variable, value):
         return  self.tag + ' - {}={}'.format(variable, value)
 
-    def scan(self, vtype='eta', variable='eta', list_figures=[], base=10,
+    def scan(self, N_scan=None, vtype='eta', variable='eta', list_figures=[], base=10,
                 display='', display_variable='qerror'):
+        if N_scan is None: N_scan = self.N_scan
         if vtype=='eta':
             median = self.shl.eta[variable]
         elif vtype=='homeo_params':
@@ -371,14 +372,14 @@ class SHL_set(object):
         if display == 'dynamic':
             fig_error, ax_error = None, None
 
-        for value in np.logspace(-1, 1, self.N_scan, base=base)*median:
+        for value in np.logspace(-1, 1, N_scan, base=base)*median:
             if variable in ['n_iter']:
                 value = int(value)
             shl = SHL(**deepcopy(self.opts))
             if vtype=='eta':
-                print(value, shl.eta[variable], self.shl.eta[variable])
+                # print(value, shl.eta[variable], self.shl.eta[variable])
                 shl.eta[variable] = value #.update(eta=eta)
-                print('post', value, shl.eta[variable], self.shl.eta[variable])
+                # print('post', value, shl.eta[variable], self.shl.eta[variable])
             elif vtype=='homeo_params':
                 shl.homeo_params[variable] = value
             else:
