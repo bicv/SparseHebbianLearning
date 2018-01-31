@@ -74,7 +74,7 @@ class SHL(object):
                  l0_sparseness=30,
                 #  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**10,
+                 n_iter=2**10 + 1,
                  # Standard
                  #eta=.01, # or equivalently
                  #eta = dict(eta=.05, beta1=0),

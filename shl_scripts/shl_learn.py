@@ -313,6 +313,14 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
             do_adam = True
             moment = energy = np.zeros_like(dictionary)
 
+    # default homeostasis parameters
+    mean_measure = None
+    gain = np.ones(n_dictionary)
+
+    # P_cum = None
+    C = 5.
+    nb_quant = 256
+
     if homeo_method=='None':
         eta_homeo = 0.
         alpha_homeo = 0.
@@ -320,85 +328,22 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
         mean_measure = None
         gain = np.ones(n_dictionary)
 
-        # P_cum = None
-        # C = 5.
-        # nb_quant = 100
-    # elif homeo_method=='EXP':
-    #
-    #     if 'eta_homeo' in homeo_params.keys():
-    #         eta_homeo = homeo_params['eta_homeo']
-    #     else:
-    #         eta_homeo = 0.8
-    #         homeo_params['eta_homeo'] = eta_homeo
-    #
-    #     if 'alpha_homeo' in homeo_params.keys():
-    #         alpha_homeo = -1*homeo_params['alpha_homeo']
-    #     else:
-    #         alpha_homeo = -((1/n_dictionary)/np.log(0.5))
-
     elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
         eta_homeo = homeo_params['eta_homeo']
-
-        # if 'eta_homeo' in homeo_params.keys():
-        #     eta_homeo = homeo_params['eta_homeo']
-        # else:
-        #     eta_homeo = 0.01
-        #
-        # if 'alpha_homeo' in homeo_params.keys():
-        #     alpha_homeo = homeo_params['alpha_homeo']
-        # else:
-        #     alpha_homeo = 0.02
-
         if homeo_method=='HEH':
             C = homeo_params['C']
-            P_cum = homeo_params['P_cum']
             nb_quant = homeo_params['nb_quant']
             # we do not use a gain
             gain = None
             # but instead do the equalitarian homeostasis
-            # if P_cum is None:
-            #     P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
-                # if C==0.:
-                #     # initialize the rescaling vector
-                #     from shl_scripts.shl_encode import get_rescaling
-                #     corr = (batches[0] @ dictionary.T)
-                #     C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
-                #     # and stack it to P_cum array for convenience
-                #     P_cum = np.vstack((P_cum, C_vec))
-        else:
-            # default homeostasis parameters
-            mean_measure = None
-            gain = np.ones(n_dictionary)
+            P_cum = homeo_params['P_cum']
+            if P_cum is None:
+                P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
 
-            # P_cum = None
-            C = 5.
-            nb_quant = 256
+        else:
             alpha_homeo = homeo_params['alpha_homeo']
             # if homeo_method=='EXP':
             #     alpha_homeo = -1*homeo_params['alpha_homeo']
-
-    #
-    # elif homeo_method=='HEH':
-    #
-    #     if 'C' in homeo_params.keys():
-    #         C = homeo_params['C']
-    #     else:
-    #         C = 5.
-    #
-    #     if 'P_cum' in homeo_params.keys():
-    #         P_cum = homeo_params['P_cum']
-    #     else:
-    #         P_cum = None
-    #
-    #     if 'eta_homeo' in homeo_params.keys():
-    #         eta_homeo = homeo_params['eta_homeo']
-    #     else:
-    #         eta_homeo = 0.01
-    #
-    #     if 'nb_quant' in homeo_params.keys():
-    #         nb_quant = homeo_params['nb_quant']
-    #     else:
-    #         nb_quant = 100
 
     else:
 
@@ -498,17 +443,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
 
         elif homeo_method=='HEH':
             pass
-            # compute histogram
-            # if C==0.: #auto-scaling
-            #     print('dooh C = 0')
-            #     corr = (this_X @ dictionary.T)
-            #     C_vec = get_rescaling(corr, nb_quant=nb_quant, do_sym=do_sym, verbose=verbose)
-            #     P_cum[:-1, :] = update_P_cum(P_cum=P_cum[:-1, :],
-            #                                  code=sparse_code, eta_homeo=eta_homeo,
-            #                                  C=P_cum[-1, :], nb_quant=nb_quant, do_sym=do_sym,
-            #                                  verbose=verbose)
-            #     P_cum[-1, :] = (1 - eta_homeo) * P_cum[-1, :] + eta_homeo * C_vec
-            # else:
+            # this was done above
             # P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
             #                      nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
         elif homeo_method in ['EXP', 'HAP', 'EMP']:
