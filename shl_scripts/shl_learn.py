@@ -401,7 +401,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                    P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness, #_endl0[ii],
                                    gain=gain)
-
+        # print(this_X.shape, sparse_code.shape, dictionary.shape)
         residual = this_X - sparse_code @ dictionary
 
         # rec_error[ii]=np.mean(np.mean(residual**2, axis=1))

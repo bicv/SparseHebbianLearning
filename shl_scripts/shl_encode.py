@@ -58,27 +58,25 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
         # Not passing in verbose=max(0, verbose-1) because Lars.fit already
         # corrects the verbosity level.
         cov = np.dot(dictionary, X.T)
-        lasso_lars = LassoLars(fit_intercept=False, # alpha=fit_tol, 
+        lasso_lars = LassoLars(fit_intercept=False, # alpha=fit_tol,
                                verbose=verbose, normalize=False,
                                precompute=None, fit_path=False)
         lasso_lars.fit(dictionary.T, X.T, Xy=cov)
-        sparse_code = lasso_lars.coef_.T
+        sparse_code = lasso_lars.coef_
 
     elif algorithm == 'lasso_cd':
-        alpha = float(regularization) / n_pixels  # account for scaling
+        alpha = 1. # float(regularization) / n_pixels  # account for scaling
+        max_iter = 1000
 
         # TODO: Make verbosity argument for Lasso?
         # sklearn.linear_model.coordinate_descent.enet_path has a verbosity
         # argument that we could pass in from Lasso.
         from sklearn.linear_model import Lasso
-        clf = Lasso(alpha=fit_tol, fit_intercept=False, normalize=False,
-                    precompute=None, max_iter=max_iter, warm_start=True)
+        clf = Lasso(alpha=alpha, fit_intercept=False, normalize=False,
+                    precompute=True, max_iter=max_iter, warm_start=True)
 
-        if init is not None:
-            clf.coef_ = init
-
-        clf.fit(dictionary.T, X.T, check_input=check_input)
-        sparse_code = clf.coef_.T
+        clf.fit(dictionary.T, X.T, check_input=True)
+        sparse_code = clf.coef_
 
     elif algorithm == 'lars':
 
@@ -87,12 +85,13 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
         from sklearn.linear_model import Lars
         cov = np.dot(dictionary, X.T)
         lars = Lars(fit_intercept=False, verbose=verbose, normalize=False,
-                    precompute=None, n_nonzero_coefs=l0_sparseness,
+                    precompute=True, n_nonzero_coefs=l0_sparseness,
                     fit_path=False)
         lars.fit(dictionary.T, X.T, Xy=cov)
-        sparse_code = lars.coef_.T
+        sparse_code = lars.coef_
 
     elif algorithm == 'threshold':
+        regularization = 1.
         cov = np.dot(dictionary, X.T)
         sparse_code = ((np.sign(cov) *
                     np.maximum(np.abs(cov) - regularization, 0))).T
@@ -107,7 +106,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
         sparse_code = orthogonal_mp_gram(
             Gram=gram, Xy=cov, n_nonzero_coefs=l0_sparseness,
             tol=None, norms_squared=row_norms(X, squared=True),
-            copy_Xy=False).T
+            copy_Xy=False)
 
     elif algorithm == 'mp':
         sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness,
