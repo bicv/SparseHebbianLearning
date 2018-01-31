@@ -58,7 +58,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
         # Not passing in verbose=max(0, verbose-1) because Lars.fit already
         # corrects the verbosity level.
         cov = np.dot(dictionary, X.T)
-        lasso_lars = LassoLars(alpha=fit_tol, fit_intercept=False,
+        lasso_lars = LassoLars(fit_intercept=False, # alpha=fit_tol, 
                                verbose=verbose, normalize=False,
                                precompute=None, fit_path=False)
         lasso_lars.fit(dictionary.T, X.T, Xy=cov)
@@ -205,15 +205,17 @@ def quantile(P_cum, p_c, stick, do_fast=True):
         q_i = np.zeros_like(p_c)
         for i in range(P_cum.shape[0]):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
+
+        #q_i[p_c==0.] = 0.
         return q_i
 
 def inv_quantile(P_cum, q, do_fast=False):
+    # TODO : do_fast=True
     n_dictionary, nb_quant = P_cum.shape
     code_bins = np.linspace(0., 1., nb_quant, endpoint=True)
     r = np.zeros_like(q)
-    i = 0
     for i in range(n_dictionary):
-        r[:, i] = np.interp(q[:, i], P_cum[i, :], code_bins, left=0., right=1.-.5/nb_quant)
+        r[:, i] = np.interp(q[:, i], P_cum[i, :-1], code_bins[:-1], left=0., right=1.-.5/nb_quant)
     return r
 
 def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1., do_sym=False, P_cum=None,

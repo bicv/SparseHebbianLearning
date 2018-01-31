@@ -693,6 +693,7 @@ def get_P_cum(code, C, nb_quant=256, do_sym=False, verbose=False):
     P_cum = np.zeros((nb_filter, nb_quant))
 
     for i in range(nb_filter):
+        # note: the last bin includes 1, while this value is impossible (pc==1 <=> C=infinite)
         p, bins = np.histogram(p_c[:, i], bins=code_bins, density=True)
         p /= p.sum()
         P_cum[i, :] = np.hstack((0, np.cumsum(p)))

@@ -67,7 +67,8 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
         slip = Image({'N_X':height, 'N_Y':width,
                 'datapath': datapath,
                 'do_mask': True,
-                'N_image': n_image})
+                'N_image': n_image,
+		'seed':42})
         import os
 
         if do_mask:

@@ -173,7 +173,8 @@ class SHL(object):
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        P_cum=P_cum, do_sym=self.do_sym, verbose=0, gain=None)
+                                        P_cum=None, do_sym=self.do_sym, verbose=0,
+                                        gain=np.ones(self.n_dictionary))
             if self.verbose:
                 dt = time.time() - t0
                 print('done in %.2fs.' % dt)
