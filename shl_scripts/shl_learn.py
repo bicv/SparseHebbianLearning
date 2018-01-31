@@ -501,7 +501,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                 SD = np.linalg.norm(X_train[indx, :])/record_num_batches
                 error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
 
-                stick = np.arange(n_dictionary)*nb_quant==
+                stick = np.arange(n_dictionary)*nb_quant
                 q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
                 P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
                 q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
@@ -518,8 +518,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                                             index=[ii])
                 record = pd.concat([record, record_one])
 
-    elif verbose==1:
-        print('|', end=' ')
+    # elif verbose==1:
+    #     print('|', end=' ')
 
     if verbose > 1:
         dt = (time.time() - t0)
