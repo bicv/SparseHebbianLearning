@@ -385,18 +385,10 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
     batches = itertools.cycle(batches)
 
+    if verbose > 1:
+        print('Learning code...', end=' ')
     # cycle over all batches
     for ii, this_X in zip(range(n_iter), batches):
-    #for ii in range(n_iter):
-        dt = (time.time() - t0)
-
-        if verbose > 0:
-            if ii % int(n_iter//verbose + 1)==0:
-                print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
-                       % (ii, n_iter, dt, dt//60))
-
-        #this_X = batches[idx_batches[ii]]
-
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                    P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness, #_endl0[ii],
@@ -480,6 +472,13 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                              '"EMP" or "HEH", got %s.'
                              % homeo_method)
 
+        cputime = (time.time() - t0)
+
+        if verbose > 0:
+            if ii % int(record_each)==0:
+                print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
+                       % (ii, n_iter, cputime, cputime//60))
+
         if record_each>0:
             if ii % int(record_each)==0:
                 if P_cum is None:
@@ -502,7 +501,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                 SD = np.linalg.norm(X_train[indx, :])/record_num_batches
                 error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
 
-                stick = np.arange(n_dictionary)*nb_quant
+                stick = np.arange(n_dictionary)*nb_quant==
                 q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
                 P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
                 q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
@@ -514,12 +513,11 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                                             'var':np.mean(sparse_code_rec**2, axis=0),
                                             'error':error/SD,
                                             'qerror':qerror/SD,
+                                            'cputime':cputime,
                                             'entropy':rel_ent}],
                                             index=[ii])
                 record = pd.concat([record, record_one])
 
-    if verbose > 1:
-        print('Learning code...', end=' ')
     elif verbose==1:
         print('|', end=' ')
 
