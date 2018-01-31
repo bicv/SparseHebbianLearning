@@ -416,8 +416,8 @@ class SHL_set(object):
             ax.set_ylabel(display_variable)
             ax.set_xlabel(variable)
             # ax.set_xlim(0, dico.n_iter)
-            if variable in ['error', 'qerror']:
-                ax.set_ylim(0)
+            if display_variable in ['error', 'qerror']:
+                ax.set_ylim(0, 1)
             ax.set_xscale('log')
             return fig, ax
 
