@@ -62,7 +62,7 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_size=(16, 16),
+                 patch_width=16,
                  datapath='database/',
                  name_database='kodakdb',
                  n_dictionary=18**2,
@@ -97,7 +97,8 @@ class SHL(object):
         self.height = height
         self.width = width
         self.datapath = datapath
-        self.patch_size = patch_size
+        # self.patch_size = (patch_width, patch_width)
+        self.patch_width = patch_width
         self.n_dictionary = n_dictionary
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
@@ -136,10 +137,11 @@ class SHL(object):
         PID, HOST = os.getpid(), os.uname()[1]
         self.LOCK = '_lock' + '_pid-' + str(PID) + '_host-' + HOST
 
-    def get_data(self, matname=None):
+    def get_data(self, matname=None, patch_width=None):
+        if patch_width is None: patch_width= self.patch_width
         from shl_scripts.shl_tools import get_data
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
-                    patch_size=self.patch_size, datapath=self.datapath,
+                    patch_size=(patch_width, patch_width), datapath=self.datapath,
                     max_patches=self.max_patches, verbose=self.verbose,
                     data_cache=self.data_cache, seed=self.seed,
                     do_mask=self.do_mask, patch_norm=self.patch_norm,
@@ -359,7 +361,7 @@ class SHL_set(object):
         return  self.tag + ' - {}={}'.format(variable, value)
 
     def scan(self, N_scan=None, vtype='eta', variable='eta', list_figures=[], base=10,
-                display='', display_variable='qerror',
+                display='', display_variable='error',
                 alpha=.6, color=None, label=None, fname=None, fig=None, ax=None):
 
         if N_scan is None: N_scan = self.N_scan
@@ -381,9 +383,15 @@ class SHL_set(object):
             if ax is None:
                 ax = fig.add_subplot(111)
 
+
         for value in vvalue:
-            if variable in ['n_iter', 'nb_quant']:
+            if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width']:
                 value = int(value)
+            if variable in ['patch_width']:
+                data = self.shl.get_data(patch_width=value)
+            else:
+                data = self.data
+
             shl = SHL(**deepcopy(self.opts))
             if vtype=='eta':
                 # print(value, shl.eta[variable], self.shl.eta[variable])
@@ -393,19 +401,20 @@ class SHL_set(object):
                 shl.homeo_params[variable] = value
             else:
                 shl.__dict__[variable] = value
-            dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
+            dico = shl.learn_dico(data=data, matname=self.matname(variable, value),
                         list_figures=list_figures)
 
             if display == 'dynamic':
                 fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
                         fig=fig_error, ax=ax_error, label='%s=%.3f' % (variable, value))
             elif display == 'final':
-                try:
+                if True:#try:
+                    # print (dico.record['cputime'])
                     df_variable = dico.record[display_variable]
                     # learning_time = np.array(df_variable.index)
                     results.append(df_variable[df_variable.index[-1]])
-                except Exception as e:
-                    print('error', e, ' with', dico)
+                # except Exception as e:
+                #     print('error', e, ' with', dico)
             else:
                 if len(list_figures)>0: plt.show()
 
@@ -419,8 +428,11 @@ class SHL_set(object):
             # ax.set_xlim(vvalue.min(), vvalue.max())
             if display_variable in ['error', 'qerror']:
                 ax.set_ylim(0, 1)
+            elif display_variable in ['cputime']:
+                ax.set_ylim(0)
             ax.set_xscale('log')
             return fig, ax
+
 #  TODO: n_jobs > 1
 # from joblib import Parallel, delayed
 #
