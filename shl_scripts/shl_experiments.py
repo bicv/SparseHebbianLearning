@@ -73,12 +73,12 @@ class SHL(object):
                  l0_sparseness=30,
                 #  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**10 + 1,
+                 n_iter=2**12 + 1,
                  # Standard
                  #eta=.01, # or equivalently
                  #eta = dict(eta=.05, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
-                 eta=dict(eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8),
+                 eta=dict(eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8),
                  homeo_method = 'HEH',
                  homeo_params = dict(eta_homeo=0.05, C=5., nb_quant=256, P_cum=None),
                 #  homeo_method='HAP',
@@ -305,6 +305,8 @@ class SHL(object):
                 fig, ax = self.time_plot(dico, variable='error', fname=fname)
             if 'time_plot_qerror' in list_figures:
                 fig, ax = self.time_plot(dico, variable='qerror', fname=fname)
+            if 'time_plot_aerror' in list_figures:
+                fig, ax = self.time_plot(dico, variable='aerror', fname=fname)
             if 'time_plot_entropy' in list_figures:
                 fig, ax = self.time_plot(dico, variable='entropy', fname=fname)
             try:
@@ -351,10 +353,10 @@ class SHL_set(object):
 
     """
     def __init__(self, opts, tag, data_matname='data', N_scan=7):
-        self.opts = opts
+        self.opts = deepcopy(opts)
         self.tag = tag
         self.N_scan = N_scan
-        self.shl = SHL(**deepcopy(opts))
+        self.shl = SHL(**deepcopy(self.opts))
         self.data = self.shl.get_data(matname='data')
 
     def matname(self, variable, value):
@@ -385,7 +387,7 @@ class SHL_set(object):
 
 
         for value in vvalue:
-            if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width']:
+            if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary']:
                 value = int(value)
             if variable in ['patch_width']:
                 data = self.shl.get_data(patch_width=value)
@@ -429,7 +431,8 @@ class SHL_set(object):
             if display_variable in ['error', 'qerror']:
                 ax.set_ylim(0, 1)
             elif display_variable in ['cputime']:
-                ax.set_ylim(0)
+                ax.set_yscale('log')
+                # ax.set_ylim(0)
             ax.set_xscale('log')
             return fig, ax
 

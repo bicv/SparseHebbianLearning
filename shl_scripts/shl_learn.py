@@ -494,25 +494,39 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
                                              l0_sparseness=l0_sparseness, gain=None)
 
                 # calculation of relative entropy
-                p_ = np.count_nonzero(sparse_code_rec,axis=0) / (sparse_code_rec.shape[1])
+                p_ = np.count_nonzero(sparse_code_rec, axis=0) / (sparse_code_rec.shape[1])
                 p_ /= p_.sum()
                 rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
                 # relative error
                 SD = np.linalg.norm(X_train[indx, :])/record_num_batches
                 error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
 
+                # calculation of quantization error
                 stick = np.arange(n_dictionary)*nb_quant
                 q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
                 P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
                 q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
                 qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
-                # print('qerror', qerror/SD, qerror, SD)
+
+                # calculation of generalization error
+                sparse_code_bar = sparse_code_rec.copy()
+                np.random.shuffle(sparse_code_bar)
+                patches_bar = sparse_code_bar @ dictionary
+                sparse_code = sparse_encode(patches_bar, dictionary, precision,
+                                            algorithm=method, fit_tol=fit_tol,
+                                             P_cum=P_cum_, C=C, do_sym=do_sym,
+                                             l0_sparseness=l0_sparseness, gain=None)
+                q = quantile(P_cum, rescaling(sparse_code, C=C), stick, do_fast=True)
+                q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=True)
+                aerror = np.mean(np.abs(q_bar-q))
+
                 from scipy.stats import kurtosis
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
                                             'var':np.mean(sparse_code_rec**2, axis=0),
                                             'error':error/SD,
                                             'qerror':qerror/SD,
+                                            'aerror':aerror,
                                             'cputime':cputime,
                                             'entropy':rel_ent}],
                                             index=[ii])
