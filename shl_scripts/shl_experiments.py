@@ -363,7 +363,7 @@ class SHL_set(object):
         return  self.tag + ' - {}={}'.format(variable, value)
 
     def scan(self, N_scan=None, vtype='eta', variable='eta', list_figures=[], base=10,
-                display='', display_variable='error',
+                display='', display_variable='aerror',
                 alpha=.6, color=None, label=None, fname=None, fig=None, ax=None):
 
         if N_scan is None: N_scan = self.N_scan
@@ -422,6 +422,8 @@ class SHL_set(object):
 
         if display == 'dynamic':
             ax_error.legend()
+            if display_variable in ['error', 'qerror', 'aerror']:
+                ax.set_ylim(0)
             return fig_error, ax_error
         elif display == 'final':
             ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
