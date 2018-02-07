@@ -14,7 +14,7 @@ toolbar_width = 40
 def touch(filename):
     open(filename, 'w').close()
 
-def preprocessing(image, height=256, width=256, seed=None):
+def preprocessing(image, height=256, width=256, patch_size=(12, 12), seed=None):
     slip = Image({'N_X':height, 'N_Y':width,
             'white_n_learning' : 0,
             'seed': seed,
@@ -25,6 +25,15 @@ def preprocessing(image, height=256, width=256, seed=None):
             'white_steepness' : 4.,
             'do_mask': True})
     image = slip.whitening(image)
+
+    # print(2*.5*max(height, width)/max(patch_size))
+    # slip.f_mask = slip.retina(sigma=2*.5*max(height, width)/max(patch_size))
+    df=.07
+    slip.f_mask = (1-np.exp((slip.f-.5)/(.5*df)))*(slip.f<.5)
+    # removing low frequencies
+    slip.f_mask *= .5*(np.tanh( 40.*(slip.f-.5/16))+1)
+    image = slip.preprocess(image)
+
     return image
 
 
@@ -34,7 +43,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
     spectra = 1/np.sqrt(fx**2+fy**2) # FIX : may be infinite!
     phase = np.random.uniform(0, 2 * np.pi, (height, width))
     image = np.real(np.fft.ifft2(np.fft.fftshift(spectra*np.exp(1j*phase))))
-    image = preprocessing(image, height=height, width=height)
+    image = preprocessing(image, height=height, width=height, patch_size=(N_f, N_f))
 
     slip = Image({'N_X':height, 'N_Y':width, 'do_mask': False})
     dictionary = slip.extract_patches_2d(image, (N_f, N_f), N_patches=n_dictionary)
@@ -80,7 +89,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
         for filename, croparea in imagelist:
             # whitening
             image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)
-            image = preprocessing(image, height=height, width=width)
+            image = preprocessing(image, height=height, width=width, patch_size=patch_size)
 
             # Extract all reference patches and ravel them
             data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))
