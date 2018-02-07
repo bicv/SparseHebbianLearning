@@ -26,13 +26,13 @@ def preprocessing(image, height=256, width=256, patch_size=(12, 12), seed=None):
             'do_mask': True})
     image = slip.whitening(image)
 
-    # print(2*.5*max(height, width)/max(patch_size))
-    # slip.f_mask = slip.retina(sigma=2*.5*max(height, width)/max(patch_size))
-    df=.07
-    slip.f_mask = (1-np.exp((slip.f-.5)/(.5*df)))*(slip.f<.5)
-    # removing low frequencies
-    slip.f_mask *= .5*(np.tanh( 40.*(slip.f-.5/16))+1)
-    image = slip.preprocess(image)
+    # # print(2*.5*max(height, width)/max(patch_size))
+    # # slip.f_mask = slip.retina(sigma=2*.5*max(height, width)/max(patch_size))
+    # df=.07
+    # slip.f_mask = (1-np.exp((slip.f-.5)/(.5*df)))*(slip.f<.5)
+    # # removing low frequencies
+    # slip.f_mask *= .5*(np.tanh( 40.*(slip.f-.5/16))+1)
+    # image = slip.preprocess(image)
 
     return image
 
