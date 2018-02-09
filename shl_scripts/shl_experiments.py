@@ -78,9 +78,9 @@ class SHL(object):
                  #eta=.01, # or equivalently
                  #eta = dict(eta=.05, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
-                 eta=dict(eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8),
+                 eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HEH',
-                 homeo_params = dict(eta_homeo=0.05, C=5., nb_quant=256, P_cum=None),
+                 eta_homeo=0.05, alpha_homeo=0.0, C=5., nb_quant=256, P_cum=None,
                 #  homeo_method='HAP',
                 #  homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
                  do_sym=False,
@@ -102,9 +102,9 @@ class SHL(object):
         self.n_dictionary = n_dictionary
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
-        self.name_database = name_database #[0],
-        self.seed = seed,
-        self.patch_norm = patch_norm,
+        self.name_database = name_database
+        self.seed = seed
+        self.patch_norm = patch_norm
         if not n_image is None:
             self.n_image = int(n_image/DEBUG_DOWNSCALE)
         else:
@@ -118,13 +118,22 @@ class SHL(object):
         self.l0_sparseness = l0_sparseness
         # self.l0_sparseness_end = l0_sparseness_end
         self.eta = eta
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
+        self.homeo_method = homeo_method
+        self.eta_homeo = eta_homeo
+        self.alpha_homeo = alpha_homeo
+        self.C = C
+        self.nb_quant = nb_quant
+        self.P_cum = P_cum
+
         self.do_sym = do_sym
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
         self.verbose = verbose
         # assigning and create a folder for caching data
         self.data_cache = data_cache
-        self.homeo_method = homeo_method
-        self.homeo_params = homeo_params
+
         self.one_over_F = one_over_F
 
         if not self.data_cache is None:
@@ -218,13 +227,23 @@ class SHL(object):
                                          fit_algorithm=self.learning_algorithm,
                                          do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary,
-                                         eta=self.eta, n_iter=self.n_iter,
+                                         eta=self.eta,
+                                         beta1=self.beta1,
+                                         beta2=self.beta2,
+                                         epsilon=self.epsilon,
+                                         homeo_method=self.homeo_method,
+                                         eta_homeo=self.eta_homeo,
+                                         alpha_homeo=self.alpha_homeo,
+                                         C=self.C,
+                                         nb_quant=self.nb_quant,
+                                         P_cum=self.P_cum,
+                                         n_iter=self.n_iter,
                                          l0_sparseness=self.l0_sparseness, one_over_F=self.one_over_F,
                                         #  l0_sparseness_end=self.l0_sparseness_end,
                                          batch_size=self.batch_size, verbose=self.verbose,
                                          fit_tol=self.fit_tol,
                                          do_precision=self.do_precision, record_each=self.record_each,
-                                         homeo_method=self.homeo_method, homeo_params=self.homeo_params)
+)
 
             if self.verbose: print('Training on %d patches' % len(data), end='... ')
             dico.fit(data)
@@ -362,20 +381,15 @@ class SHL_set(object):
     def matname(self, variable, value):
         return  self.tag + ' - {}={}'.format(variable, value)
 
-    def scan(self, N_scan=None, vtype='eta', variable='eta', list_figures=[], base=10,
+    def scan(self, N_scan=None, variable='eta', list_figures=[], base=10,
                 display='', display_variable='aerror',
-                alpha=.6, color=None, label=None, fname=None, fig=None, ax=None):
-
+                alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=1):
+        # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
-        if vtype=='eta':
-            median = self.shl.eta[variable]
-        elif vtype=='homeo_params':
-            median = self.shl.homeo_params[variable]
-        else:
-            median = self.shl.__dict__[variable]
+        median = self.shl.__dict__[variable]
 
         vvalue = np.logspace(-1., 1., N_scan, base=base)*median
-
+        if verbose: print('DEBUG:', variable, median, vvalue)
         if display == 'dynamic':
             fig_error, ax_error = None, None
         elif display == 'final':
@@ -390,20 +404,13 @@ class SHL_set(object):
             if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary']:
                 value = int(value)
             if variable in ['patch_width']:
-                data = self.shl.get_data(**dict(variable=value))
+                data = self.shl.get_data(**{variable:value})
             else:
-                data = self.data
+                data = deepcopy(self.data)
 
             shl = SHL(**deepcopy(self.opts))
-            if vtype=='eta':
-                # print(value, shl.eta[variable], self.shl.eta[variable])
-                shl.eta[variable] = value #.update(eta=eta)
-                # print('post', value, shl.eta[variable], self.shl.eta[variable])
-            elif vtype=='homeo_params':
-                shl.homeo_params[variable] = value
-            else:
-                shl.__dict__[variable] = value
-            print('DEBUG:', shl.__dict__)
+            shl.__dict__[variable] = value
+            if verbose: print('DEBUG:', shl.__dict__, self.shl.__dict__)
             dico = shl.learn_dico(data=data, matname=self.matname(variable, value),
                         list_figures=list_figures)
 
@@ -421,6 +428,7 @@ class SHL_set(object):
                     print('We encountered error', e, ' with', dico)
             else:
                 if len(list_figures)>0: plt.show()
+            del shl
 
         if display == 'dynamic':
             ax_error.legend()

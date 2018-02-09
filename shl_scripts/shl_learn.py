@@ -85,17 +85,28 @@ class SparseHebbianLearning:
 
     """
     def __init__(self, fit_algorithm, dictionary=None, precision=None,
-                 n_dictionary=None, eta=0.02, n_iter=10000,
+                 eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 homeo_method = 'HEH',
+                 eta_homeo=0.05, alpha_homeo=0.0, C=5., nb_quant=256, P_cum=None,
+                 n_dictionary=None, n_iter=10000,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None, #  l0_sparseness_end=None,
                  do_precision=False, do_sym=False,
-                 record_each=200, verbose=False,
-                 homeo_method='EXP', homeo_params={}, one_over_F=True):
+                 record_each=200, verbose=False, one_over_F=True):
         self.fit_algorithm = fit_algorithm
         self.dictionary = dictionary
         self.precision = precision
         self.n_dictionary = n_dictionary
         self.eta = eta
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
+        self.homeo_method = homeo_method
+        self.eta_homeo = eta_homeo
+        self.alpha_homeo = alpha_homeo
+        self.C = C
+        self.nb_quant = nb_quant
+        self.P_cum = P_cum
         self.n_iter = n_iter
         self.do_sym = do_sym
         self.batch_size = batch_size
@@ -105,8 +116,6 @@ class SparseHebbianLearning:
         self.do_precision = do_precision
         self.record_each = record_each
         self.verbose = verbose
-        self.homeo_method = homeo_method
-        self.homeo_params = homeo_params
         self.one_over_F = one_over_F
 
     def fit(self, X, y=None):
@@ -124,10 +133,21 @@ class SparseHebbianLearning:
             Returns the instance itself.
         """
         return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.precision,
-                                  eta=self.eta, n_dictionary=self.n_dictionary, l0_sparseness=self.l0_sparseness, #l0_sparseness_end=self.l0_sparseness_end,
-                                  n_iter=self.n_iter, method=self.fit_algorithm, do_sym=self.do_sym, one_over_F=self.one_over_F,
+                                  eta=self.eta, beta1=self.beta1, beta2=self.beta2,
+                                  epsilon=self.epsilon,
+                                  homeo_method=self.homeo_method,
+                                  eta_homeo=self.eta_homeo,
+                                  alpha_homeo=self.alpha_homeo,
+                                  C=self.C,
+                                  nb_quant=self.nb_quant,
+                                  P_cum=self.P_cum,
+                                  n_dictionary=self.n_dictionary,
+                                  l0_sparseness=self.l0_sparseness, #l0_sparseness_end=self.l0_sparseness_end,
+                                  n_iter=self.n_iter, method=self.fit_algorithm,
+                                  do_sym=self.do_sym, one_over_F=self.one_over_F,
                                   batch_size=self.batch_size, record_each=self.record_each,
-                                  verbose=self.verbose, homeo_method=self.homeo_method, homeo_params=self.homeo_params)
+                                  verbose=self.verbose
+                                  )
 
         if self.record_each==0:
             self.dictionary, self.precision, self.P_cum = return_fn
@@ -155,11 +175,14 @@ class SparseHebbianLearning:
                                 fit_tol=fit_tol, l0_sparseness=l0_sparseness)
 
 
-def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
-                  n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
-                  do_precision=False, n_iter=100, one_over_F=True,
-                  batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                  method='mp', do_sym=False, homeo_method='HEH', homeo_params={}):
+def dict_learning(X, dictionary=None, precision=None,
+                 eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 homeo_method = 'HEH',
+                 eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
+                 n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
+                 do_precision=False, n_iter=100, one_over_F=True,
+                 batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
+                 method='mp', do_sym=False):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -303,15 +326,11 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
     # print(alpha_homeo, eta_homeo, alpha_homeo==0, eta_homeo==0, alpha_homeo==0 or eta_homeo==0, 'P_cum', P_cum)
 
     #initializing parameters
-    if isinstance(eta, np.float):
+    if beta1 == 0:
         do_adam = False
     else:
-        if eta['beta1'] == 0:
-            do_adam = False
-            eta = eta['eta']
-        else:
-            do_adam = True
-            moment = energy = np.zeros_like(dictionary)
+        do_adam = True
+        moment = energy = np.zeros_like(dictionary)
 
     # default homeostasis parameters
     mean_measure = None
@@ -322,28 +341,17 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
     nb_quant = 256
 
     if homeo_method=='None':
-        eta_homeo = 0.05 # HACK
-        alpha_homeo = 0.
         # default homeostasis parameters
         mean_measure = None
         gain = np.ones(n_dictionary)
 
     elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
-        eta_homeo = homeo_params['eta_homeo']
         if homeo_method=='HEH':
-            C = homeo_params['C']
-            nb_quant = homeo_params['nb_quant']
             # we do not use a gain
             gain = None
             # but instead do the equalitarian homeostasis
-            P_cum = homeo_params['P_cum']
             if P_cum is None:
                 P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
-
-        else:
-            alpha_homeo = homeo_params['alpha_homeo']
-            # if homeo_method=='EXP':
-            #     alpha_homeo = -1*homeo_params['alpha_homeo']
 
     else:
 
@@ -405,10 +413,10 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
         gradient = - sparse_code.T @ residual
         if do_adam:
             #  biased first moment estimate
-            moment = eta['beta1'] * moment + (1 - eta['beta1']) * gradient
+            moment = beta1 * moment + (1 - beta1) * gradient
             # biased second raw moment estimate
-            energy = eta['beta2'] * energy + (1 - eta['beta2']) * (gradient**2)
-            dictionary -= eta['eta'] * (moment / (1-eta['beta1']**(ii+1)))  / (np.sqrt(energy / (1-eta['beta2']**(ii+1))) + eta['epsilon'])
+            energy = beta2 * energy + (1 - beta2) * (gradient**2)
+            dictionary -= eta * (moment / (1-beta1**(ii+1)))  / (np.sqrt(energy / (1-beta2**(ii+1))) + epsilon)
 
         else:
             # eta_ = eta + (1 - eta) / (ii + 1)
@@ -467,7 +475,6 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
             # apply heuristics on the gain
             gain = mean_measure**(-alpha_homeo)
         else:
-
             raise ValueError('Homeostasis method must be "EXP", "None", "HAP", "Olshausen" '
                              '"EMP" or "HEH", got %s.'
                              % homeo_method)
@@ -476,8 +483,8 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
 
         if verbose > 0:
             if ii % int(record_each)==0:
-                print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 4.1fmn)"
-                       % (ii, n_iter, cputime, cputime//60))
+                print ("Iteration % 3i /  % 3i (elapsed time: % 3is, % 3imn % 3is)"
+                       % (ii + 1, n_iter, cputime, cputime//60, cputime%60))
 
         if record_each>0:
             if ii % int(record_each)==0:
