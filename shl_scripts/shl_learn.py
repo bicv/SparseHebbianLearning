@@ -322,7 +322,7 @@ def dict_learning(X, dictionary=None, precision=None, P_cum=None, eta=0.02,
     nb_quant = 256
 
     if homeo_method=='None':
-        eta_homeo = 0.
+        eta_homeo = 0.05 # HACK
         alpha_homeo = 0.
         # default homeostasis parameters
         mean_measure = None

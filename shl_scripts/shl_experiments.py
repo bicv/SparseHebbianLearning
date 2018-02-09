@@ -92,7 +92,7 @@ class SHL(object):
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='/tmp/data_cache',
+                 data_cache='data_cache',
                 ):
         self.height = height
         self.width = width
@@ -390,7 +390,7 @@ class SHL_set(object):
             if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary']:
                 value = int(value)
             if variable in ['patch_width']:
-                data = self.shl.get_data(patch_width=value)
+                data = self.shl.get_data(**dict(variable=value))
             else:
                 data = self.data
 
@@ -403,6 +403,7 @@ class SHL_set(object):
                 shl.homeo_params[variable] = value
             else:
                 shl.__dict__[variable] = value
+            print('DEBUG:', shl.__dict__)
             dico = shl.learn_dico(data=data, matname=self.matname(variable, value),
                         list_figures=list_figures)
 
@@ -410,20 +411,21 @@ class SHL_set(object):
                 fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
                         fig=fig_error, ax=ax_error, label='%s=%.3f' % (variable, value))
             elif display == 'final':
-                if True:#try:
+                try:
                     # print (dico.record['cputime'])
                     df_variable = dico.record[display_variable]
                     # learning_time = np.array(df_variable.index)
                     results.append(df_variable[df_variable.index[-1]])
-                # except Exception as e:
-                #     print('error', e, ' with', dico)
+                except Exception as e:
+                    print('Wile processing ', self.matname(variable, value))
+                    print('We encountered error', e, ' with', dico)
             else:
                 if len(list_figures)>0: plt.show()
 
         if display == 'dynamic':
             ax_error.legend()
             if display_variable in ['error', 'qerror', 'aerror']:
-                ax.set_ylim(0)
+                ax_error.set_ylim(0)
             return fig_error, ax_error
         elif display == 'final':
             ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
@@ -432,6 +434,8 @@ class SHL_set(object):
             # ax.set_xlim(vvalue.min(), vvalue.max())
             if display_variable in ['error', 'qerror']:
                 ax.set_ylim(0, 1)
+            elif display_variable in ['aerror']:
+                ax.set_ylim(0)
             elif display_variable in ['cputime']:
                 ax.set_yscale('log')
                 # ax.set_ylim(0)
