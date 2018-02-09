@@ -217,8 +217,8 @@ def inv_quantile(P_cum, q, do_fast=False):
         r[:, i] = np.interp(q[:, i], P_cum[i, :-1], code_bins[:-1], left=0., right=1.-.5/nb_quant)
     return r
 
-def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1., do_sym=False, P_cum=None,
-       do_fast=True, C=5., verbose=0, gain=None):
+def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1.,
+       do_sym=False, P_cum=None, do_fast=True, C=5., verbose=0, gain=None):
     """
     Matching Pursuit
     cf. https://en.wikipedia.org/wiki/Matching_pursuit
@@ -252,10 +252,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
     n_samples, n_pixels = X.shape
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
-    #
-    # if homeo_method == 'HEH':
-    #     nb_quant = P_cum.shape[1]
-    #     stick = np.arange(n_dictionary)*nb_quant
+
     # #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
@@ -269,19 +266,13 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         Xcorr = (dictionary @ (precision*dictionary).T)
         #SE_0 = np.sum(X*2, axis=1)
 
-    if gain is None:
-        # COMP
+    # COMP
+    if gain is None: # SLOW
         nb_quant = P_cum.shape[1]
         stick = np.arange(n_dictionary)*nb_quant
-        # if C == 0.:
-        #     print('C=5 dooh')
-        #     C = P_cum[-1, :]
-        #     P_cum = P_cum[:-1, :]
 
         for i_sample in range(n_samples):
             c = corr[i_sample, :].copy()
-            #c_0 = corr_0[i_sample]
-            #i_l0, SE = 0, SE_0
             #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
             for i_l0 in range(int(l0_sparseness)) :
                 r = rescaling(c, C=C, do_sym=do_sym)
@@ -292,7 +283,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
 
                 sparse_code[i_sample, ind] += c_ind
                 c -= c_ind * Xcorr[ind, :]
-    else:
+    else: # FAST
         gain = gain[np.newaxis, :] * np.ones_like(corr)
         line = np.arange(n_samples)
         for i_l0 in range(int(l0_sparseness)):

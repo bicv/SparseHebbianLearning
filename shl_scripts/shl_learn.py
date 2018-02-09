@@ -176,13 +176,13 @@ class SparseHebbianLearning:
 
 
 def dict_learning(X, dictionary=None, precision=None,
-                 eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
-                 homeo_method = 'HEH',
-                 eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
-                 n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
-                 do_precision=False, n_iter=100, one_over_F=True,
-                 batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
-                 method='mp', do_sym=False):
+                  eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
+                  homeo_method = 'HEH',
+                  eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
+                  n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
+                  do_precision=False, n_iter=100, one_over_F=True,
+                  batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
+                  method='mp', do_sym=False):
     """
     Solves a dictionary learning matrix factorization problem online.
 
@@ -315,15 +315,13 @@ def dict_learning(X, dictionary=None, precision=None,
 
     #if not precision is None: do_precision = True
     if do_precision:
-        print('dooh precision not implemented')
+        print('dooh! precision not implemented')
         precision = np.ones((n_dictionary, n_pixels))
     else:
         precision = None
 
     if verbose==1:
         print('[dict_learning]', end=' ')
-
-    # print(alpha_homeo, eta_homeo, alpha_homeo==0, eta_homeo==0, alpha_homeo==0 or eta_homeo==0, 'P_cum', P_cum)
 
     #initializing parameters
     if beta1 == 0:
@@ -334,32 +332,15 @@ def dict_learning(X, dictionary=None, precision=None,
 
     # default homeostasis parameters
     mean_measure = None
-    gain = np.ones(n_dictionary)
-
-    # P_cum = None
-    C = 5.
-    nb_quant = 256
-
-    if homeo_method=='None':
-        # default homeostasis parameters
-        mean_measure = None
-        gain = np.ones(n_dictionary)
-
-    elif homeo_method in ['HAP', 'Olshausen', 'EMP', 'EXP', 'HEH']:
-        if homeo_method=='HEH':
-            # we do not use a gain
-            gain = None
-            # but instead do the equalitarian homeostasis
-            if P_cum is None:
-                P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
-
+    if homeo_method=='HEH':
+        # we do not use a gain
+        gain = None
+        # but instead do the equalitarian homeostasis
+        if P_cum is None:
+            P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
     else:
-
-        raise ValueError('Homeostasis method must be "None", "EXP", "HAP" '
-                         '"EMP" or "HEH", got %s.'
-                         % homeo_method)
-    if P_cum is None:
-        P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
+        gain = np.ones(n_dictionary)
+        P_cum = None
 
     # splits the whole dataset into batches
     n_batches = n_samples // batch_size
@@ -368,27 +349,6 @@ def dict_learning(X, dictionary=None, precision=None,
     np.random.shuffle(X_train)
     # Splits into ``n_batches`` batches
     batches = np.array_split(X_train, n_batches)
-
-    # rec_error = np.zeros(n_iter)
-    # idx_batches = np.random.randint(0, n_batches, n_iter)
-
-    # cycle over all batches
-
-    #scheduling l0_sparseness TODO : evaluate if this makes the learning faster
-    # if (l0_sparseness_end is None) or (l0_sparseness_end < l0_sparseness):
-    #     l0 = l0_sparseness * np.ones(n_iter)
-    # else:
-    #     l0_init = l0_sparseness
-    #     l0_end = l0_sparseness_end
-    #     tau = 0.5 * n_iter
-    #     A = (l0_end - l0_init)
-    #     B = l0_init - A
-    #     n = np.arange(n_iter)
-    #     l0 = (l0_end - l0_init) * (np.exp(n / tau) - 1) / (np.exp(n_iter / tau) - 1)
-    #     l0 += l0_init
-    #     l0 = l0.astype(int)
-
-
     import itertools
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
     batches = itertools.cycle(batches)
@@ -404,11 +364,7 @@ def dict_learning(X, dictionary=None, precision=None,
         # print(this_X.shape, sparse_code.shape, dictionary.shape)
         residual = this_X - sparse_code @ dictionary
 
-        # rec_error[ii]=np.mean(np.mean(residual**2, axis=1))
-
         # Update dictionary: Hebbian learning
-
-        #dictionary *= np.sqrt(1-eta**2) # http://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/
         residual /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
         gradient = - sparse_code.T @ residual
         if do_adam:
@@ -419,7 +375,6 @@ def dict_learning(X, dictionary=None, precision=None,
             dictionary -= eta * (moment / (1-beta1**(ii+1)))  / (np.sqrt(energy / (1-beta2**(ii+1))) + epsilon)
 
         else:
-            # eta_ = eta + (1 - eta) / (ii + 1)
             dictionary -= eta * gradient
 
         if do_precision:
@@ -428,9 +383,6 @@ def dict_learning(X, dictionary=None, precision=None,
             variance *= 1-eta
             variance += eta * sparse_code.T @ (residual**2)
             precision = 1./(variance + 1.e-16)
-
-        P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
-                             nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         # homeostasis
         # 1/ first, we normalise filters
@@ -442,24 +394,24 @@ def dict_learning(X, dictionary=None, precision=None,
             pass
 
         elif homeo_method=='HEH':
-            pass
-            # this was done above
-            # P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
-            #                      nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
+            P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
+                                 nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
         elif homeo_method in ['EXP', 'HAP', 'EMP']:
             # compute statistics on the activation probability
             if mean_measure is None:
-                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1., verbose=verbose,
-                                 do_HAP=True)
+                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code,
+                                                eta_homeo=1., verbose=verbose,
+                                                do_HAP=True)
             else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=True)
+                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo,
+                                              verbose=verbose, do_HAP=True)
             # apply different heuristics on the gain
             if homeo_method=='EXP':
                 gain = np.exp(-(1 / alpha_homeo) * mean_measure)
 
             elif homeo_method=='HAP':
                 gain = mean_measure**(-alpha_homeo)#
-                    # gain /= gain.mean()
+                # gain /= gain.mean()
 
             elif homeo_method=='EMP':
                 p_threshold = (1/n_dictionary)*(1+alpha_homeo)
@@ -468,10 +420,12 @@ def dict_learning(X, dictionary=None, precision=None,
         elif homeo_method=='Olshausen':
             # compute statistics on the variance of coefficients
             if mean_measure is None:
-                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code, eta_homeo=1., verbose=verbose,
-                                 do_HAP=False)
+                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code,
+                                              eta_homeo=1., verbose=verbose,
+                                              do_HAP=False)
             else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo, verbose=verbose, do_HAP=False)
+                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo,
+                                                verbose=verbose, do_HAP=False)
             # apply heuristics on the gain
             gain = mean_measure**(-alpha_homeo)
         else:
@@ -488,17 +442,11 @@ def dict_learning(X, dictionary=None, precision=None,
 
         if record_each>0:
             if ii % int(record_each)==0:
-                if P_cum is None:
-                    print('dooh P_cum is None')
-                    P_cum_ = get_P_cum(sparse_code, C=C, nb_quant=nb_quant)
-                else:
-                    P_cum_ = P_cum.copy()
-
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision,
                                             algorithm=method, fit_tol=fit_tol,
-                                             P_cum=P_cum_, C=C, do_sym=do_sym,
-                                             l0_sparseness=l0_sparseness, gain=None)
+                                             P_cum=P_cum, C=C, do_sym=do_sym,
+                                             l0_sparseness=l0_sparseness, gain=gain)
 
                 # calculation of relative entropy
                 p_ = np.count_nonzero(sparse_code_rec, axis=0) / (sparse_code_rec.shape[1])
@@ -509,6 +457,10 @@ def dict_learning(X, dictionary=None, precision=None,
                 error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
 
                 # calculation of quantization error
+                if P_cum is None:
+                    P_cum_ = get_P_cum(sparse_code, C=C, nb_quant=nb_quant)
+                else:
+                    P_cum_ = P_cum.copy()
                 stick = np.arange(n_dictionary)*nb_quant
                 q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
                 P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
@@ -519,13 +471,14 @@ def dict_learning(X, dictionary=None, precision=None,
                 sparse_code_bar = sparse_code_rec.copy()
                 np.random.shuffle(sparse_code_bar)
                 patches_bar = sparse_code_bar @ dictionary
-                sparse_code = sparse_encode(patches_bar, dictionary, precision,
+                sparse_code_rec = sparse_encode(patches_bar, dictionary, precision,
                                             algorithm=method, fit_tol=fit_tol,
-                                             P_cum=P_cum_, C=C, do_sym=do_sym,
-                                             l0_sparseness=l0_sparseness, gain=None)
-                q = quantile(P_cum, rescaling(sparse_code, C=C), stick, do_fast=True)
-                q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=True)
-                aerror = np.mean(np.abs(q_bar-q))
+                                             P_cum=P_cum, C=C, do_sym=do_sym,
+                                             l0_sparseness=l0_sparseness, gain=gain)
+                # q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
+                # q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
+                # aerror = np.mean(np.abs(q_bar-q))
+                aerror = np.mean( (sparse_code_bar>0) == (sparse_code_rec>0))
 
                 from scipy.stats import kurtosis
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),

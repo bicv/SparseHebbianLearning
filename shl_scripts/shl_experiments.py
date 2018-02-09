@@ -383,7 +383,7 @@ class SHL_set(object):
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=10,
                 display='', display_variable='aerror',
-                alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=1):
+                alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
         median = self.shl.__dict__[variable]
@@ -443,7 +443,7 @@ class SHL_set(object):
             if display_variable in ['error', 'qerror']:
                 ax.set_ylim(0, 1)
             elif display_variable in ['aerror']:
-                ax.set_ylim(0)
+                ax.set_ylim(0.9, 1.0)
             elif display_variable in ['cputime']:
                 ax.set_yscale('log')
                 # ax.set_ylim(0)
