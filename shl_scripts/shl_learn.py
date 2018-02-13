@@ -469,8 +469,10 @@ def dict_learning(X, dictionary=None, precision=None,
 
                 # calculation of generalization error
                 l0_sparseness_noise, l0_sparseness_high = 200, 25
-                sparse_code_bar = mp(data[indx, :], dico.dictionary, l0_sparseness=l0_sparseness_noise,
-                 P_cum=dico.P_cum, gain=None)
+                sparse_code_bar = sparse_encode(X_train[indx, :], dictionary, precision,
+                                            algorithm=method, fit_tol=fit_tol,
+                                             P_cum=P_cum, C=C, do_sym=do_sym,
+                                             l0_sparseness=l0_sparseness_noise, gain=gain)
 
                 np.random.shuffle(sparse_code_bar)
                 patches_bar = sparse_code_bar @ dictionary
@@ -478,6 +480,10 @@ def dict_learning(X, dictionary=None, precision=None,
                                             algorithm=method, fit_tol=fit_tol,
                                              P_cum=P_cum, C=C, do_sym=do_sym,
                                              l0_sparseness=l0_sparseness_high, gain=gain)
+
+                thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0/n_dictionary ), axis=0)
+                sparse_code_bar *= (sparse_code_bar > thr)
+
                 q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
                 q_bar = quantile(P_cum_, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
                 aerror = np.mean(np.abs(q_bar-q))
@@ -487,9 +493,8 @@ def dict_learning(X, dictionary=None, precision=None,
                 #    return sparse_code>thr
                 #sparse_code_bar_high = threshold(sparse_code_bar, l0_sparseness_high) * sparse_code_bar
                 #sparse_code_rec_high = threshold(sparse_code_rec, l0_sparseness_high) * sparse_code_rec
-                thr = np.percentile(sparse_code.ravel(), 100 * (1 - l0/n_dictionary ), axis=0)
 
-                perror = 1 - np.mean( (sparse_code_bar > thr) == (sparse_code_rec>0))
+                perror = 1 - np.mean( (sparse_code_bar > 0) == (sparse_code_rec>0))
 
                 from scipy.stats import kurtosis
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
