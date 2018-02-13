@@ -382,7 +382,7 @@ class SHL_set(object):
         return  self.tag + ' - {}={}'.format(variable, value)
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=10,
-                display='', display_variable='aerror',
+                display='', display_variable='perror',
                 alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
@@ -432,24 +432,28 @@ class SHL_set(object):
 
         if display == 'dynamic':
             ax_error.legend()
-            if display_variable in ['error', 'qerror', 'aerror']:
+            if display_variable in ['aerror']:
                 ax_error.set_ylim(0)
             if display_variable in ['error', 'qerror']:
                 ax_error.set_ylim(0, 1)
-            elif display_variable in ['perror']:
-                ax_error.set_ylim(0.99, 1.0)
+            # elif display_variable in ['perror']:
+            #     ax_error.set_ylim(1.0)
             elif display_variable in ['cputime']:
                 ax_error.set_yscale('log')
             return fig_error, ax_error
         elif display == 'final':
-            ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
+            try:
+                ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
+            except Exception as e:
+                print('While processing ', self.matname(variable, value), self.shl.LOCK)
+                print('We encountered error', e, ' with', dico)
             ax.set_ylabel(display_variable)
             ax.set_xlabel(variable)
             # ax.set_xlim(vvalue.min(), vvalue.max())
             if display_variable in ['error', 'qerror']:
                 ax.set_ylim(0, 1)
-            elif display_variable in ['perror']:
-                ax.set_ylim(0.99, 1.0)
+            # elif display_variable in ['perror']:
+            #     ax.set_ylim(1.0)
             elif display_variable in ['cputime']:
                 #ax.set_yscale('log')
                 ax.set_ylim(0)
