@@ -451,8 +451,8 @@ class SHL_set(object):
             elif display_variable in ['perror']:
                 ax.set_ylim(0.99, 1.0)
             elif display_variable in ['cputime']:
-                ax.set_yscale('log')
-                # ax.set_ylim(0)
+                #ax.set_yscale('log')
+                ax.set_ylim(0)
             ax.set_xscale('log')
             return fig, ax
 

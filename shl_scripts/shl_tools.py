@@ -264,6 +264,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None,
                          interpolation='nearest')
         ax.set_xticks(())
         ax.set_yticks(())
+        ax.set_axis_off()
 
     if title is not None:
         fig.suptitle(title, fontsize=12, backgroundcolor = 'white', color = 'k')
