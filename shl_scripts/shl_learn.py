@@ -481,19 +481,12 @@ def dict_learning(X, dictionary=None, precision=None,
                                              P_cum=P_cum, C=C, do_sym=do_sym,
                                              l0_sparseness=l0_sparseness_high, gain=gain)
 
-                thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0/n_dictionary ), axis=0)
+                thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0_sparseness_high/n_dictionary ), axis=0)
                 sparse_code_bar *= (sparse_code_bar > thr)
 
                 q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
                 q_bar = quantile(P_cum_, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
                 aerror = np.mean(np.abs(q_bar-q))
-
-                #def threshold(sparse_code, l0):
-                #    thr = np.percentile(sparse_code.ravel(), 100 * (1 - l0/n_dictionary ), axis=0)
-                #    return sparse_code>thr
-                #sparse_code_bar_high = threshold(sparse_code_bar, l0_sparseness_high) * sparse_code_bar
-                #sparse_code_rec_high = threshold(sparse_code_rec, l0_sparseness_high) * sparse_code_rec
-
                 perror = 1 - np.mean( (sparse_code_bar > 0) == (sparse_code_rec>0))
 
                 from scipy.stats import kurtosis
