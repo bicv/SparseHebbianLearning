@@ -475,10 +475,10 @@ def dict_learning(X, dictionary=None, precision=None,
                                             algorithm=method, fit_tol=fit_tol,
                                              P_cum=P_cum, C=C, do_sym=do_sym,
                                              l0_sparseness=l0_sparseness, gain=gain)
-                # q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
-                # q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
-                # aerror = np.mean(np.abs(q_bar-q))
-                aerror = np.mean( (sparse_code_bar>0) == (sparse_code_rec>0))
+                q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
+                q_bar = quantile(P_cum_, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
+                aerror = np.mean(np.abs(q_bar-q))
+                perror = np.mean( (sparse_code_bar>0) == (sparse_code_rec>0))
 
                 from scipy.stats import kurtosis
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
@@ -487,6 +487,7 @@ def dict_learning(X, dictionary=None, precision=None,
                                             'error':error/SD,
                                             'qerror':qerror/SD,
                                             'aerror':aerror,
+                                            'perror':perror,
                                             'cputime':cputime,
                                             'entropy':rel_ent}],
                                             index=[ii])

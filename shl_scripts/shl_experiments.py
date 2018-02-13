@@ -62,18 +62,18 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_width=16,
+                 patch_width=13,
                  datapath='database/',
                  name_database='kodakdb',
-                 n_dictionary=18**2,
+                 n_dictionary=21**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
                  do_mask=True,
-                 l0_sparseness=30,
+                 l0_sparseness=15,
                 #  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**12 + 1,
+                 n_iter=2**13 + 1,
                  # Standard
                  #eta=.01, # or equivalently
                  #eta = dict(eta=.05, beta1=0),
@@ -424,7 +424,7 @@ class SHL_set(object):
                     # learning_time = np.array(df_variable.index)
                     results.append(df_variable[df_variable.index[-1]])
                 except Exception as e:
-                    print('Wile processing ', self.matname(variable, value))
+                    print('While processing ', self.matname(variable, value), self.shl.LOCK)
                     print('We encountered error', e, ' with', dico)
             else:
                 if len(list_figures)>0: plt.show()
@@ -434,6 +434,12 @@ class SHL_set(object):
             ax_error.legend()
             if display_variable in ['error', 'qerror', 'aerror']:
                 ax_error.set_ylim(0)
+            if display_variable in ['error', 'qerror']:
+                ax_error.set_ylim(0, 1)
+            elif display_variable in ['perror']:
+                ax_error.set_ylim(0.99, 1.0)
+            elif display_variable in ['cputime']:
+                ax_error.set_yscale('log')
             return fig_error, ax_error
         elif display == 'final':
             ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
@@ -442,8 +448,8 @@ class SHL_set(object):
             # ax.set_xlim(vvalue.min(), vvalue.max())
             if display_variable in ['error', 'qerror']:
                 ax.set_ylim(0, 1)
-            elif display_variable in ['aerror']:
-                ax.set_ylim(0.9, 1.0)
+            elif display_variable in ['perror']:
+                ax.set_ylim(0.99, 1.0)
             elif display_variable in ['cputime']:
                 ax.set_yscale('log')
                 # ax.set_ylim(0)
