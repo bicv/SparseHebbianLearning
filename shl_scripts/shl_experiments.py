@@ -62,10 +62,10 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_width=13,
+                 patch_width=12,
                  datapath='database/',
                  name_database='kodakdb',
-                 n_dictionary=21**2,
+                 n_dictionary=23**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
@@ -73,16 +73,17 @@ class SHL(object):
                  l0_sparseness=15,
                 #  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**13 + 1,
+                 n_iter=2**11 + 1,
                  # Standard
                  #eta=.01, # or equivalently
                  #eta = dict(eta=.05, beta1=0),
                  # ADAM https://arxiv.org/pdf/1412.6980.pdf
                  eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HEH',
-                 eta_homeo=0.05, alpha_homeo=0.0, C=5., nb_quant=256, P_cum=None,
+                 eta_homeo=0.05, alpha_homeo=0.0,
+                 C=5., nb_quant=256, P_cum=None,
                 #  homeo_method='HAP',
-                #  homeo_params=dict(eta_homeo=0.05, alpha_homeo=0.02),
+                #  eta_homeo=0.05, alpha_homeo=0.02,
                  do_sym=False,
                  max_patches=4096,
                  seed=42,
@@ -324,10 +325,14 @@ class SHL(object):
                 fig, ax = self.time_plot(dico, variable='error', fname=fname)
             if 'time_plot_qerror' in list_figures:
                 fig, ax = self.time_plot(dico, variable='qerror', fname=fname)
+            if 'time_plot_perror' in list_figures:
+                fig, ax = self.time_plot(dico, variable='perror', fname=fname)
             if 'time_plot_aerror' in list_figures:
                 fig, ax = self.time_plot(dico, variable='aerror', fname=fname)
             if 'time_plot_entropy' in list_figures:
                 fig, ax = self.time_plot(dico, variable='entropy', fname=fname)
+            if 'time_plot_logL' in list_figures:
+                fig, ax = self.time_plot(dico, variable='logL', fname=fname)
             try:
                 #if fname is None:
                 fig.show()
@@ -382,7 +387,7 @@ class SHL_set(object):
         return  self.tag + ' - {}={}'.format(variable, value)
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=10,
-                display='', display_variable='perror',
+                display='', display_variable='logL',
                 alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
@@ -426,6 +431,7 @@ class SHL_set(object):
                 except Exception as e:
                     print('While processing ', self.matname(variable, value), self.shl.LOCK)
                     print('We encountered error', e, ' with', dico)
+                    results.append(np.nan)
             else:
                 if len(list_figures)>0: plt.show()
             del shl
@@ -438,26 +444,26 @@ class SHL_set(object):
                 ax_error.set_ylim(0, 1)
             # elif display_variable in ['perror']:
             #     ax_error.set_ylim(1.0)
-            elif display_variable in ['cputime']:
-                ax_error.set_yscale('log')
+            # elif display_variable in ['cputime']:
+            #     ax_error.set_yscale('log')
             return fig_error, ax_error
         elif display == 'final':
             try:
                 ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
+                ax.set_ylabel(display_variable)
+                ax.set_xlabel(variable)
+                # ax.set_xlim(vvalue.min(), vvalue.max())
+                if display_variable in ['error', 'qerror']:
+                    ax.set_ylim(0, 1)
+                # elif display_variable in ['perror']:
+                #     ax.set_ylim(1.0)
+                elif display_variable in ['cputime']:
+                    #ax.set_yscale('log')
+                    ax.set_ylim(0)
+                ax.set_xscale('log')
             except Exception as e:
                 print('While processing ', self.matname(variable, value), self.shl.LOCK)
                 print('We encountered error', e, ' with', dico)
-            ax.set_ylabel(display_variable)
-            ax.set_xlabel(variable)
-            # ax.set_xlim(vvalue.min(), vvalue.max())
-            if display_variable in ['error', 'qerror']:
-                ax.set_ylim(0, 1)
-            # elif display_variable in ['perror']:
-            #     ax.set_ylim(1.0)
-            elif display_variable in ['cputime']:
-                #ax.set_yscale('log')
-                ax.set_ylim(0)
-            ax.set_xscale('log')
             return fig, ax
 
 #  TODO: n_jobs > 1

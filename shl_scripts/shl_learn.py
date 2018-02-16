@@ -456,47 +456,57 @@ def dict_learning(X, dictionary=None, precision=None,
                 SD = np.linalg.norm(X_train[indx, :])/record_num_batches
                 error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
 
-                # calculation of quantization error
-                if P_cum is None:
-                    P_cum_ = get_P_cum(sparse_code, C=C, nb_quant=nb_quant)
-                else:
-                    P_cum_ = P_cum.copy()
-                stick = np.arange(n_dictionary)*nb_quant
-                q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
-                P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
-                q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
-                qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
+                # # calculation of quantization error
+                # if P_cum is None:
+                #     P_cum_ = get_P_cum(sparse_code, C=C, nb_quant=nb_quant)
+                # else:
+                #     P_cum_ = P_cum.copy()
+                # stick = np.arange(n_dictionary)*nb_quant
+                # q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick)
+                # P_cum_mean = P_cum_.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
+                # q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
+                # qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
+                #
+                # # calculation of generalization error
+                # l0_sparseness_noise, l0_sparseness_high = 200, l0_sparseness
+                # sparse_code_bar = sparse_encode(X_train[indx, :], dictionary, precision,
+                #                             algorithm=method, fit_tol=fit_tol,
+                #                              P_cum=P_cum, C=C, do_sym=do_sym,
+                #                              l0_sparseness=l0_sparseness_noise, gain=gain)
+                #
+                # np.random.shuffle(sparse_code_bar)
+                # patches_bar = sparse_code_bar @ dictionary
+                # sparse_code_rec = sparse_encode(patches_bar, dictionary, precision,
+                #                             algorithm=method, fit_tol=fit_tol,
+                #                              P_cum=P_cum, C=C, do_sym=do_sym,
+                #                              l0_sparseness=l0_sparseness_high, gain=gain)
+                #
+                # thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0_sparseness_high/n_dictionary ), axis=0)
+                # sparse_code_bar *= (sparse_code_bar > thr)
+                #
+                # q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
+                # q_bar = quantile(P_cum_, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
+                # aerror = np.mean(np.abs(q_bar-q))
+                # perror = 1 - np.mean( (sparse_code_bar > 0) == (sparse_code_rec>0))
+                measures = np.count_nonzero(sparse_code_rec, axis=0)
 
-                # calculation of generalization error
-                l0_sparseness_noise, l0_sparseness_high = 200, 25
-                sparse_code_bar = sparse_encode(X_train[indx, :], dictionary, precision,
-                                            algorithm=method, fit_tol=fit_tol,
-                                             P_cum=P_cum, C=C, do_sym=do_sym,
-                                             l0_sparseness=l0_sparseness_noise, gain=gain)
 
-                np.random.shuffle(sparse_code_bar)
-                patches_bar = sparse_code_bar @ dictionary
-                sparse_code_rec = sparse_encode(patches_bar, dictionary, precision,
-                                            algorithm=method, fit_tol=fit_tol,
-                                             P_cum=P_cum, C=C, do_sym=do_sym,
-                                             l0_sparseness=l0_sparseness_high, gain=gain)
+                rho = l0_sparseness / n_dictionary
+                sd = np.sqrt(rho*(1-rho)*record_num_batches)
+                likelihood = 1 / np.sqrt(2*np.pi) / sd
+                likelihood *= np.exp(-.5 * (measures - rho*record_num_batches)**2 / sd**2)
+                logL = np.log(likelihood).mean()
 
-                thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0_sparseness_high/n_dictionary ), axis=0)
-                sparse_code_bar *= (sparse_code_bar > thr)
-
-                q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
-                q_bar = quantile(P_cum_, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
-                aerror = np.mean(np.abs(q_bar-q))
-                perror = 1 - np.mean( (sparse_code_bar > 0) == (sparse_code_rec>0))
 
                 from scipy.stats import kurtosis
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
                                             'prob_active':np.mean(np.abs(sparse_code_rec)>0, axis=0),
                                             'var':np.mean(sparse_code_rec**2, axis=0),
                                             'error':error/SD,
-                                            'qerror':qerror/SD,
-                                            'aerror':aerror,
-                                            'perror':perror,
+                                            'logL':logL,
+                                            # 'qerror':qerror/SD,
+                                            # 'aerror':aerror,
+                                            # 'perror':perror,
                                             'cputime':cputime,
                                             'entropy':rel_ent}],
                                             index=[ii])

@@ -14,7 +14,8 @@ toolbar_width = 40
 def touch(filename):
     open(filename, 'w').close()
 
-def preprocessing(image, height=256, width=256, patch_size=(12, 12), seed=None):
+def preprocessing(image, height=256, width=256, patch_size=(12, 12), do_bandpass=False,
+seed=None):
     slip = Image({'N_X':height, 'N_Y':width,
             'white_n_learning' : 0,
             'seed': seed,
@@ -25,14 +26,14 @@ def preprocessing(image, height=256, width=256, patch_size=(12, 12), seed=None):
             'white_steepness' : 4.,
             'do_mask': True})
     image = slip.whitening(image)
-
-    # # print(2*.5*max(height, width)/max(patch_size))
-    # # slip.f_mask = slip.retina(sigma=2*.5*max(height, width)/max(patch_size))
-    df=.07
-    slip.f_mask = (1-np.exp((slip.f-.5)/(.5*df)))*(slip.f<.5)
-    # removing low frequencies
-    slip.f_mask *= .5*(np.tanh( 40.*(slip.f-.5/16))+1)
-    image = slip.preprocess(image)
+    if do_bandpass:
+        # # print(2*.5*max(height, width)/max(patch_size))
+        # # slip.f_mask = slip.retina(sigma=2*.5*max(height, width)/max(patch_size))
+        df=.07
+        slip.f_mask = (1-np.exp((slip.f-.5)/(.5*df)))*(slip.f<.5)
+        # removing low frequencies
+        slip.f_mask *= .5*(np.tanh( 40.*(slip.f-.5/16))+1)
+        image = slip.preprocess(image)
 
     return image
 
