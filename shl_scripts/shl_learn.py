@@ -493,10 +493,12 @@ def dict_learning(X, dictionary=None, precision=None,
 
                 rho = l0_sparseness / n_dictionary
                 sd = np.sqrt(rho*(1-rho)*record_num_batches)
-                likelihood = 1 / np.sqrt(2*np.pi) / sd
-                likelihood *= np.exp(-.5 * (measures - rho*record_num_batches)**2 / sd**2)
-                logL = np.log(likelihood).mean()
-
+                # likelihood = 1 / np.sqrt(2*np.pi) / sd
+                # likelihood *= np.exp(-.5 * (measures - rho*record_num_batches)**2 / sd**2)
+                # logL = np.log(likelihood).mean()
+                logL_ = -.5 * (measures - rho)**2 / sd**2
+                logL_ += np.log(1 / np.sqrt(2*np.pi) / sd)
+                logL = logL_.mean()
 
                 from scipy.stats import kurtosis
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),
