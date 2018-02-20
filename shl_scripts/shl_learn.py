@@ -497,7 +497,7 @@ def dict_learning(X, dictionary=None, precision=None,
                 # likelihood *= np.exp(-.5 * (measures - rho*record_num_batches)**2 / sd**2)
                 # logL = np.log(likelihood).mean()
                 logL_ = -.5 * (measures - rho)**2 / sd**2
-                logL_ += np.log(1 / np.sqrt(2*np.pi) / sd)
+                logL_ -= np.log(np.sqrt(2*np.pi) * sd)
                 logL = logL_.mean()
 
                 from scipy.stats import kurtosis
@@ -607,10 +607,11 @@ def update_P_cum(P_cum, code, eta_homeo, C, nb_quant=100, do_sym=False, verbose=
         Updated value of the modulation function.
 
     """
-
     if eta_homeo>0.:
         P_cum_ = get_P_cum(code, nb_quant=nb_quant, C=C, do_sym=do_sym, verbose=verbose)
         P_cum = (1 - eta_homeo)*P_cum + eta_homeo * P_cum_
+    else:
+        print('dooh, eta_homeo is nil')
     return P_cum
 
 def get_P_cum(code, C, nb_quant=256, do_sym=False, verbose=False):

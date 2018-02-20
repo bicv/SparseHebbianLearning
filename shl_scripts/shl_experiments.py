@@ -73,7 +73,7 @@ class SHL(object):
                  l0_sparseness=15,
                 #  l0_sparseness_end=None,
                  one_over_F=True,
-                 n_iter=2**11 + 1,
+                 n_iter=2**13 + 1,
                  # Standard
                  #eta=.01, # or equivalently
                  #eta = dict(eta=.05, beta1=0),
@@ -83,7 +83,7 @@ class SHL(object):
                  eta_homeo=0.05, alpha_homeo=0.0,
                  C=5., nb_quant=256, P_cum=None,
                 #  homeo_method='HAP',
-                #  eta_homeo=0.05, alpha_homeo=0.02,
+                #  eta_homeo=0.05, alpha_homeo=0.2,
                  do_sym=False,
                  max_patches=4096,
                  seed=42,
