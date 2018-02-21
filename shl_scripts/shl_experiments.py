@@ -385,7 +385,7 @@ class SHL_set(object):
     def matname(self, variable, value):
         return  self.tag + ' - {}={}'.format(variable, value)
 
-    def scan(self, N_scan=None, variable='eta', list_figures=[], base=10,
+    def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
                 display='', display_variable='logL',
                 alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=0):
         # defining  the range of the scan
