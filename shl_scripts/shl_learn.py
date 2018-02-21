@@ -315,7 +315,7 @@ def dict_learning(X, dictionary=None, precision=None,
 
     #if not precision is None: do_precision = True
     if do_precision:
-        print('dooh! precision not implemented')
+        print('dooh! precision not implemented yet')
         precision = np.ones((n_dictionary, n_pixels))
     else:
         precision = None
@@ -339,6 +339,7 @@ def dict_learning(X, dictionary=None, precision=None,
     else:
         gain = np.ones(n_dictionary)
 
+    #initializing cumulative probability
     if P_cum is None:
         P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
 
@@ -359,7 +360,7 @@ def dict_learning(X, dictionary=None, precision=None,
     for ii, this_X in zip(range(n_iter), batches):
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
-                                   P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness, #_endl0[ii],
+                                   P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
                                    gain=gain)
         # print(this_X.shape, sparse_code.shape, dictionary.shape)
         residual = this_X - sparse_code @ dictionary
@@ -576,10 +577,10 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
         code = code[:, np.newaxis]
     if eta_homeo>0.:
         if not do_HAP:
-            mean_measure_ = np.mean(code**2, axis=0)/np.mean(code**2)
+            measure_ = np.mean(code**2, axis=0)
         else:
-            counts = np.count_nonzero(code, axis=0)
-            mean_measure_ = counts / counts.sum()
+            measure_ = np.count_nonzero(code, axis=0)
+        mean_measure_ = measure_ / measure_.mean()
         mean_measure = (1 - eta_homeo)*mean_measure + eta_homeo * mean_measure_
 
     return mean_measure
