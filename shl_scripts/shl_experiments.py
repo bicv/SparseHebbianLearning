@@ -65,27 +65,20 @@ class SHL(object):
                  patch_width=12,
                  datapath='database/',
                  name_database='kodakdb',
+                 max_patches=4096,
                  n_dictionary=23**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
                  do_mask=True,
                  l0_sparseness=15,
-                #  l0_sparseness_end=None,
                  one_over_F=True,
                  n_iter=2**13 + 1,
-                 # Standard
-                 #eta=.01, # or equivalently
-                 #eta = dict(eta=.05, beta1=0),
-                 # ADAM https://arxiv.org/pdf/1412.6980.pdf
                  eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HEH',
                  eta_homeo=0.05, alpha_homeo=0.0,
                  C=5., nb_quant=256, P_cum=None,
-                #  homeo_method='HAP',
-                #  eta_homeo=0.05, alpha_homeo=0.2,
                  do_sym=False,
-                 max_patches=4096,
                  seed=42,
                  patch_norm=False,
                  batch_size=512,
@@ -97,13 +90,13 @@ class SHL(object):
                 ):
         self.height = height
         self.width = width
-        self.datapath = datapath
-        # self.patch_size = (patch_width, patch_width)
         self.patch_width = patch_width
+        self.datapath = datapath
+        self.name_database = name_database
         self.n_dictionary = n_dictionary
+        self.learning_algorithm = learning_algorithm
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
         self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
-        self.name_database = name_database
         self.seed = seed
         self.patch_norm = patch_norm
         if not n_image is None:
@@ -111,7 +104,6 @@ class SHL(object):
         else:
             self.n_image = None
         self.batch_size = batch_size
-        self.learning_algorithm = learning_algorithm
         self.fit_tol = fit_tol
         self.do_precision = do_precision
         self.do_mask = do_mask
@@ -304,6 +296,8 @@ class SHL(object):
         if not dico == 'lock':
             if 'show_dico' in list_figures:
                 fig, ax = self.show_dico(dico, title=matname, fname=fname)
+            if 'show_Pcum' in list_figures:
+                fig, ax = self.show_Pcum(dico, fname=fname)
             if 'plot_error' in list_figures:
                 fig, ax = self.plot_error(dico)
             if 'show_dico_in_order' in list_figures:
@@ -356,6 +350,11 @@ class SHL(object):
     def show_dico(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico
         return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
+
+    def show_Pcum(self, dico, title=None, fname=None, verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
+        from shl_scripts.shl_tools import plot_P_cum
+        ymin = 1 - 1.5 * self.l0_sparseness/self.n_dictionary
+        return plot_P_cum(dico.P_cum, ymin=ymin, title=title, verbose=verbose, n_yticks=n_yticks, alpha=alpha, c=c, fig=None, ax=None)
 
     def plot_error(self, dico, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_error
@@ -418,7 +417,6 @@ class SHL_set(object):
             if verbose: print('DEBUG:', shl.__dict__, self.shl.__dict__)
             dico = shl.learn_dico(data=data, matname=self.matname(variable, value),
                         list_figures=list_figures)
-
             if display == 'dynamic':
                 fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
                         fig=fig_error, ax=ax_error, label='%s=%.3f' % (variable, value))
@@ -469,6 +467,9 @@ class SHL_set(object):
 #  TODO: n_jobs > 1
 # from joblib import Parallel, delayed
 #
+# We will use the ``joblib`` package do distribute this computation on different CPUs.
+# from joblib import Parallel, delayed
+# Parallel(n_jobs=n_jobs)(delayed(np.sqrt)(i ** 2) for i in range(10))
 # def run(C, list_figures, data, homeo_params):
 #     matname = tag + ' - C={}'.format(C)
 #     homeo_params.update(C=C)

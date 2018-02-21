@@ -334,13 +334,13 @@ def dict_learning(X, dictionary=None, precision=None,
     mean_measure = None
     if homeo_method=='HEH':
         # we do not use a gain
-        gain = None
         # but instead do the equalitarian homeostasis
-        if P_cum is None:
-            P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
+        gain = None
     else:
         gain = np.ones(n_dictionary)
-        P_cum = None
+
+    if P_cum is None:
+        P_cum = np.linspace(0., 1., nb_quant, endpoint=True)[np.newaxis, :] * np.ones((n_dictionary, 1))
 
     # splits the whole dataset into batches
     n_batches = n_samples // batch_size
@@ -368,6 +368,7 @@ def dict_learning(X, dictionary=None, precision=None,
         residual /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
         gradient = - sparse_code.T @ residual
         if do_adam:
+            # ADAM https://arxiv.org/pdf/1412.6980.pdf
             #  biased first moment estimate
             moment = beta1 * moment + (1 - beta1) * gradient
             # biased second raw moment estimate
@@ -388,14 +389,19 @@ def dict_learning(X, dictionary=None, precision=None,
         # 1/ first, we normalise filters
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
-        # 2/ then, define different strategies
+        # 2/ then, we compute P_cum and define different strategies
+        P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
+                             nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
+
         if homeo_method=='None':
             # do nothing
+            assert(gain[0]==1.)
             pass
-
         elif homeo_method=='HEH':
-            P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
-                                 nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
+            assert(gain is None)
+            pass
+            # P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
+            #                      nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
         elif homeo_method in ['EXP', 'HAP', 'EMP']:
             # compute statistics on the activation probability
             if mean_measure is None:

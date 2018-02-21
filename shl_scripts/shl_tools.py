@@ -44,6 +44,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
     spectra = 1/np.sqrt(fx**2+fy**2) # FIX : may be infinite!
     phase = np.random.uniform(0, 2 * np.pi, (height, width))
     image = np.real(np.fft.ifft2(np.fft.fftshift(spectra*np.exp(1j*phase))))
+    
     image = preprocessing(image, height=height, width=height, patch_size=(N_f, N_f))
 
     slip = Image({'N_X':height, 'N_Y':width, 'do_mask': False})
@@ -482,7 +483,7 @@ def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None)
     return fig, ax
 
 
-def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05, c='g', fig=None, ax=None):
+def plot_P_cum(P_cum, ymin=0.95, title=None, verbose=False, n_yticks= 21, alpha=.05, c='g', fig=None, ax=None):
     if fig is None:
         fig = plt.figure(figsize=(16, 8))
     if ax is None:
@@ -496,6 +497,10 @@ def plot_P_cum(P_cum, verbose=False, n_yticks= 21, alpha=.05, c='g', fig=None, a
     #ax.set_xlim(0)
     ax.set_yticks( np.linspace(0, 1, n_yticks))
     ax.axis('tight')
+    ax.set_ylim(ymin, 1.001)
+    
+    if title is not None:
+        fig.suptitle(title, fontsize=12, backgroundcolor='white', color='k')
     return fig, ax
 
 #import seaborn as sns
