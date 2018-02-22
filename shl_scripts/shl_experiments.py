@@ -375,7 +375,7 @@ class SHL_set(object):
         - quantitative analysis
 
     """
-    def __init__(self, opts, tag, data_matname='data', N_scan=7):
+    def __init__(self, opts, tag='default', data_matname='data', N_scan=7):
         self.opts = deepcopy(opts)
         self.tag = tag
         self.N_scan = N_scan
@@ -383,7 +383,11 @@ class SHL_set(object):
         self.data = self.shl.get_data(matname='data')
 
     def matname(self, variable, value):
-        return  self.tag + ' - {}={}'.format(variable, value)
+        if not isinstance(value, int):
+            label = '%.3f' % value
+        else:
+            label = '%d' % value
+        return  self.tag + ' - {}={}'.format(variable, label)
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
                 display='', display_variable='logL',

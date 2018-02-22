@@ -366,8 +366,8 @@ def dict_learning(X, dictionary=None, precision=None,
         residual = this_X - sparse_code @ dictionary
 
         # Update dictionary: Hebbian learning
+        residual /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
         gradient = - sparse_code.T @ residual
-        gradient /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf
             #  biased first moment estimate
@@ -375,6 +375,7 @@ def dict_learning(X, dictionary=None, precision=None,
             # biased second raw moment estimate
             energy = beta2 * energy + (1 - beta2) * (gradient**2)
             dictionary -= eta * (moment / (1-beta1**(ii+1)))  / (np.sqrt(energy / (1-beta2**(ii+1))) + epsilon)
+
         else:
             dictionary -= eta * gradient
 
