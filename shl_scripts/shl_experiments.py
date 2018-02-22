@@ -405,7 +405,7 @@ class SHL_set(object):
 
 
         for value in vvalue:
-            if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary']:
+            if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary', 'batch_size']:
                 value = int(value)
             if variable in ['patch_width']:
                 data = self.shl.get_data(**{variable:value})
@@ -418,8 +418,12 @@ class SHL_set(object):
             dico = shl.learn_dico(data=data, matname=self.matname(variable, value),
                         list_figures=list_figures)
             if display == 'dynamic':
+                if not isinstance(value, int):
+                    label = '%s=%.3f' % (variable, value)
+                else:
+                    label = '%s=%d' % (variable, value)
                 fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
-                        fig=fig_error, ax=ax_error, label='%s=%.3f' % (variable, value))
+                        fig=fig_error, ax=ax_error, label=label)
             elif display == 'final':
                 try:
                     # print (dico.record['cputime'])
