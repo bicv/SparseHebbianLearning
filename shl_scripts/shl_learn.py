@@ -354,8 +354,6 @@ def dict_learning(X, dictionary=None, precision=None,
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
     batches = itertools.cycle(batches)
 
-    if verbose > 1:
-        print('Learning code...', end=' ')
     # cycle over all batches
     for ii, this_X in zip(range(n_iter), batches):
         # Sparse coding
@@ -492,10 +490,12 @@ def dict_learning(X, dictionary=None, precision=None,
 def homeostasis(mean_measure, P_cum, gain,
                 homeo_method, sparse_code, eta_homeo, alpha_homeo,
                 nb_quant, verbose, C, do_sym):
+
     # homeostasis : we compute P_cum and define different strategies
     P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
                          nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
+    n_dictionary = sparse_code.shape[1]
     # compute statistics on the activation probability
     if mean_measure is None:
         mean_measure = update_measure(np.zeros(n_dictionary), sparse_code,

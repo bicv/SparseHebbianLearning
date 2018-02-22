@@ -73,10 +73,10 @@ class SHL(object):
                  do_mask=True,
                  l0_sparseness=15,
                  one_over_F=True,
-                 n_iter=2**13 + 1,
+                 n_iter=2**10 + 1,
                  eta=.001, beta1=.9, beta2=.999, epsilon=1.e-8,
-                 homeo_method = 'HEH',
-                 eta_homeo=0.05, alpha_homeo=0.0,
+                 homeo_method = 'HAP',
+                 eta_homeo=0.05, alpha_homeo=0.8,
                  C=5., nb_quant=256, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -238,7 +238,7 @@ class SHL(object):
                                          do_precision=self.do_precision, record_each=self.record_each,
 )
 
-            if self.verbose: print('Training on %d patches' % len(data), end='... ')
+            if self.verbose: print('Training on %d patches' % len(data))
             dico.fit(data)
 
             if self.verbose:
