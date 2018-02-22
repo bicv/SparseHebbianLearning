@@ -360,7 +360,6 @@ def dict_learning(X, dictionary=None, precision=None,
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                    P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
                                    gain=gain)
-        # print(this_X.shape, sparse_code.shape, dictionary.shape)
         residual = this_X - sparse_code @ dictionary
 
         # homeostasis : we compute P_cum and define different strategies
@@ -369,15 +368,26 @@ def dict_learning(X, dictionary=None, precision=None,
                         nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         # Update dictionary: Hebbian learning
+
         gradient = - sparse_code.T @ residual
         gradient /= batch_size # divide by the batch size to get the average in the Hebbian formula below
+
+        if not homeo_method in ['Olshausen', 'None']:
+            target = l0_sparseness/n_dictionary
+            learning_gain = np.exp(-(mean_measure/target-1.)/(1.5)) # np.exp((1/mean_measure-1)/(1 - mean_measure*l0_sparseness/n_dictionary))
+            #learning_gain /= learning_gain.mean()
+            # print(learning_gain.min(), learning_gain.max(), learning_gain.mean(), learning_gain.std())
+            # print(mean_measure.min(), mean_measure.max(), mean_measure.mean(), mean_measure.std(), l0_sparseness/n_dictionary)
+            gradient *= learning_gain[:, np.newaxis]
+
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf
             #  biased first moment estimate
             moment = beta1 * moment + (1 - beta1) * gradient
             # biased second raw moment estimate
             energy = beta2 * energy + (1 - beta2) * (gradient**2)
-            dictionary -= eta * (moment / (1-beta1**(ii+1)))  / (np.sqrt(energy / (1-beta2**(ii+1))) + epsilon)
+            energy_ = (np.sqrt(energy / (1-beta2**(ii+1))) + epsilon)
+            dictionary -= eta * (moment / (1-beta1**(ii+1))) / energy_
 
         else:
             dictionary -= eta * gradient
@@ -513,14 +523,16 @@ def homeostasis(mean_measure, P_cum, gain,
         assert(gain is None)
 
     elif homeo_method in ['EXP', 'HAP', 'EMP']:
+        target = (sparse_code>0).mean()
         # apply different heuristics on the gain
         if homeo_method=='EXP':
-            gain = np.exp(-(1 / alpha_homeo) * mean_measure)
+            # cf. https://github.com/VictorBoutin/CHAMP/blob/caa2a77cc65d0043db1aeb11eedb707633a93df4/CHAMP/CHAMP_Layer.py#L365
+            gain = np.exp(-(1 / alpha_homeo) * (mean_measure-target))
         elif homeo_method=='HAP':
-            gain = mean_measure**(-alpha_homeo)#
+            gain = (mean_measure/target)**(-alpha_homeo)#
             # gain /= gain.mean()
         elif homeo_method=='EMP':
-            p_threshold = (1/n_dictionary)*(1+alpha_homeo)
+            p_threshold = target*(1+alpha_homeo)
             gain = 1. * (mean_measure < p_threshold)
 
     elif homeo_method=='Olshausen':
@@ -587,9 +599,10 @@ def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     if eta_homeo>0.:
         if not do_HAP:
             measure_ = np.mean(code**2, axis=0)
+            mean_measure_ = measure_ / measure_.mean()
         else:
-            measure_ = np.count_nonzero(code, axis=0)
-        mean_measure_ = measure_ / measure_.mean()
+            measure_ = 1. * np.count_nonzero(code, axis=0)
+            mean_measure_ = measure_ / code.shape[0]
         mean_measure = (1 - eta_homeo)*mean_measure + eta_homeo * mean_measure_
 
     return mean_measure
