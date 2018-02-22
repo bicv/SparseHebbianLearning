@@ -384,7 +384,7 @@ class SHL_set(object):
 
     def matname(self, variable, value):
         if not isinstance(value, int):
-            label = '%.3f' % value
+            label = '%.5f' % value
         else:
             label = '%d' % value
         return  self.tag + ' - {}={}'.format(variable, label)

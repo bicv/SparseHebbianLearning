@@ -365,6 +365,11 @@ def dict_learning(X, dictionary=None, precision=None,
         # print(this_X.shape, sparse_code.shape, dictionary.shape)
         residual = this_X - sparse_code @ dictionary
 
+        # homeostasis : we compute P_cum and define different strategies
+        mean_measure, P_cum, gain = homeostasis(mean_measure, P_cum, gain,
+                        homeo_method, sparse_code, eta_homeo, alpha_homeo,
+                        nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
+
         # Update dictionary: Hebbian learning
         gradient = - sparse_code.T @ residual
         gradient /= batch_size # divide by the batch size to get the average in the Hebbian formula below
@@ -379,66 +384,16 @@ def dict_learning(X, dictionary=None, precision=None,
         else:
             dictionary -= eta * gradient
 
+        # we normalise filters
+        norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
+        dictionary /= norm[:, np.newaxis]
+
         if do_precision:
             print('dooh precision not implemented')
             variance = 1./(precision + 1.e-16)
             variance *= 1-eta
             variance += eta * sparse_code.T @ (residual**2)
             precision = 1./(variance + 1.e-16)
-
-        # homeostasis
-        # 1/ first, we normalise filters
-        norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
-        dictionary /= norm[:, np.newaxis]
-        # 2/ then, we compute P_cum and define different strategies
-        P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
-                             nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
-
-        if homeo_method=='None':
-            # do nothing
-            assert(gain[0]==1.)
-            pass
-        elif homeo_method=='HEH':
-            assert(gain is None)
-            pass
-            # P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
-            #                      nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
-        elif homeo_method in ['EXP', 'HAP', 'EMP']:
-            # compute statistics on the activation probability
-            if mean_measure is None:
-                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code,
-                                                eta_homeo=1., verbose=verbose,
-                                                do_HAP=True)
-            else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo,
-                                              verbose=verbose, do_HAP=True)
-            # apply different heuristics on the gain
-            if homeo_method=='EXP':
-                gain = np.exp(-(1 / alpha_homeo) * mean_measure)
-
-            elif homeo_method=='HAP':
-                gain = mean_measure**(-alpha_homeo)#
-                # gain /= gain.mean()
-
-            elif homeo_method=='EMP':
-                p_threshold = (1/n_dictionary)*(1+alpha_homeo)
-                gain = 1. * (mean_measure < p_threshold)
-
-        elif homeo_method=='Olshausen':
-            # compute statistics on the variance of coefficients
-            if mean_measure is None:
-                mean_measure = update_measure(np.zeros(n_dictionary), sparse_code,
-                                              eta_homeo=1., verbose=verbose,
-                                              do_HAP=False)
-            else:
-                mean_measure = update_measure(mean_measure, sparse_code, eta_homeo,
-                                                verbose=verbose, do_HAP=False)
-            # apply heuristics on the gain
-            gain = mean_measure**(-alpha_homeo)
-        else:
-            raise ValueError('Homeostasis method must be "EXP", "None", "HAP", "Olshausen" '
-                             '"EMP" or "HEH", got %s.'
-                             % homeo_method)
 
         cputime = (time.time() - t0)
 
@@ -532,6 +487,60 @@ def dict_learning(X, dictionary=None, precision=None,
         return dictionary, precision, P_cum
     else:
         return dictionary, precision, P_cum, record
+
+
+def homeostasis(mean_measure, P_cum, gain,
+                homeo_method, sparse_code, eta_homeo, alpha_homeo,
+                nb_quant, verbose, C, do_sym):
+    # homeostasis : we compute P_cum and define different strategies
+    P_cum = update_P_cum(P_cum, sparse_code, eta_homeo,
+                         nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
+
+    # compute statistics on the activation probability
+    if mean_measure is None:
+        mean_measure = update_measure(np.zeros(n_dictionary), sparse_code,
+                                        eta_homeo=1., verbose=verbose,
+                                        do_HAP=True)
+    else:
+        mean_measure = update_measure(mean_measure, sparse_code, eta_homeo,
+                                      verbose=verbose, do_HAP=True)
+
+    if homeo_method=='None':
+        # do nothing
+        assert(gain[0]==1.)
+
+    elif homeo_method=='HEH':
+        assert(gain is None)
+
+    elif homeo_method in ['EXP', 'HAP', 'EMP']:
+        # apply different heuristics on the gain
+        if homeo_method=='EXP':
+            gain = np.exp(-(1 / alpha_homeo) * mean_measure)
+        elif homeo_method=='HAP':
+            gain = mean_measure**(-alpha_homeo)#
+            # gain /= gain.mean()
+        elif homeo_method=='EMP':
+            p_threshold = (1/n_dictionary)*(1+alpha_homeo)
+            gain = 1. * (mean_measure < p_threshold)
+
+    elif homeo_method=='Olshausen':
+        # compute statistics on the variance of coefficients
+        if mean_measure is None:
+            mean_measure = update_measure(np.zeros(n_dictionary), sparse_code,
+                                          eta_homeo=1., verbose=verbose,
+                                          do_HAP=False)
+        else:
+            mean_measure = update_measure(mean_measure, sparse_code, eta_homeo,
+                                            verbose=verbose, do_HAP=False)
+        # apply heuristics on the gain
+        gain = mean_measure**(-alpha_homeo)
+
+    else:
+        raise ValueError('Homeostasis method must be "EXP", "None", "HAP", "Olshausen" '
+                         '"EMP" or "HEH", got %s.'
+                         % homeo_method)
+
+    return mean_measure, P_cum, gain
 
 def update_measure(mean_measure, code, eta_homeo, verbose=False, do_HAP=False):
     """Update the estimated statistics of coefficients in place.
