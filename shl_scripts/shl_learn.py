@@ -348,7 +348,7 @@ def dict_learning(X, dictionary=None, precision=None,
     X_train = X.copy()
     # Modifies the sequence in-place by shuffling its contents; Multi-dimensional arrays are only shuffled along the first axis:
     np.random.shuffle(X_train)
-    # Splits into ``n_batches`` batches
+    # Splits into ``n_batches`` batches of size batch_size
     batches = np.array_split(X_train, n_batches)
     import itertools
     # Return elements from list of batches until it is exhausted. Then repeat the sequence indefinitely.
@@ -366,8 +366,8 @@ def dict_learning(X, dictionary=None, precision=None,
         residual = this_X - sparse_code @ dictionary
 
         # Update dictionary: Hebbian learning
-        residual /= n_batches # divide by the number of batches to get the average in the Hebbian formula below
         gradient = - sparse_code.T @ residual
+        gradient /= batch_size # divide by the batch size to get the average in the Hebbian formula below
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf
             #  biased first moment estimate
