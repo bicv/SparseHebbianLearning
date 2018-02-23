@@ -74,8 +74,8 @@ class SHL(object):
                  l0_sparseness=15,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=.01, beta1=.9, beta2=.999, epsilon=1.e-8,
-                 homeo_method = 'HAP',
+                 eta=.2, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 homeo_method = 'HEH',
                  eta_homeo=0.05, alpha_homeo=0.5,
                  C=5., nb_quant=256, P_cum=None,
                  do_sym=False,
@@ -158,19 +158,6 @@ class SHL(object):
                 print('Coding data with algorithm ', coding_algorithm,  end=' ')
                 t0 = time.time()
             from shl_scripts.shl_encode import sparse_encode
-            # if 'C' in self.homeo_params.keys():
-            #     C = self.homeo_params['C']
-            # else:
-            #     C = 0.
-            # if 'P_cum' in self.homeo_params.keys():
-            #     P_cum = self.homeo_params['P_cum']
-            # else:
-            #     P_cum = None
-            #
-            # if self.l0_sparseness_end is not None:
-            #     l0_sparseness = self.l0_sparseness_end
-            # else:
-            #     l0_sparseness = self.l0_sparseness
 
             sparse_code = sparse_encode(data, dico.dictionary, dico.precision,
                                         fit_tol=fit_tol,
@@ -178,9 +165,7 @@ class SHL(object):
                                         algorithm=self.learning_algorithm,
                                         P_cum=None, do_sym=self.do_sym, verbose=0,
                                         gain=np.ones(self.n_dictionary))
-            # if self.verbose:
-            #     dt = time.time() - t0
-            #     print('done in %.2fs.' % dt)
+
         else:
             fmatname = os.path.join(self.data_cache, matname) + '_coding.npy'
             if not(os.path.isfile(fmatname)):
@@ -464,6 +449,7 @@ class SHL_set(object):
                 # elif display_variable in ['perror']:
                 #     ax.set_ylim(1.0)
                 elif display_variable in ['cputime']:
+                    ax.axis('tight')
                     #ax.set_yscale('log')
                     ax.set_ylim(0)
                 ax.set_xscale('log')
