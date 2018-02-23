@@ -63,9 +63,9 @@ class SHL(object):
                  height=256, # of image
                  width=256, # of image
                  patch_width=12,
-                 datapath='database/',
+                 N_patches=2**16,
+                 datapath='../database/',
                  name_database='kodakdb',
-                 max_patches=4096,
                  n_dictionary=23**2,
                  learning_algorithm='mp',
                  fit_tol=None,
@@ -74,7 +74,7 @@ class SHL(object):
                  l0_sparseness=15,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=.2, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=.02, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HEH',
                  eta_homeo=0.05, alpha_homeo=0.5,
                  C=5., nb_quant=256, P_cum=None,
@@ -91,12 +91,12 @@ class SHL(object):
         self.height = height
         self.width = width
         self.patch_width = patch_width
+        self.N_patches = int(N_patches/DEBUG_DOWNSCALE)
         self.datapath = datapath
         self.name_database = name_database
         self.n_dictionary = n_dictionary
         self.learning_algorithm = learning_algorithm
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
-        self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
         self.seed = seed
         self.patch_norm = patch_norm
         if not n_image is None:
@@ -144,7 +144,7 @@ class SHL(object):
         from shl_scripts.shl_tools import get_data
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=(patch_width, patch_width), datapath=self.datapath,
-                    max_patches=self.max_patches, verbose=self.verbose,
+                    N_patches=self.N_patches, verbose=self.verbose,
                     data_cache=self.data_cache, seed=self.seed,
                     do_mask=self.do_mask, patch_norm=self.patch_norm,
                     name_database=self.name_database, matname=matname)

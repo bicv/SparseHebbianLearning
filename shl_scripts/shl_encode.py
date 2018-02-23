@@ -109,8 +109,6 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
             copy_Xy=False).T
 
     elif algorithm == 'mp':
-        print('sparse_encode says C=', C)
-
         sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness,
                          fit_tol=fit_tol, P_cum=P_cum, C=C, do_sym=do_sym,
                          verbose=verbose, gain=gain)
@@ -141,8 +139,6 @@ def rescaling(code, C=5., do_sym=False, verbose=False):
     for a derivation of the following function.
 
     """
-    print('rescaling says C=', C)
-
     return 1.-np.exp(-rectify(code, do_sym=do_sym)/C)
 
 def inv_rescaling(r, C=5.):
@@ -218,7 +214,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         The sparse code
 
     """
-    print('MP says C=', C)
+    
     # initialization
     if verbose>0:
         t0=time.time()

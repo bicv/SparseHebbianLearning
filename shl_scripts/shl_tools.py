@@ -44,7 +44,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
     spectra = 1/np.sqrt(fx**2+fy**2) # FIX : may be infinite!
     phase = np.random.uniform(0, 2 * np.pi, (height, width))
     image = np.real(np.fft.ifft2(np.fft.fftshift(spectra*np.exp(1j*phase))))
-    
+
     image = preprocessing(image, height=height, width=height, patch_size=(N_f, N_f))
 
     slip = Image({'N_X':height, 'N_Y':width, 'do_mask': False})
@@ -57,7 +57,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             datapath='database/', name_database='kodakdb',
-            max_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
+            N_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
             data_cache='/tmp/data_cache', matname=None):
     """
     Extract data:
@@ -94,7 +94,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
             image = preprocessing(image, height=height, width=width, patch_size=patch_size)
 
             # Extract all reference patches and ravel them
-            data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(max_patches))
+            data_ = slip.extract_patches_2d(image, patch_size, max_patches=int(N_patches/len(imagelist)))
             data_ -= np.mean(data_)
             if patch_norm:
                 data_ /= np.std(data_)
@@ -123,7 +123,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
                     if verbose: print('No cache found {}: Extracting data...'.format(fmatname + '_data'), end=' ')
                     data = get_data(height=height, width=width, n_image=n_image,
                                     patch_size=patch_size, datapath=datapath,
-                                    name_database=name_database, max_patches=max_patches,
+                                    name_database=name_database, N_patches=N_patches,
                                     seed=seed, patch_norm=patch_norm, verbose=verbose,
                                     matname=None)
                     np.save(fmatname + '_data.npy', data)
@@ -279,17 +279,17 @@ def show_data(data, fname=None, dpi=200, cmax=None, fig=None, axs=None):
     display the data in a line
 
     """
-    max_patches, n_pixels = data.shape
+    N_patches, n_pixels = data.shape
     N_pix = np.sqrt(n_pixels).astype(int)
     # subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
     if fig is None:
         fig = plt.figure(figsize=(15, 3))#, subplotpars=subplotpars
-        fig, axs = plt.subplots(1, max_patches, figsize=(15, 2))
+        fig, axs = plt.subplots(1, N_patches, figsize=(15, 2))
     # if ax is None:
     #     ax = fig.add_subplot(111)
 
     if cmax is None: cmax = np.max(np.abs(data))
-    for j in range(max_patches):
+    for j in range(N_patches):
         axs[j].imshow(data[j, :].reshape((N_pix, N_pix)),
                          cmap=plt.cm.gray_r, vmin=-cmax, vmax=+cmax,
                          interpolation='nearest')
@@ -498,7 +498,7 @@ def plot_P_cum(P_cum, ymin=0.95, title=None, verbose=False, n_yticks= 21, alpha=
     ax.set_yticks( np.linspace(0, 1, n_yticks))
     ax.axis('tight')
     ax.set_ylim(ymin, 1.001)
-    
+
     if title is not None:
         fig.suptitle(title, fontsize=12, backgroundcolor='white', color='k')
     return fig, ax
