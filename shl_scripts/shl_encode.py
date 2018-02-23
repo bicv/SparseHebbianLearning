@@ -214,7 +214,6 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         The sparse code
 
     """
-    
     # initialization
     if verbose>0:
         t0=time.time()
