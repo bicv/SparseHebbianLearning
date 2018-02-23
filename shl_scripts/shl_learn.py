@@ -356,6 +356,8 @@ def dict_learning(X, dictionary=None, precision=None,
 
     # cycle over all batches
     for ii, this_X in zip(range(n_iter), batches):
+        print('learning says C=', C)
+
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                    P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,

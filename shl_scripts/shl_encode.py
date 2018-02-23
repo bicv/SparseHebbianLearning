@@ -109,6 +109,8 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
             copy_Xy=False).T
 
     elif algorithm == 'mp':
+        print('sparse_encode says C=', C)
+
         sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness,
                          fit_tol=fit_tol, P_cum=P_cum, C=C, do_sym=do_sym,
                          verbose=verbose, gain=gain)
@@ -117,17 +119,6 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
                          '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'
                          % algorithm)
     return sparse_code
-#
-# def get_rescaling(corr, nb_quant, do_sym=False, verbose=False):
-#     # if do_sym:
-#     #     corr = np.abs(corr)
-#     # else:
-#     #     corr *= corr>0
-#
-#     sorted_coeffs = np.sort(corr.ravel())
-#     indices = [int(q*(sorted_coeffs.size-1) ) for q in np.linspace(0, 1, nb_quant, endpoint=True)]
-#     C_vec = sorted_coeffs[indices]
-#     return C_vec
 
 def rectify(code, do_sym=False, verbose=False):
     """
@@ -138,6 +129,7 @@ def rectify(code, do_sym=False, verbose=False):
     if do_sym:
         return np.abs(code)
     else:
+        # ReLU
         return code*(code>0)
 
 def rescaling(code, C=5., do_sym=False, verbose=False):
@@ -149,18 +141,9 @@ def rescaling(code, C=5., do_sym=False, verbose=False):
     for a derivation of the following function.
 
     """
-    return 1.-np.exp(-rectify(code, do_sym=do_sym)/C)
+    print('rescaling says C=', C)
 
-    # if isinstance(C, (np.float, int)):
-    #     if C == 0.: print('WARNING! C is equal to zero!')
-    #     elif C == np.inf: return C
-    #     if do_sym:
-    #         return 1.-np.exp(-np.abs(code)/C)
-    #     else:
-    #         return (1.-np.exp(-code/C))*(code>0)
-    # elif isinstance(C, np.ndarray):
-    #     code_bins = np.linspace(0., 1., C.size, endpoint=True)
-    #     return np.interp(code, C, code_bins, left=0., right=1.) * (code > 0.)
+    return 1.-np.exp(-rectify(code, do_sym=do_sym)/C)
 
 def inv_rescaling(r, C=5.):
     """
@@ -235,6 +218,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         The sparse code
 
     """
+    print('MP says C=', C)
     # initialization
     if verbose>0:
         t0=time.time()
