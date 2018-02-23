@@ -63,9 +63,11 @@ class SHL(object):
                  height=256, # of image
                  width=256, # of image
                  patch_width=12,
+                 patch_ds=4,
                  N_patches=2**16,
                  datapath='../database/',
-                 name_database='kodakdb',
+                 # name_database='kodakdb',
+                 name_database='laurent',
                  n_dictionary=23**2,
                  learning_algorithm='mp',
                  fit_tol=None,
@@ -91,6 +93,7 @@ class SHL(object):
         self.height = height
         self.width = width
         self.patch_width = patch_width
+        self.patch_ds = patch_ds
         self.N_patches = int(N_patches/DEBUG_DOWNSCALE)
         self.datapath = datapath
         self.name_database = name_database
@@ -143,7 +146,7 @@ class SHL(object):
         if patch_width is None: patch_width= self.patch_width
         from shl_scripts.shl_tools import get_data
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
-                    patch_size=(patch_width, patch_width), datapath=self.datapath,
+                    patch_size=(patch_width, patch_width), patch_ds=self.patch_ds, datapath=self.datapath,
                     N_patches=self.N_patches, verbose=self.verbose,
                     data_cache=self.data_cache, seed=self.seed,
                     do_mask=self.do_mask, patch_norm=self.patch_norm,

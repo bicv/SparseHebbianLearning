@@ -55,7 +55,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
 
     return dictionary
 
-def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
+def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
             datapath='database/', name_database='kodakdb',
             N_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
             data_cache='/tmp/data_cache', matname=None):
@@ -76,25 +76,35 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12,12),
     if matname is None:
         # Load natural images and extract patches
         # see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
-        slip = Image({'N_X':height, 'N_Y':width,
+        slip = Image({'datapath': datapath, 'N_image': n_image, 'seed':seed, 'N_X':height, 'N_Y':width})
+        slip_us = Image({'N_X':height*patch_ds, 'N_Y':width*patch_ds,
                 'datapath': datapath,
                 'do_mask': True,
                 'N_image': n_image,
-		'seed':42})
+		'seed':seed})
         import os
 
         if do_mask:
             x, y = np.meshgrid(np.linspace(-1, 1, patch_size[0]), np.linspace(-1, 1, patch_size[1]))
             mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
 
-        imagelist = slip.make_imagelist(name_database=name_database)
+        imagelist = slip_us.make_imagelist(name_database=name_database)
         for filename, croparea in imagelist:
+            image, filename_, croparea_ = slip_us.patch(name_database, filename=filename, croparea=croparea, center=False)
+            if patch_ds>1:
+                # from scipy.ndimage import zoom
+                # data_ = zozoommm(data_, (1./patch_ds, 1./patch_ds, 1))
+                from skimage.measure import block_reduce
+                image = block_reduce(image, block_size=(patch_ds, patch_ds), func=np.mean)
+                print(image.shape)
+
+
             # whitening
-            image, filename_, croparea_ = slip.patch(name_database, filename=filename, croparea=croparea, center=False)
             image = preprocessing(image, height=height, width=width, patch_size=patch_size)
 
             # Extract all reference patches and ravel them
-            data_ = slip.extract_patches_2d(image, patch_size, max_patches=int(N_patches/len(imagelist)))
+            data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(N_patches/len(imagelist)))
+
             data_ -= np.mean(data_)
             if patch_norm:
                 data_ /= np.std(data_)
