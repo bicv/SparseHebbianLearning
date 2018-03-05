@@ -373,13 +373,14 @@ def dict_learning(X, dictionary=None, precision=None,
         gradient = - sparse_code.T @ residual
         gradient /= batch_size # divide by the batch size to get the average in the Hebbian formula below
 
-        if not homeo_method in ['Olshausen', 'None']:
-            target = l0_sparseness/n_dictionary
-            learning_gain = np.exp(-(mean_measure/target-1.)/(1.5)) # np.exp((1/mean_measure-1)/(1 - mean_measure*l0_sparseness/n_dictionary))
-            #learning_gain /= learning_gain.mean()
-            # print(learning_gain.min(), learning_gain.max(), learning_gain.mean(), learning_gain.std())
-            # print(mean_measure.min(), mean_measure.max(), mean_measure.mean(), mean_measure.std(), l0_sparseness/n_dictionary)
-            gradient *= learning_gain[:, np.newaxis]
+        # TODO: should we try to modify the learning ?
+        # if not homeo_method in ['Olshausen', 'None']:
+        #     target = l0_sparseness/n_dictionary
+        #     learning_gain = np.exp(-(mean_measure/target-1.)/(1.5)) # np.exp((1/mean_measure-1)/(1 - mean_measure*l0_sparseness/n_dictionary))
+        #     #learning_gain /= learning_gain.mean()
+        #     # print(learning_gain.min(), learning_gain.max(), learning_gain.mean(), learning_gain.std())
+        #     # print(mean_measure.min(), mean_measure.max(), mean_measure.mean(), mean_measure.std(), l0_sparseness/n_dictionary)
+        #     gradient *= learning_gain[:, np.newaxis]
 
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf

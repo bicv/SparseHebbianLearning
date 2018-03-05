@@ -63,7 +63,7 @@ class SHL(object):
                  height=256, # of image
                  width=256, # of image
                  patch_width=12,
-                 patch_ds=4,
+                 patch_ds=8,
                  N_patches=2**18,
                  datapath='../database/',
                  # name_database='kodakdb',
@@ -75,7 +75,7 @@ class SHL(object):
                  do_mask=True,
                  l0_sparseness=15,
                  one_over_F=True,
-                 n_iter=2**14 + 1,
+                 n_iter=2**12 + 1,
                  eta=.02, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HEH',
                  eta_homeo=0.02, alpha_homeo=0.25,
