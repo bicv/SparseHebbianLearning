@@ -81,7 +81,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
                 'datapath': datapath,
                 'do_mask': True,
                 'N_image': n_image,
-		'seed':seed})
+                'seed':seed})
         import os
 
         if do_mask:
@@ -92,12 +92,8 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
         for filename, croparea in imagelist:
             image, filename_, croparea_ = slip_us.patch(name_database, filename=filename, croparea=croparea, center=False)
             if patch_ds>1:
-                # from scipy.ndimage import zoom
-                # data_ = zozoommm(data_, (1./patch_ds, 1./patch_ds, 1))
                 from skimage.measure import block_reduce
                 image = block_reduce(image, block_size=(patch_ds, patch_ds), func=np.mean)
-                print(image.shape)
-
 
             # whitening
             image = preprocessing(image, height=height, width=width, patch_size=patch_size)
