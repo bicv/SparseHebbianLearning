@@ -376,14 +376,39 @@ class SHL_set(object):
             label = '%d' % value
         return  self.tag + ' - {}={}'.format(variable, label)
 
+    def run(self, N_scan=None, variables=['eta'], base=4, n_jobs=36, list_figures=[], verbose=0):
+        # defining  the range of the scan
+        if N_scan is None: N_scan = self.N_scan
+
+        variables_, values_ = [], np.zeros(N_scan*len(variables))
+        for i, variable in enumerate(variables):
+            variables_.extend([variable] * N_scan)
+            median = self.shl.__dict__[variable]
+            values_[(i*N_scan):((i+1)*N_scan)] = np.logspace(-1., 1., N_scan, base=base)*median
+        print(variables_, values_)
+        if n_jobs == 1:
+            for value in values:
+                shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
+                dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
+                            list_figures=list_figures)
+        else:
+            for (variable, value) in zip(variables_, values_):
+                print(variable, value)
+
+            # We will use the ``joblib`` package do distribute this computation on different CPUs.
+            from joblib import Parallel, delayed
+            Parallel(n_jobs=n_jobs, verbose=15)(delayed(run)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures) for (variable, value) in zip(variables_, values_))
+
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
                 display='', display_variable='logL', n_jobs=36,
                 alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
         median = self.shl.__dict__[variable]
-
         values = np.logspace(-1., 1., N_scan, base=base)*median
+
+        self.run(N_scan=N_scan, variables=[variable], base=base, n_jobs=n_jobs, verbose=verbose)
+
         if verbose: print('DEBUG:', variable, median, values)
         if display == 'dynamic':
             import matplotlib.pyplot as plt
@@ -395,18 +420,6 @@ class SHL_set(object):
                 fig = plt.figure(figsize=(16, 4))
             if ax is None:
                 ax = fig.add_subplot(111)
-
-
-
-        if n_jobs == 1:
-            for value in values:
-                shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
-                dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
-                            list_figures=list_figures)
-        else:
-            # We will use the ``joblib`` package do distribute this computation on different CPUs.
-            from joblib import Parallel, delayed
-            Parallel(n_jobs=n_jobs, verbose=15)(delayed(run)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures) for value in values)
 
         for value in values:
             shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
