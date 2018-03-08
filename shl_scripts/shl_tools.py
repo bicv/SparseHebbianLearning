@@ -4,8 +4,6 @@ from __future__ import division, print_function, absolute_import
 import time
 import numpy as np
 from shl_scripts.shl_encode import sparse_encode
-import matplotlib
-import matplotlib.pyplot as plt
 from SLIP import Image
 
 toolbar_width = 40
@@ -216,6 +214,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None,
     """
     display the dictionary in a random order
     """
+    import matplotlib
     subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
 
     dim_graph = dico.dictionary.shape[0]
@@ -228,6 +227,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None,
         indices = range(dim_graph)
     dim_patch = int(np.sqrt(dico.dictionary.shape[1]))
 
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
     if ax is None:
@@ -292,6 +292,7 @@ def show_data(data, fname=None, dpi=200, cmax=None, fig=None, axs=None):
     N_patches, n_pixels = data.shape
     N_pix = np.sqrt(n_pixels).astype(int)
     # subplotpars = matplotlib.figure.SubplotParams(left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(15, 3))#, subplotpars=subplotpars
         fig, axs = plt.subplots(1, N_patches, figsize=(15, 2))
@@ -322,6 +323,7 @@ def plot_coeff_distribution(dico, data, title=None, algorithm=None, fname=None, 
     import pandas as pd
     import seaborn as sns
     df = pd.DataFrame(res_lst, columns=['Coeff'])
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:
@@ -371,6 +373,7 @@ def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None, fig=
     coeff_min = np.abs(sparse_code[:,index_min])
     bins_max = bins_step(0.0001,np.max(coeff_max),20)
     bins_min = bins_step(0.0001,np.max(coeff_min),20)
+    import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(6, 10))
     ax = plt.subplot(2,1,1)
     with sns.axes_style("white"):
@@ -405,6 +408,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None, fig=N
     Q=np.random.normal(mom1,mom2,dico.dictionary.shape[0])
     df1=pd.DataFrame(Q, columns=['Q'])
 
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:
@@ -437,6 +441,7 @@ def plot_proba_histogram(coding, verbose=False, fig=None, ax=None):
     rel_ent = np.sum( -p * np.log(p)) / np.log(n_dictionary)
     if verbose: print('Entropy / Entropy_max=', rel_ent )
 
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:
@@ -451,6 +456,7 @@ def plot_proba_histogram(coding, verbose=False, fig=None, ax=None):
 
 def plot_error(dico, fig=None, ax=None):
     # TODO : show SE as a function of l0
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:
@@ -464,6 +470,7 @@ def plot_error(dico, fig=None, ax=None):
     return fig, ax
 
 def plot_variance(shl_exp, sparse_code, fname=None, fig=None, ax=None):
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:
@@ -479,6 +486,7 @@ def plot_variance(shl_exp, sparse_code, fname=None, fig=None, ax=None):
     return fig, ax
 
 def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None):
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:
@@ -494,6 +502,7 @@ def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None)
 
 
 def plot_P_cum(P_cum, ymin=0.95, title=None, verbose=False, n_yticks= 21, alpha=.05, c='g', fig=None, ax=None):
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 8))
     if ax is None:
@@ -516,6 +525,7 @@ def plot_P_cum(P_cum, ymin=0.95, title=None, verbose=False, n_yticks= 21, alpha=
 #import seaborn as sns
 #import pandas as pd
 def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True', ylabel='MP', fig=None, ax=None):
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 16))
     if ax is None:
@@ -534,6 +544,7 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True
 
 
 def time_plot(shl_exp, dico, variable='kurt', N_nosample=0, alpha=.6, color=None, label=None, fname=None, fig=None, ax=None):
+    import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
     if ax is None:

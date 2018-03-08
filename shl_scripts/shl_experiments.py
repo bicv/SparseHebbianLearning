@@ -41,7 +41,6 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
 import time
 toolbar_width = 40
 import numpy as np
-import matplotlib.pyplot as plt
 
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -62,8 +61,8 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_width=12,
-                 patch_ds=8,
+                 patch_width=21,
+                 patch_ds=2,
                  N_patches=2**18,
                  datapath='../database/',
                  #name_database='kodakdb',
@@ -75,10 +74,10 @@ class SHL(object):
                  do_mask=True,
                  l0_sparseness=15,
                  one_over_F=True,
-                 n_iter=2**12 + 1,
+                 n_iter=2**10 + 1,
                  eta=.005, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HAP',
-                 eta_homeo=0.02, alpha_homeo=0.1,
+                 eta_homeo=0.02, alpha_homeo=0.9,
                  C=4., nb_quant=256, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -387,8 +386,10 @@ class SHL_set(object):
         vvalue = np.logspace(-1., 1., N_scan, base=base)*median
         if verbose: print('DEBUG:', variable, median, vvalue)
         if display == 'dynamic':
+            import matplotlib.pyplot as plt
             fig_error, ax_error = None, None
         elif display == 'final':
+            import matplotlib.pyplot as plt
             results = []
             if fig is None:
                 fig = plt.figure(figsize=(16, 4))
@@ -427,7 +428,9 @@ class SHL_set(object):
                     print('We encountered error', e, ' with', dico)
                     results.append(np.nan)
             else:
-                if len(list_figures)>0: plt.show()
+                if len(list_figures)>0:
+                    import matplotlib.pyplot as plt
+                    plt.show()
             del shl
 
         if display == 'dynamic':
@@ -452,7 +455,7 @@ class SHL_set(object):
                 # elif display_variable in ['perror']:
                 #     ax.set_ylim(1.0)
                 elif display_variable in ['cputime']:
-                    ax.axis('tight')
+                    #ax.axis('tight')
                     #ax.set_yscale('log')
                     ax.set_ylim(0)
                 ax.set_xscale('log')
