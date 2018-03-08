@@ -75,9 +75,9 @@ class SHL(object):
                  l0_sparseness=15,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=.005, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HAP',
-                 eta_homeo=0.02, alpha_homeo=0.9,
+                 eta_homeo=0.02, alpha_homeo=0.4,
                  C=4., nb_quant=256, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -377,14 +377,14 @@ class SHL_set(object):
         return  self.tag + ' - {}={}'.format(variable, label)
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
-                display='', display_variable='logL',
+                display='', display_variable='logL', n_jobs=36,
                 alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
         median = self.shl.__dict__[variable]
 
-        vvalue = np.logspace(-1., 1., N_scan, base=base)*median
-        if verbose: print('DEBUG:', variable, median, vvalue)
+        values = np.logspace(-1., 1., N_scan, base=base)*median
+        if verbose: print('DEBUG:', variable, median, values)
         if display == 'dynamic':
             import matplotlib.pyplot as plt
             fig_error, ax_error = None, None
@@ -397,19 +397,22 @@ class SHL_set(object):
                 ax = fig.add_subplot(111)
 
 
-        for value in vvalue:
-            if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary', 'batch_size']:
-                value = int(value)
-            if variable in ['patch_width']:
-                data = self.shl.get_data(**{variable:value})
-            else:
-                data = deepcopy(self.data)
 
-            shl = SHL(**deepcopy(self.opts))
-            shl.__dict__[variable] = value
-            if verbose: print('DEBUG:', shl.__dict__, self.shl.__dict__)
-            dico = shl.learn_dico(data=data, matname=self.matname(variable, value),
-                        list_figures=list_figures)
+        if n_jobs == 1:
+            for value in values:
+                shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
+                dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
+                            list_figures=list_figures)
+        else:
+            # We will use the ``joblib`` package do distribute this computation on different CPUs.
+            from joblib import Parallel, delayed
+            Parallel(n_jobs=n_jobs, verbose=15)(delayed(run)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures) for value in values)
+
+        for value in values:
+            shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
+            dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
+                            list_figures=list_figures)
+
             if display == 'dynamic':
                 if not isinstance(value, int):
                     label = '%s=%.3f' % (variable, value)
@@ -446,10 +449,10 @@ class SHL_set(object):
             return fig_error, ax_error
         elif display == 'final':
             try:
-                ax.plot(vvalue, results, '-', lw=1, alpha=alpha, color=color, label=label)
+                ax.plot(values, results, '-', lw=1, alpha=alpha, color=color, label=label)
                 ax.set_ylabel(display_variable)
                 ax.set_xlabel(variable)
-                # ax.set_xlim(vvalue.min(), vvalue.max())
+                # ax.set_xlim(values.min(), values.max())
                 if display_variable in ['error', 'qerror']:
                     ax.set_ylim(0, 1)
                 # elif display_variable in ['perror']:
@@ -464,27 +467,18 @@ class SHL_set(object):
                 print('We encountered error', e, ' with', dico)
             return fig, ax
 
-#  TODO: n_jobs > 1
-# from joblib import Parallel, delayed
-#
-# We will use the ``joblib`` package do distribute this computation on different CPUs.
-# from joblib import Parallel, delayed
-# Parallel(n_jobs=n_jobs)(delayed(np.sqrt)(i ** 2) for i in range(10))
-# def run(C, list_figures, data, homeo_params):
-#     matname = tag + ' - C={}'.format(C)
-#     homeo_params.update(C=C)
-#     opts.update(homeo_params=homeo_params)
-#     shl = SHL(**deepcopy(opts))
-#     dico = shl.learn_dico(data=data, matname=matname, list_figures=list_figures)
-#     return dico
-#
-#
-# Cs = np.linspace(1, 10, 5)
-# if not n_jobs==1: out = Parallel(n_jobs=n_jobs, verbose=15)(delayed(run)(C, [], data, homeo_params) for C in Cs)
-#
-# for C in Cs:
-#     dico = run(C, list_figures=list_figures, data=data, homeo_params=homeo_params)
-#     plt.show()
+def run(variable, value, data, opts, matname, list_figures):
+    if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary', 'batch_size']:
+        value = int(value)
+    shl = SHL(**deepcopy(opts))
+    shl.__dict__[variable] = value
+    # if verbose: print('DEBUG:', shl.__dict__, self.shl.__dict__)
+    if variable in ['patch_width']:
+        data = shl.get_data(**{variable:value})
+
+    dico = shl.learn_dico(data=data, matname=matname,
+                list_figures=list_figures)
+    return shl
 
 if __name__ == '__main__':
 
