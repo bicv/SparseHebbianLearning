@@ -58,7 +58,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
 def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
             datapath='database/', name_database='kodakdb',
             N_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
-            data_cache='/tmp/data_cache', matname=None):
+            data_cache='/tmp/data_cache', over_patches=8, matname=None):
     """
     Extract data:
 
@@ -85,7 +85,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
         import os
 
         if do_mask:
-            x, y = np.meshgrid(np.linspace(-1, 1, patch_size[0]), np.linspace(-1, 1, patch_size[1]))
+            x, y = np.meshgrid(np.linspace(-1, 1, patch_size[0], endpoint=True), np.linspace(-1, 1, patch_size[1], endpoint=True))
             mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
 
         imagelist = slip_us.make_imagelist(name_database=name_database)
@@ -99,7 +99,11 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
             image = preprocessing(image, height=height, width=width, patch_size=patch_size)
 
             # Extract all reference patches and ravel them
-            data_ = slip.extract_patches_2d(image, patch_size, N_patches=int(N_patches/len(imagelist)))
+            data_ = slip.extract_patches_2d(image, patch_size, N_patches=over_patches*int(N_patches/len(imagelist)))
+            print(data_.shape, np.std(data_, axis=(1, 2)).shape)
+            indices_most_energy = np.argsort(-np.std(data_, axis=(1, 2)))
+            data_ = data_[indices_most_energy[:int(N_patches/len(imagelist))], :, :]
+            print(data_.shape, np.std(data_, axis=(1, 2)).shape)
 
             data_ -= np.mean(data_)
             if patch_norm:
