@@ -98,10 +98,8 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
 
             # Extract all reference patches and ravel them
             data_ = slip.extract_patches_2d(image, patch_size, N_patches=over_patches*int(N_patches/len(imagelist)))
-            print(data_.shape, np.std(data_, axis=(1, 2)).shape)
             indices_most_energy = np.argsort(-np.std(data_, axis=(1, 2)))
             data_ = data_[indices_most_energy[:int(N_patches/len(imagelist))], :, :]
-            print(data_.shape, np.std(data_, axis=(1, 2)).shape)
 
             data_ -= np.mean(data_)
             if patch_norm:

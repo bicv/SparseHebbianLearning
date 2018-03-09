@@ -72,13 +72,14 @@ class SHL(object):
                  fit_tol=None,
                  do_precision=False,
                  do_mask=True,
-                 l0_sparseness=15,
+                 over_patches=16,
+                 l0_sparseness=30,
                  one_over_F=True,
-                 n_iter=2**10 + 1,
-                 eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 n_iter=2**12 + 1,
+                 eta=.02, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HAP',
-                 eta_homeo=0.02, alpha_homeo=0.4,
-                 C=4., nb_quant=256, P_cum=None,
+                 eta_homeo=0.02, alpha_homeo=1.,
+                 C=2., nb_quant=64, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
@@ -109,6 +110,7 @@ class SHL(object):
         self.fit_tol = fit_tol
         self.do_precision = do_precision
         self.do_mask = do_mask
+        self.over_patches = over_patches
 
         self.l0_sparseness = l0_sparseness
         # self.l0_sparseness_end = l0_sparseness_end
@@ -148,7 +150,7 @@ class SHL(object):
                     patch_size=(patch_width, patch_width), patch_ds=self.patch_ds, datapath=self.datapath,
                     N_patches=self.N_patches, verbose=self.verbose,
                     data_cache=self.data_cache, seed=self.seed,
-                    do_mask=self.do_mask, patch_norm=self.patch_norm,
+                    do_mask=self.do_mask, over_patches = self.over_patches, patch_norm=self.patch_norm,
                     name_database=self.name_database, matname=matname)
 
 
@@ -370,44 +372,47 @@ class SHL_set(object):
         self.data = self.shl.get_data(matname='data')
 
     def matname(self, variable, value):
+        value = check_type(variable, value)
         if not isinstance(value, int):
             label = '%.5f' % value
         else:
             label = '%d' % value
         return  self.tag + ' - {}={}'.format(variable, label)
 
-    def run(self, N_scan=None, variables=['eta'], base=4, n_jobs=36, list_figures=[], verbose=0):
+    def run(self, N_scan=None, variables=['eta'], base=4, n_jobs=-1, list_figures=[], verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
 
-        variables_, values_ = [], np.zeros(N_scan*len(variables))
-        for i, variable in enumerate(variables):
-            variables_.extend([variable] * N_scan)
-            median = self.shl.__dict__[variable]
-            values_[(i*N_scan):((i+1)*N_scan)] = np.logspace(-1., 1., N_scan, base=base)*median
-        print(variables_, values_)
         if n_jobs == 1:
-            for value in values:
-                shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
-                dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
-                            list_figures=list_figures)
+            for variable in variables:
+                median = self.shl.__dict__[variable]
+                values = np.logspace(-1., 1., N_scan, base=base)*median
+                values = [check_type(variable, value) for value in values]
+                for value in values:
+                    shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
+                    dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
+                                list_figures=list_figures)
         else:
-            for (variable, value) in zip(variables_, values_):
-                print(variable, value)
+            variables_, values_ = [], np.zeros(N_scan*len(variables))
+            for i, variable in enumerate(variables):
+                variables_.extend([variable] * N_scan)
+                median = self.shl.__dict__[variable]
+                values_[(i*N_scan):((i+1)*N_scan)] = [check_type(variable, value) for value in np.logspace(-1., 1., N_scan, base=base)*median]
 
             # We will use the ``joblib`` package do distribute this computation on different CPUs.
             from joblib import Parallel, delayed
             Parallel(n_jobs=n_jobs, verbose=15)(delayed(run)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures) for (variable, value) in zip(variables_, values_))
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
-                display='', display_variable='logL', n_jobs=36,
+                display='', display_variable='logL',
                 alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
         median = self.shl.__dict__[variable]
         values = np.logspace(-1., 1., N_scan, base=base)*median
+        values = [check_type(variable, value) for value in values]
 
-        self.run(N_scan=N_scan, variables=[variable], base=base, n_jobs=n_jobs, verbose=verbose)
+        self.run(N_scan=N_scan, variables=[variable], base=base, n_jobs=1, verbose=verbose)
 
         if verbose: print('DEBUG:', variable, median, values)
         if display == 'dynamic':
@@ -480,9 +485,14 @@ class SHL_set(object):
                 print('We encountered error', e, ' with', dico)
             return fig, ax
 
-def run(variable, value, data, opts, matname, list_figures):
+def check_type(variable, value):
     if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary', 'batch_size']:
         value = int(value)
+    return value
+
+def run(variable, value, data, opts, matname, list_figures):
+    value = check_type(variable, value)
+
     shl = SHL(**deepcopy(opts))
     shl.__dict__[variable] = value
     # if verbose: print('DEBUG:', shl.__dict__, self.shl.__dict__)
