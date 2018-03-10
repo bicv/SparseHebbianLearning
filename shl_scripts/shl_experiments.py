@@ -62,7 +62,7 @@ class SHL(object):
                  height=256, # of image
                  width=256, # of image
                  patch_width=21,
-                 patch_ds=2,
+                 patch_ds=1,
                  N_patches=2**16,
                  datapath='../database/',
                  name_database='kodakdb',
@@ -71,7 +71,7 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
-                 do_mask=True,
+                 do_mask=True, do_bandpass=True,
                  over_patches=16,
                  l0_sparseness=16,
                  one_over_F=True,
@@ -110,6 +110,7 @@ class SHL(object):
         self.fit_tol = fit_tol
         self.do_precision = do_precision
         self.do_mask = do_mask
+        self.do_bandpass = do_bandpass
         self.over_patches = over_patches
 
         self.l0_sparseness = l0_sparseness
@@ -149,7 +150,7 @@ class SHL(object):
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=(patch_width, patch_width), patch_ds=self.patch_ds, datapath=self.datapath,
                     N_patches=self.N_patches, verbose=self.verbose,
-                    data_cache=self.data_cache, seed=self.seed,
+                    data_cache=self.data_cache, seed=self.seed, do_bandpass=self.do_bandpass,
                     do_mask=self.do_mask, over_patches = self.over_patches, patch_norm=self.patch_norm,
                     name_database=self.name_database, matname=matname)
 

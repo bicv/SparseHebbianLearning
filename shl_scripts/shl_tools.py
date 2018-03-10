@@ -12,7 +12,7 @@ toolbar_width = 40
 def touch(filename):
     open(filename, 'w').close()
 
-def preprocessing(image, height=256, width=256, patch_size=(12, 12), do_bandpass=False,
+def preprocessing(image, height=256, width=256, patch_size=(12, 12), do_bandpass=True,
 seed=None):
     slip = Image({'N_X':height, 'N_Y':width,
             'white_n_learning' : 0,
@@ -30,13 +30,15 @@ seed=None):
         df=.07
         slip.f_mask = (1-np.exp((slip.f-.5)/(.5*df)))*(slip.f<.5)
         # removing low frequencies
-        slip.f_mask *= .5*(np.tanh( 40.*(slip.f-.5/16))+1)
+        cutoff, slope = 1./max(patch_size), 42
+        # useful for debuging : slip.f_mask *= .5*(np.tanh(-slope*(slip.f-cutoff))+1)
+        slip.f_mask *= .5*np.tanh(slope*(slip.f-cutoff)) + .5
         image = slip.preprocess(image)
 
     return image
 
 
-def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
+def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None, do_bandpass=True):
     N_f = np.sqrt(n_pixels).astype(int)
     fx, fy = np.meshgrid(np.linspace(-1, 1, height), np.linspace(-1, 1, width))
     spectra = 1/np.sqrt(fx**2+fy**2) # FIX : may be infinite!
@@ -54,7 +56,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None):
     return dictionary
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
-            datapath='database/', name_database='kodakdb',
+            datapath='database/', name_database='kodakdb', do_bandpass=True,
             N_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
             data_cache='/tmp/data_cache', over_patches=8, matname=None):
     """
@@ -94,7 +96,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
                 image = block_reduce(image, block_size=(patch_ds, patch_ds), func=np.mean)
 
             # whitening
-            image = preprocessing(image, height=height, width=width, patch_size=patch_size)
+            image = preprocessing(image, height=height, width=width, patch_size=patch_size, do_bandpass=do_bandpass)
 
             # Extract all reference patches and ravel them
             data_ = slip.extract_patches_2d(image, patch_size, N_patches=over_patches*int(N_patches/len(imagelist)))
