@@ -460,17 +460,18 @@ def dict_learning(X, dictionary=None, precision=None,
                 # q_bar = quantile(P_cum_, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
                 # aerror = np.mean(np.abs(q_bar-q))
                 # perror = 1 - np.mean( (sparse_code_bar > 0) == (sparse_code_rec>0))
-                measures = np.count_nonzero(sparse_code_rec, axis=0)
 
-
-                rho = l0_sparseness / n_dictionary
-                sd = np.sqrt(rho*(1-rho)*record_num_batches)
-                # likelihood = 1 / np.sqrt(2*np.pi) / sd
-                # likelihood *= np.exp(-.5 * (measures - rho*record_num_batches)**2 / sd**2)
-                # logL = np.log(likelihood).mean()
-                logL_ = -.5 * (measures - rho)**2 / sd**2
-                logL_ -= np.log(np.sqrt(2*np.pi) * sd)
-                logL = logL_.mean()
+                from shl_scripts.shl_tools import get_logL
+                # measures = np.count_nonzero(sparse_code_rec, axis=0)
+                # 
+                # rho = l0_sparseness / n_dictionary
+                # sd = np.sqrt(rho*(1-rho)*record_num_batches)
+                # # likelihood = 1 / np.sqrt(2*np.pi) / sd
+                # # likelihood *= np.exp(-.5 * (measures - rho*record_num_batches)**2 / sd**2)
+                # # logL = np.log(likelihood).mean()
+                # logL_ = -.5 * (measures - rho)**2 / sd**2
+                # logL_ -= np.log(np.sqrt(2*np.pi) * sd)
+                logL = get_logL(sparse_code_rec).mean()
 
                 from scipy.stats import kurtosis
                 record_one = pd.DataFrame([{'kurt':kurtosis(sparse_code_rec, axis=0),

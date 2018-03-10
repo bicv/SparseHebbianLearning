@@ -63,22 +63,22 @@ class SHL(object):
                  width=256, # of image
                  patch_width=21,
                  patch_ds=2,
-                 N_patches=2**18,
+                 N_patches=2**16,
                  datapath='../database/',
-                 #name_database='kodakdb',
-                 name_database='laurent',
+                 name_database='kodakdb',
+                 #name_database='laurent',
                  n_dictionary=23**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
                  do_mask=True,
                  over_patches=16,
-                 l0_sparseness=30,
+                 l0_sparseness=16,
                  one_over_F=True,
-                 n_iter=2**12 + 1,
-                 eta=.02, beta1=.9, beta2=.999, epsilon=1.e-8,
-                 homeo_method = 'HAP',
-                 eta_homeo=0.02, alpha_homeo=1.,
+                 n_iter=2**10 + 1,
+                 eta=.006, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 homeo_method='HAP',
+                 eta_homeo=0.005, alpha_homeo=.4,
                  C=2., nb_quant=64, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -379,7 +379,7 @@ class SHL_set(object):
             label = '%d' % value
         return  self.tag + ' - {}={}'.format(variable, label)
 
-    def run(self, N_scan=None, variables=['eta'], base=4, n_jobs=-1, list_figures=[], verbose=0):
+    def run(self, N_scan=None, variables=['eta'], base=4, n_jobs=14, list_figures=[], verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
 

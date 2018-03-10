@@ -165,6 +165,22 @@ def generate_sparse_vector(N_image, l0_sparseness, nb_dico, N_boost=0,
 
     return coeff
 
+def get_logL(sparse_code):
+    record_num_batches = sparse_code.shape[0]
+    rho_hat = np.count_nonzero(sparse_code, axis=0).mean()/record_num_batches
+    #rho = shl.l0_sparseness / shl.n_dictionary
+    sd = np.sqrt(rho_hat*(1-rho_hat)*record_num_batches)
+
+    measures = np.count_nonzero(sparse_code, axis=0)
+
+    # likelihood = 1 / np.sqrt(2*np.pi) / sd *  np.exp(-.5 * (measures - rho)**2 / sd**2)
+    logL = -.5 * (measures - rho_hat*record_num_batches)**2 / sd**2
+    logL -= np.log(np.sqrt(2*np.pi) * sd)
+    #print(np.log(np.sum(np.exp(logL))), np.log(np.sqrt(2*np.pi) * sd))
+    #logL -= np.log(np.sum(np.exp(logL)))
+    return logL
+
+
 def compute_RMSE(data, dico):
     """
     Compute the Root Mean Square Error between the image and it's encoded representation
