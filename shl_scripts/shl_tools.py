@@ -182,14 +182,14 @@ def get_logL(sparse_code):
     #logL -= np.log(np.sum(np.exp(logL)))
     return logL
 
-def print_stats(data, dictionary, sparse_code, max_patches=10):
+def print_stats(data, dictionary, sparse_code, max_patches=10, N_show=120):
     import matplotlib.pyplot as plt
     print(42*'🐒')
 
     print('number of codes, size of codewords = ', sparse_code.shape)
     print('average of codewords = ', sparse_code.mean())
     print('average std of codewords = ', sparse_code.std())
-    print('l0-sparseness of codewords = ', (sparse_code>0).mean(), ' ~= l0/M =', shl.l0_sparseness/shl.n_dictionary)
+    print('l0-sparseness of codewords = ', (sparse_code>0).mean())#, ' ~= l0/M =', shl.l0_sparseness/shl.n_dictionary)
     print('std of the average of individual patches = ', sparse_code.mean(axis=0).std())
 
 
