@@ -189,8 +189,9 @@ def print_stats(data, dictionary, sparse_code, max_patches=10):
 
     print('number of codes, size of codewords = ', sparse_code.shape)
     print('average of codewords = ', sparse_code.mean())
-    print('average std of codewords = ', sparse_code.std())
     print('l0-sparseness of codewords = ', (sparse_code>0).mean(), ' ~= l0/M =', shl.l0_sparseness/shl.n_dictionary)
+    print('average energy of codewords = ', sparse_code.std(axis=0).mean())
+    print('average std of codewords = ', sparse_code.std())
     print('std of the average of individual patches = ', sparse_code.mean(axis=0).std())
 
     print('number of codes, size of reconstructed images = ', patches.shape)
@@ -201,7 +202,8 @@ def print_stats(data, dictionary, sparse_code, max_patches=10):
     plt.show()
     fig, axs = show_data(patches[:max_patches, :])
     plt.show()
-    fig, axs = show_data(error[:max_patches, :], cmax=np.max(np.abs(patches[:max_patches, :])))
+
+    fig, axs = show_data(error[:max_patches, :], cmax=np.max(np.abs(data[:max_patches, :])))
     plt.show()
     print('average of data patches = ', data.mean(), '+/-', data.mean(axis=1).std())
     print('average of residual patches = ', error.mean(), '+/-', error.mean(axis=1).std())
@@ -212,7 +214,7 @@ def print_stats(data, dictionary, sparse_code, max_patches=10):
     print('average energy of data = ', SD.mean(), '+/-', SD.std())
     #print('total energy of data = ', np.sqrt(np.sum(data**2)))
     #print('total deviation of data = ', np.sum(np.abs(data)))
-
+    print('average error = ', error.mean(), '+/-', error.std())
     SE = np.sqrt(np.mean(error**2, axis=1))
     #SE = np.linalg.norm(error)/record_num_batches
 
@@ -221,7 +223,7 @@ def print_stats(data, dictionary, sparse_code, max_patches=10):
     #print('total energy of residual = ', np.sqrt(np.sum(error**2)))
     #print('total deviation of residual = ', np.sum(np.abs(error)))
     print('average gain of coding = ', (SD/SE).mean(), '+/-', (SD/SE).std())
-    #print('average gain of coding = ', data[indx, :].std()/error.std())
+
 
     return SD, SE
 
