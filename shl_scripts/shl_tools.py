@@ -182,6 +182,17 @@ def get_logL(sparse_code):
     #logL -= np.log(np.sum(np.exp(logL)))
     return logL
 
+def get_MI(sparse_code):
+    b_ij = (sparse_code[:, np.newaxis, :]>0) * (sparse_code[:, :, np.newaxis]>0)
+    P_ij = 1.*np.count_nonzero(b_ij, axis=0)
+    P_ij /= P_ij.sum()
+    P_i = 1.*np.count_nonzero(sparse_code, axis=0)
+    P_i /= P_i.sum()
+    MI_ = - P_ij * np.log( P_i[:, np.newaxis]*P_i[np.newaxis, :] / P_ij  )
+    MI_[P_ij==0] = 0
+    MI_[(P_i[:, np.newaxis]*P_i[np.newaxis, :])==0] = 0
+    return MI_.sum()
+
 def print_stats(data, dictionary, sparse_code, max_patches=10, N_show=120):
     import matplotlib.pyplot as plt
     print(42*'🐒')
