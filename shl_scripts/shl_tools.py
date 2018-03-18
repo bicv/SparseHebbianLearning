@@ -193,44 +193,49 @@ def get_MI(sparse_code):
     MI_[(P_i[:, np.newaxis]*P_i[np.newaxis, :])==0] = 0
     return MI_.sum()
 
-def print_stats(data, dictionary, sparse_code, max_patches=10, N_show=120):
-    import matplotlib.pyplot as plt
-    print(42*'🐒')
+def print_stats(data, dictionary, sparse_code, max_patches=10, N_show=120, display=True, verbose=True):
+    if display: import matplotlib.pyplot as plt
+    if verbose:
+        print(42*'🐒')
 
-    print('number of codes, size of codewords = ', sparse_code.shape)
-    print('average of codewords = ', sparse_code.mean())
-    print('average std of codewords = ', sparse_code.std())
-    print('l0-sparseness of codewords = ', (sparse_code>0).mean())#, ' ~= l0/M =', shl.l0_sparseness/shl.n_dictionary)
-    print('std of the average of individual patches = ', sparse_code.mean(axis=0).std())
+        print('number of codes, size of codewords = ', sparse_code.shape)
+        print('average of codewords = ', sparse_code.mean())
+        print('average std of codewords = ', sparse_code.std())
+        print('l0-sparseness of codewords = ', (sparse_code>0).mean())#, ' ~= l0/M =', shl.l0_sparseness/shl.n_dictionary)
+        print('std of the average of individual patches = ', sparse_code.mean(axis=0).std())
 
-
-    plt.matshow(sparse_code[:N_show, :])
-    plt.show()
-    fig, axs = show_data(data[:max_patches, :])
-    plt.show()
+    if display:
+        plt.matshow(sparse_code[:N_show, :])
+        plt.show()
+        fig, axs = show_data(data[:max_patches, :])
+        plt.show()
 
     patches = sparse_code @ dictionary
     error = data - patches
 
-    print('number of codes, size of reconstructed images = ', patches.shape)
+    if verbose: print('number of codes, size of reconstructed images = ', patches.shape)
 
-    fig, axs = show_data(patches[:max_patches, :])
-    plt.show()
-    fig, axs = show_data(error[:max_patches, :], cmax=np.max(np.abs(patches[:max_patches, :])))
-    plt.show()
-    print('average of data patches = ', data.mean(), '+/-', data.mean(axis=1).std())
-    print('average of residual patches = ', error.mean(), '+/-', error.mean(axis=1).std())
+    if display:
+        fig, axs = show_data(patches[:max_patches, :])
+        plt.show()
+        fig, axs = show_data(error[:max_patches, :], cmax=np.max(np.abs(patches[:max_patches, :])))
+        plt.show()
+
     SD = np.sqrt(np.mean(data**2, axis=1))
 
-    print('median energy of data = ', np.median(SD))
-    print('average energy of data = ', SD.mean(), '+/-', SD.std())
-    print('average error = ', error.mean(), '+/-', error.std())
+    if verbose:
+        print('average of data patches = ', data.mean(), '+/-', data.mean(axis=1).std())
+        print('average of residual patches = ', error.mean(), '+/-', error.mean(axis=1).std())
+        print('median energy of data = ', np.median(SD))
+        print('average energy of data = ', SD.mean(), '+/-', SD.std())
+        print('average error = ', error.mean(), '+/-', error.std())
 
     SE = np.sqrt(np.mean(error**2, axis=1))
 
-    print('average energy of residual = ', SE.mean(), '+/-', SE.std())
-    print('median energy of residual = ', np.median(SE))
-    print('average gain of coding = ', (SD/SE).mean(), '+/-', (SD/SE).std())
+    if verbose:
+        print('average energy of residual = ', SE.mean(), '+/-', SE.std())
+        print('median energy of residual = ', np.median(SE))
+        print('average gain of coding = ', (SD/SE).mean(), '+/-', (SD/SE).std())
 
     return SD, SE
 
