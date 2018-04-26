@@ -67,7 +67,7 @@ class SHL(object):
                  name_database='kodakdb',
                  #name_database='laurent',
                  do_mask=True, do_bandpass=True,
-                 over_patches=16,
+                 over_patches=4,
                  patch_ds=1,
                  n_dictionary=23**2,
                  learning_algorithm='mp',
@@ -75,11 +75,11 @@ class SHL(object):
                  do_precision=False,
                  l0_sparseness=29,
                  one_over_F=True,
-                 n_iter=2**10 + 1,
-                 eta=.002, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 n_iter=2**12 + 1,
+                 eta=.02, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
                  eta_homeo=0.02, alpha_homeo=.8,
-                 C=2., nb_quant=64, P_cum=None,
+                 C=5., nb_quant=256, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
@@ -317,6 +317,8 @@ class SHL(object):
                 fig, ax = self.time_plot(dico, variable='entropy', fname=fname)
             if 'time_plot_logL' in list_figures:
                 fig, ax = self.time_plot(dico, variable='logL', fname=fname)
+            if 'time_plot_MC' in list_figures:
+                fig, ax = self.time_plot(dico, variable='MC', fname=fname)
             try:
                 #if fname is None:
                 fig.show()
@@ -459,8 +461,8 @@ class SHL_set(object):
             ax_error.legend()
             if display_variable in ['aerror']:
                 ax_error.set_ylim(0)
-            if display_variable in ['error', 'qerror']:
-                ax_error.set_ylim(0, 1)
+            # if display_variable in ['error', 'qerror']:
+            #     ax_error.set_ylim(0, 1)
             # elif display_variable in ['perror']:
             #     ax_error.set_ylim(1.0)
             # elif display_variable in ['cputime']:

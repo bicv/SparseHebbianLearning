@@ -4,6 +4,7 @@ from __future__ import division, print_function, absolute_import
 from shl_scripts.shl_encode import sparse_encode
 from shl_scripts.shl_encode import quantile, rescaling
 from shl_scripts.shl_encode import inv_quantile, inv_rescaling
+from shl_scripts.shl_tools import mutual_coherence
 import time
 import numpy as np
 
@@ -414,6 +415,8 @@ def dict_learning(X, dictionary=None, precision=None,
 
         if record_each>0:
             if ii % int(record_each)==0:
+                MC = mutual_coherence(dictionary)
+
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision,
                                             algorithm=method, fit_tol=fit_tol,
@@ -456,8 +459,8 @@ def dict_learning(X, dictionary=None, precision=None,
                 thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0_sparseness_high/n_dictionary ), axis=0)
                 sparse_code_bar *= (sparse_code_bar > thr)
 
-                q = quantile(P_cum_, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
-                q_bar = quantile(P_cum_, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
+                q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
+                q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
                 aerror = np.mean(np.abs(q_bar-q))
                 perror = 1 - np.mean( (sparse_code_bar > 0) == (sparse_code_rec>0))
 
@@ -473,6 +476,7 @@ def dict_learning(X, dictionary=None, precision=None,
                                             'error':error/SD,
                                             'logL':logL,
                                             'MI':MI,
+                                            'MC':MC,
                                             'qerror':qerror/SD,
                                             'aerror':aerror,
                                             'perror':perror,

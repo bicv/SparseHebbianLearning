@@ -460,6 +460,21 @@ def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None, fig=
     if not fname is None: fig.savefig(fname, dpi=200)
     return fig, ax
 
+
+
+def mutual_coherence(dictionary):
+    """
+    returns the mutual-coherence of matrix dico
+
+    http://stemblab.github.io/mutual-coherence/
+
+    """
+    norm = np.sqrt(np.sum(dictionary**2, axis=1))
+    dictionary /= norm[:, np.newaxis]
+    Xcorr = (dictionary @ dictionary.T)
+    Xcorr[np.diag_indices_from(Xcorr)] = 0.
+    return Xcorr.max()
+
 ## To adapt with shl_exp
 def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None, fig=None, ax=None):
     """
