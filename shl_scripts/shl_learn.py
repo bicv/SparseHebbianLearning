@@ -459,9 +459,9 @@ def dict_learning(X, dictionary=None, precision=None,
                 thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0_sparseness_high/n_dictionary ), axis=0)
                 sparse_code_bar *= (sparse_code_bar > thr)
 
-                q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
-                q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
-                aerror = np.mean(np.abs(q_bar-q))
+                # q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
+                # q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
+                # aerror = np.mean(np.abs(q_bar-q))
                 perror = 1 - np.mean( (sparse_code_bar > 0) == (sparse_code_rec>0))
 
                 from shl_scripts.shl_tools import get_logL
@@ -477,8 +477,8 @@ def dict_learning(X, dictionary=None, precision=None,
                                             'logL':logL,
                                             'MI':MI,
                                             'MC':MC,
-                                            'qerror':qerror/SD,
-                                            'aerror':aerror,
+                                            # 'qerror':qerror/SD,
+                                            # 'aerror':aerror,
                                             'perror':perror,
                                             'cputime':cputime,
                                             'entropy':rel_ent}],
