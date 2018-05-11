@@ -4,6 +4,7 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 import time
 
+
 def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
                   P_cum=None, l0_sparseness=10, C=5., do_sym=False, verbose=0,
                   gain=None):
@@ -21,7 +22,8 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
         the data. Some of the algorithms assume normalized rows.
 
     precision : array of shape (n_dictionary, n_pixels)
-        A matrix giving for each dictionary its respective precision (inverse of variance)
+        A matrix giving for each dictionary its respective precision (inverse
+        of variance)
 
     algorithm : {'mp', 'lasso_lars', 'lasso_cd', 'lars', 'omp', 'threshold'}
         mp :  Matching Pursuit
@@ -118,6 +120,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
                          % algorithm)
     return sparse_code
 
+
 def rectify(code, do_sym=False, verbose=False):
     """
 
@@ -130,6 +133,7 @@ def rectify(code, do_sym=False, verbose=False):
         # ReLU
         return code*(code>0)
 
+
 def rescaling(code, C=5., do_sym=False, verbose=False):
     """
     See
@@ -141,6 +145,7 @@ def rescaling(code, C=5., do_sym=False, verbose=False):
     """
     return 1.-np.exp(-rectify(code, do_sym=do_sym)/C)
 
+
 def inv_rescaling(r, C=5.):
     """
     Inverting the rescaling
@@ -148,8 +153,8 @@ def inv_rescaling(r, C=5.):
     """
     if np.sum(r>=1) + np.sum(r<0) > 0.: print('WARNING! out of range values!')
     code = -C*np.log(1.-r)
-    #code[r==1.] = 100#np.inf
     return code
+
 
 def quantile(P_cum, p_c, stick, do_fast=True):
     """
@@ -179,6 +184,7 @@ def quantile(P_cum, p_c, stick, do_fast=True):
             q_i[i] = np.interp(p_c[i], code_bins, P_cum[i, :], left=0., right=1.)
         return q_i
 
+
 def inv_quantile(P_cum, q, do_fast=False):
     # TODO : do_fast=True
     n_dictionary, nb_quant = P_cum.shape
@@ -187,6 +193,7 @@ def inv_quantile(P_cum, q, do_fast=False):
     for i in range(n_dictionary):
         r[:, i] = np.interp(q[:, i], P_cum[i, :-1], code_bins[:-1], left=0., right=1.-.5/nb_quant)
     return r
+
 
 def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1.,
        do_sym=False, P_cum=None, do_fast=True, C=5., verbose=0, gain=None):
@@ -206,7 +213,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
     precision : array of shape (n_dictionary, n_pixels)
         A matrix giving for each dictionary its respective precision (inverse of variance)
 
-    fit_tol : criterium based on the residual error - not implem    ented yet
+    fit_tol : criterium based on the residual error - not implemented yet
 
     Returns
     -------
@@ -223,8 +230,6 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
     n_samples, n_pixels = X.shape
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
-
-    # #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
     if precision is None:
