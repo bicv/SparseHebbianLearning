@@ -441,7 +441,7 @@ def dict_learning(X, dictionary=None, precision=None,
                 qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
 
                 # calculation of generalization error
-                l0_sparseness_noise, l0_sparseness_high = 200, l0_sparseness
+                l0_sparseness_noise, l0_sparseness_high = l0_sparseness, l0_sparseness # TODO: simplify
                 sparse_code_bar = sparse_encode(X_train[indx, :], dictionary, precision,
                                             algorithm=method, fit_tol=fit_tol,
                                              P_cum=None, gain=np.ones(n_dictionary),
