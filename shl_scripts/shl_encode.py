@@ -206,7 +206,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
     precision : array of shape (n_dictionary, n_pixels)
         A matrix giving for each dictionary its respective precision (inverse of variance)
 
-    fit_tol : criterium based on the residual error - not implem    ented yet
+    fit_tol : criterium based on the residual error - not implemented yet
 
     Returns
     -------
@@ -223,8 +223,6 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
     n_samples, n_pixels = X.shape
     n_dictionary, n_pixels = dictionary.shape
     sparse_code = np.zeros((n_samples, n_dictionary))
-
-    # #if fit_tol is None: fit_tol = 0.
 
     # starting Matching Pursuit
     if precision is None:

@@ -3,7 +3,7 @@
 from __future__ import division, print_function, absolute_import
 import time
 import numpy as np
-from shl_scripts.shl_encode import sparse_encode
+from shl_scripts import sparse_encode
 from SLIP import Image
 
 toolbar_width = 40

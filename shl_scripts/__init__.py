@@ -35,7 +35,7 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
 
 
 """
-from shl_scripts import shl_tools
-from shl_scripts import shl_encode
-from shl_scripts import shl_learn
-from shl_scripts import shl_experiments
+from .shl_encode import *
+from .shl_tools import *
+from .shl_learn import *
+from .shl_experiments import *

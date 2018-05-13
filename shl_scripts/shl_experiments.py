@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
-from shl_scripts.shl_tools import get_data, touch
-from shl_scripts.shl_encode import sparse_encode
-from shl_scripts import shl_tools
+from shl_scripts import get_data, touch
+from shl_scripts import sparse_encode
 
 """
 
@@ -75,11 +74,11 @@ class SHL(object):
                  do_precision=False,
                  l0_sparseness=25,
                  one_over_F=True,
-                 n_iter=2**12 + 1,
+                 n_iter=2**10 + 1,
                  eta=.005, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
-                 eta_homeo=0.02, alpha_homeo=.8,
-                 C=5., nb_quant=256, P_cum=None,
+                 eta_homeo=0.03, alpha_homeo=.8,
+                 C=2., nb_quant=64, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
