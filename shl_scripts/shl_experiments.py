@@ -77,14 +77,14 @@ class SHL(object):
                  n_iter=2**10 + 1,
                  eta=.005, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
-                 eta_homeo=0.07, alpha_homeo=.8,
-                 C=2., nb_quant=64, P_cum=None,
+                 eta_homeo=0.07, alpha_homeo=.08,
+                 C=4., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
-                 batch_size=1024,
+                 batch_size=2**6,
                  record_each=128,
-                 record_num_batches=2**12,
+                 record_num_batches=2**10,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
@@ -415,7 +415,8 @@ class SHL_set(object):
         else:
             # We will use the ``joblib`` package do distribute this computation on different CPUs.
             from joblib import Parallel, delayed
-            Parallel(n_jobs=n_jobs, verbose=15, backend="threading")(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose) for (variable, value) in zip(variables_, values_))
+            # , backend="threading"
+            Parallel(n_jobs=n_jobs, verbose=15)(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose) for (variable, value) in zip(variables_, values_))
 
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
@@ -424,8 +425,6 @@ class SHL_set(object):
                 fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
-        values = self.get_values(variable, self.shl.__dict__[variable], N_scan, base, verbose=verbose)
-
         self.run(N_scan=N_scan, variables=[variable], base=base, n_jobs=1, verbose=verbose)
 
         if display == 'dynamic':
@@ -439,6 +438,7 @@ class SHL_set(object):
             if ax is None:
                 ax = fig.add_subplot(111)
 
+        values = self.get_values(variable, self.shl.__dict__[variable], N_scan, base, verbose=verbose)
         for value in values:
             shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose)
             dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
