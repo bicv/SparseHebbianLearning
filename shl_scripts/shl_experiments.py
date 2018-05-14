@@ -408,14 +408,14 @@ class SHL_set(object):
         if n_jobs == 1:
             for variable, value in zip(variables_, values_):
                 shl = prun(variable, value, self.data, self.opts,
-                            self.matname(variable, value), list_figures)
+                            self.matname(variable, value), list_figures, verbose)
                 dico = shl.learn_dico(data=self.data,
                             matname=self.matname(variable, value),
                             list_figures=list_figures)
         else:
             # We will use the ``joblib`` package do distribute this computation on different CPUs.
             from joblib import Parallel, delayed
-            Parallel(n_jobs=n_jobs, verbose=15, backend="threading")(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures) for (variable, value) in zip(variables_, values_))
+            Parallel(n_jobs=n_jobs, verbose=15, backend="threading")(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose) for (variable, value) in zip(variables_, values_))
 
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
@@ -503,7 +503,8 @@ def check_type(variable, value):
         value = int(value)
     return value
 
-def prun(variable, value, data, opts, matname, list_figures):
+def prun(variable, value, data, opts, matname, list_figures, verbose):
+    if verbose: print('Running variable', variable, 'with value', value)
     value = check_type(variable, value)
 
     shl = SHL(**deepcopy(opts))

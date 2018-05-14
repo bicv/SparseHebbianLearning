@@ -3,7 +3,6 @@
 from __future__ import division, print_function, absolute_import
 import time
 import numpy as np
-# from shl_scripts import sparse_encode
 from SLIP import Image
 
 toolbar_width = 40
@@ -195,6 +194,40 @@ def get_logL(sparse_code):
     #logL -= np.log(np.sum(np.exp(logL)))
     return logL
 
+def get_perror(X_train, dictionary, precision,
+                            algorithm, fit_tol,
+                             P_cum, gain,
+                             C, do_sym,
+                             l0_sparseness):
+    # calculation of generalization error
+    sparse_code_bar = shl_encode.sparse_encode(X_train, dictionary, precision,
+                            algorithm=method, fit_tol=fit_tol,
+                             P_cum=P_cum, gain=gain,
+                             C=C, do_sym=do_sym,
+                             l0_sparseness=l0_sparseness)
+    # sparse_code_bar = sparse_code_bar.T
+    # np.random.shuffle(sparse_code_bar)
+    # sparse_code_bar = sparse_code_bar.T
+    # np.random.shuffle(sparse_code_bar)
+    # sparse_code_bar = np.random.permutation(sparse_code_bar.ravel()).reshape(sparse_code_bar.shape)
+    sparse_code_bar = np.random.permutation(sparse_code_bar)
+
+    patches_bar = sparse_code_bar @ dictionary
+    sparse_code_rec = shl_encode.sparse_encode(patches_bar, dictionary, precision,
+                             algorithm=method, fit_tol=fit_tol,
+                             P_cum=P_cum, gain=gain,
+                                C=C, do_sym=do_sym,
+                             l0_sparseness=l0_sparseness)
+
+    # thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0_sparseness_high/n_dictionary ), axis=0)
+    # sparse_code_bar *= (sparse_code_bar > thr)
+
+    # q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
+    # q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
+    # aerror = np.mean(np.abs(q_bar-q))
+    perror = np.mean((sparse_code_bar > 0) == (sparse_code_rec > 0))
+    perror = 1. - perror
+    return perror
 
 def get_MI(sparse_code):
     b_ij = (sparse_code[:, np.newaxis, :] > 0) * (sparse_code[:, :, np.newaxis] > 0)
