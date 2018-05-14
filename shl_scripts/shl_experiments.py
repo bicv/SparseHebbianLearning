@@ -77,7 +77,7 @@ class SHL(object):
                  n_iter=2**10 + 1,
                  eta=.005, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
-                 eta_homeo=0.03, alpha_homeo=.8,
+                 eta_homeo=0.07, alpha_homeo=.8,
                  C=2., nb_quant=64, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -394,7 +394,7 @@ class SHL_set(object):
         return values
 
     def run(self, N_scan=None, variables=['eta'], base=1.61803, n_jobs=4,
-            list_figures=[], verbose=0):
+            list_figures=[], verbose=1):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
 
@@ -420,7 +420,8 @@ class SHL_set(object):
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
                 display='', display_variable='logL',
-                alpha=.6, color=None, label=None, fname=None, fig=None, ax=None, verbose=0):
+                alpha=.6, color=None, label=None, fname=None,
+                fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
         values = self.get_values(variable, self.shl.__dict__[variable], N_scan, base, verbose=verbose)
