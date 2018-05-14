@@ -440,7 +440,7 @@ class SHL_set(object):
                 ax = fig.add_subplot(111)
 
         for value in values:
-            shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
+            shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose)
             dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
                             list_figures=list_figures)
 

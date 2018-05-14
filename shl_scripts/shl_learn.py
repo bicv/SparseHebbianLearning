@@ -462,12 +462,8 @@ def dict_learning(X, dictionary=None, precision=None,
                                             index=[ii])
                 record = pd.concat([record, record_one])
 
-    # elif verbose==1:
-    #     print('|', end=' ')
-
     if verbose > 1:
-        dt = (time.time() - t0)
-        print('done (total time: % 3is, % 4.1fmn)' % (dt, dt / 60))
+        print('done (total time: % 3is, % 4.1fmn)' % (cputime, cputime / 60))
 
     if record_each==0:
         return dictionary, precision, P_cum
