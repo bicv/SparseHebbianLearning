@@ -93,7 +93,8 @@ class SparseHebbianLearning:
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None, #  l0_sparseness_end=None,
                  do_precision=False, do_sym=False,
-                 record_each=200, verbose=False, one_over_F=True):
+                 record_each=200, record_num_batches=2**12,
+                 verbose=False, one_over_F=True):
         self.fit_algorithm = fit_algorithm
         self.dictionary = dictionary
         self.precision = precision
@@ -116,6 +117,7 @@ class SparseHebbianLearning:
         self.fit_tol = fit_tol
         self.do_precision = do_precision
         self.record_each = record_each
+        self.record_num_batches = record_num_batches
         self.verbose = verbose
         self.one_over_F = one_over_F
 
@@ -146,7 +148,9 @@ class SparseHebbianLearning:
                                   l0_sparseness=self.l0_sparseness, #l0_sparseness_end=self.l0_sparseness_end,
                                   n_iter=self.n_iter, method=self.fit_algorithm,
                                   do_sym=self.do_sym, one_over_F=self.one_over_F,
-                                  batch_size=self.batch_size, record_each=self.record_each,
+                                  batch_size=self.batch_size,
+                                  record_each=self.record_each,
+                                  record_num_batches=self.record_num_batches,
                                   verbose=self.verbose
                                   )
 
@@ -182,7 +186,7 @@ def dict_learning(X, dictionary=None, precision=None,
                   eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
                   n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
                   do_precision=False, n_iter=100, one_over_F=True,
-                  batch_size=100, record_each=0, record_num_batches = 1000, verbose=False,
+                  batch_size=100, record_each=0, record_num_batches=2**12, verbose=False,
                   method='mp', do_sym=False):
     """
     Solves a dictionary learning matrix factorization problem online.
@@ -370,18 +374,9 @@ def dict_learning(X, dictionary=None, precision=None,
                         nb_quant=nb_quant, verbose=verbose, C=C, do_sym=do_sym)
 
         # Update dictionary: Hebbian learning
-
         gradient = - sparse_code.T @ residual
-        gradient /= batch_size # divide by the batch size to get the average in the Hebbian formula below
-
-        # TODO: should we try to modify the learning ?
-        # if not homeo_method in ['Olshausen', 'None']:
-        #     target = l0_sparseness/n_dictionary
-        #     learning_gain = np.exp(-(mean_measure/target-1.)/(1.5)) # np.exp((1/mean_measure-1)/(1 - mean_measure*l0_sparseness/n_dictionary))
-        #     #learning_gain /= learning_gain.mean()
-        #     # print(learning_gain.min(), learning_gain.max(), learning_gain.mean(), learning_gain.std())
-        #     # print(mean_measure.min(), mean_measure.max(), mean_measure.mean(), mean_measure.std(), l0_sparseness/n_dictionary)
-        #     gradient *= learning_gain[:, np.newaxis]
+        # divide by the batch size to get the average in the Hebbian learning:
+        gradient /= batch_size
 
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf
@@ -391,7 +386,6 @@ def dict_learning(X, dictionary=None, precision=None,
             energy = beta2 * energy + (1 - beta2) * (gradient**2)
             energy_ = (np.sqrt(energy / (1-beta2**(ii+1))) + epsilon)
             dictionary -= eta * (moment / (1-beta1**(ii+1))) / energy_
-
         else:
             dictionary -= eta * gradient
 
@@ -434,35 +428,40 @@ def dict_learning(X, dictionary=None, precision=None,
                 error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
 
                 # calculation of quantization error
-                stick = np.arange(n_dictionary)*nb_quant
-                q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick)
-                P_cum_mean = P_cum.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
-                q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
-                qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
+                # stick = np.arange(n_dictionary)*nb_quant
+                # q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick)
+                # P_cum_mean = P_cum.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
+                # q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
+                # qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
 
                 # calculation of generalization error
-                l0_sparseness_noise, l0_sparseness_high = 200, l0_sparseness
                 sparse_code_bar = sparse_encode(X_train[indx, :], dictionary, precision,
                                             algorithm=method, fit_tol=fit_tol,
-                                             P_cum=None, gain=np.ones(n_dictionary),
+                                             P_cum=P_cum, gain=gain,
                                              C=C, do_sym=do_sym,
-                                             l0_sparseness=l0_sparseness_noise)
+                                             l0_sparseness=l0_sparseness)
+                # sparse_code_bar = sparse_code_bar.T
+                # np.random.shuffle(sparse_code_bar)
+                # sparse_code_bar = sparse_code_bar.T
+                # np.random.shuffle(sparse_code_bar)
+                # sparse_code_bar = np.random.permutation(sparse_code_bar.ravel()).reshape(sparse_code_bar.shape)
+                sparse_code_bar = np.random.permutation(sparse_code_bar)
 
-                np.random.shuffle(sparse_code_bar)
                 patches_bar = sparse_code_bar @ dictionary
                 sparse_code_rec = sparse_encode(patches_bar, dictionary, precision,
                                              algorithm=method, fit_tol=fit_tol,
-                                             P_cum=None, gain=np.ones(n_dictionary),
-                                             C=C, do_sym=do_sym,
-                                             l0_sparseness=l0_sparseness_high)
+                                             P_cum=P_cum, gain=gain,
+                                                C=C, do_sym=do_sym,
+                                             l0_sparseness=l0_sparseness)
 
-                thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0_sparseness_high/n_dictionary ), axis=0)
-                sparse_code_bar *= (sparse_code_bar > thr)
+                # thr = np.percentile(sparse_code_bar.ravel(), 100 * (1 - l0_sparseness_high/n_dictionary ), axis=0)
+                # sparse_code_bar *= (sparse_code_bar > thr)
 
                 # q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick, do_fast=False)
                 # q_bar = quantile(P_cum, rescaling(sparse_code_bar, C=C), stick, do_fast=False)
                 # aerror = np.mean(np.abs(q_bar-q))
-                perror = 1 - np.mean( (sparse_code_bar > 0) == (sparse_code_rec>0))
+                perror = np.mean((sparse_code_bar > 0) == (sparse_code_rec > 0))
+                perror = 1. - perror
 
                 from shl_scripts.shl_tools import get_logL
                 logL = get_logL(sparse_code_rec).mean()

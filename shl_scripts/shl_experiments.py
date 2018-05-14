@@ -72,7 +72,7 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
-                 l0_sparseness=25,
+                 l0_sparseness=13,
                  one_over_F=True,
                  n_iter=2**10 + 1,
                  eta=.005, beta1=.9, beta2=.999, epsilon=1.e-8,
@@ -84,6 +84,7 @@ class SHL(object):
                  patch_norm=False,
                  batch_size=1024,
                  record_each=128,
+                 record_num_batches=2**12,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
@@ -127,6 +128,7 @@ class SHL(object):
 
         self.do_sym = do_sym
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
+        self.record_num_batches = record_num_batches
         self.verbose = verbose
         # assigning and create a folder for caching data
         self.data_cache = data_cache
@@ -196,8 +198,9 @@ class SHL(object):
     def decode(self, sparse_code, dico):
         return sparse_code @ dico.dictionary
 
-    def learn_dico(self, dictionary=None, precision=None, P_cum=None, data=None,
-                   matname=None, record_each=None, folder_exp=None, list_figures=[], fname=None):
+    def learn_dico(self, dictionary=None, precision=None, P_cum=None,
+                   data=None, matname=None, record_each=None, folder_exp=None,
+                   list_figures=[], fname=None):
 
         if data is None: data = self.get_data(matname=matname)
 
@@ -220,11 +223,14 @@ class SHL(object):
                                          nb_quant=self.nb_quant,
                                          P_cum=self.P_cum,
                                          n_iter=self.n_iter,
-                                         l0_sparseness=self.l0_sparseness, one_over_F=self.one_over_F,
-                                        #  l0_sparseness_end=self.l0_sparseness_end,
-                                         batch_size=self.batch_size, verbose=self.verbose,
+                                         l0_sparseness=self.l0_sparseness,
+                                         one_over_F=self.one_over_F,
+                                         batch_size=self.batch_size,
+                                         verbose=self.verbose,
                                          fit_tol=self.fit_tol,
-                                         do_precision=self.do_precision, record_each=self.record_each,
+                                         do_precision=self.do_precision,
+                                         record_each=self.record_each,
+                                         record_num_batches=self.record_num_batches,
 )
 
             if self.verbose: print('Training on %d patches' % len(data))
@@ -381,7 +387,8 @@ class SHL_set(object):
             label = '%d' % value
         return  self.tag + ' - {}={}'.format(variable, label)
 
-    def run(self, N_scan=None, variables=['eta'], base=4, n_jobs=14, list_figures=[], verbose=0):
+    def run(self, N_scan=None, variables=['eta'], base=1.61803, n_jobs=4,
+            list_figures=[], verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
 
@@ -391,7 +398,7 @@ class SHL_set(object):
                 values = np.logspace(-1., 1., N_scan, base=base)*median
                 values = [check_type(variable, value) for value in values]
                 for value in values:
-                    shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
+                    shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
                     dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
                                 list_figures=list_figures)
         else:
@@ -403,7 +410,7 @@ class SHL_set(object):
 
             # We will use the ``joblib`` package do distribute this computation on different CPUs.
             from joblib import Parallel, delayed
-            Parallel(n_jobs=n_jobs, verbose=15)(delayed(run)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures) for (variable, value) in zip(variables_, values_))
+            Parallel(n_jobs=n_jobs, verbose=15, backend="threading")(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures) for (variable, value) in zip(variables_, values_))
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
                 display='', display_variable='logL',
@@ -429,7 +436,7 @@ class SHL_set(object):
                 ax = fig.add_subplot(111)
 
         for value in values:
-            shl = run(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
+            shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), list_figures)
             dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
                             list_figures=list_figures)
 
@@ -492,7 +499,7 @@ def check_type(variable, value):
         value = int(value)
     return value
 
-def run(variable, value, data, opts, matname, list_figures):
+def prun(variable, value, data, opts, matname, list_figures):
     value = check_type(variable, value)
 
     shl = SHL(**deepcopy(opts))
@@ -500,7 +507,6 @@ def run(variable, value, data, opts, matname, list_figures):
     # if verbose: print('DEBUG:', shl.__dict__, self.shl.__dict__)
     if variable in ['patch_width']:
         data = shl.get_data(**{variable:value})
-
     dico = shl.learn_dico(data=data, matname=matname,
                 list_figures=list_figures)
     return shl
