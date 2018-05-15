@@ -36,8 +36,8 @@ Installation
 
 * Be sure to have dependencies installed::
 
-   pip3 install -U git+https://github.com/NeuralEnsemble/NeuroTools.git
-   pip3 install -U git+https://github.com/bicv/SLIP.git
+   pip3 install -U NeuroTools
+   pip3 install -U SLIP
 
 * Then, either install the code directly::
 
