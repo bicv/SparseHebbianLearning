@@ -82,8 +82,8 @@ class SHL(object):
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
-                 batch_size=2**6,
-                 record_each=128,
+                 batch_size=2**10,
+                 record_each=32,
                  record_num_batches=2**10,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
@@ -372,7 +372,7 @@ class SHL_set(object):
         - quantitative analysis
 
     """
-    def __init__(self, opts, tag='default', data_matname='data', N_scan=7):
+    def __init__(self, opts, tag='default', data_matname='data', N_scan=9):
         self.opts = deepcopy(opts)
         self.tag = tag
         self.N_scan = N_scan
