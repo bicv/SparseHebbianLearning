@@ -3,6 +3,10 @@
 from __future__ import division, print_function, absolute_import
 import time
 import numpy as np
+<<<<<<< HEAD
+=======
+# from shl_scripts import sparse_encode
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
 from SLIP import Image
 from shl_scripts import sparse_encode
 
@@ -195,6 +199,7 @@ def get_logL(sparse_code):
     #logL -= np.log(np.sum(np.exp(logL)))
     return logL
 
+<<<<<<< HEAD
 def get_perror(X_train, dictionary, precision, algorithm, fit_tol,
                   P_cum, gain, C, do_sym, l0_sparseness):
     # calculation of generalization error
@@ -226,6 +231,8 @@ def get_perror(X_train, dictionary, precision, algorithm, fit_tol,
     perror = np.mean((sparse_code_bar > 0) == (sparse_code_rec > 0))
     perror = 1. - perror
     return perror
+=======
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
 
 def get_MI(sparse_code):
     b_ij = (sparse_code[:, np.newaxis, :] > 0) * (sparse_code[:, :, np.newaxis] > 0)
@@ -449,7 +456,11 @@ def plot_coeff_distribution(dico, data, title=None, algorithm=None, fname=None, 
     """
 
     if algorithm is not None:
+<<<<<<< HEAD
         sparse_code = sparse_encode(data, dico.dictionary, algorithm=algorithm)
+=======
+        sparse_code = shl_encode.sparse_encode(data, dico.dictionary, algorithm=algorithm)
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
     else:
         sparse_code = dico.transform(data)
     res_lst = np.count_nonzero(sparse_code, axis=0)
@@ -495,7 +506,11 @@ def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None, fig=
     and the one which is selected the less
     """
     if (algorithm is not None) and (data is not None):
+<<<<<<< HEAD
         sparse_code = sparse_encode(data, dico.dictionary, algorithm=algorithm)
+=======
+        sparse_code = shl_encode.sparse_encode(data, dico.dictionary, algorithm=algorithm)
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
     else:
         sparse_code = shl_exp.coding
     nb_filter_selection = np.count_nonzero(sparse_code, axis=0)
@@ -547,7 +562,11 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None, fig=N
     and the corresponding gaussian one
     """
     if algorithm is not None:
+<<<<<<< HEAD
         sparse_code = sparse_encode(data, dico.dictionary, algorithm=algorithm)
+=======
+        sparse_code = shl_encode.sparse_encode(data, dico.dictionary, algorithm=algorithm)
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
     else:
         sparse_code = shl_encode.code(data)
     Z = np.mean(sparse_code**2)

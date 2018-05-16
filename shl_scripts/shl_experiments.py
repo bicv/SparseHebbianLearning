@@ -77,8 +77,13 @@ class SHL(object):
                  n_iter=2**10 + 1,
                  eta=.005, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
+<<<<<<< HEAD
                  eta_homeo=0.07, alpha_homeo=.08,
                  C=4., nb_quant=128, P_cum=None,
+=======
+                 eta_homeo=0.03, alpha_homeo=.8,
+                 C=2., nb_quant=64, P_cum=None,
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
@@ -230,7 +235,10 @@ class SHL(object):
                                          fit_tol=self.fit_tol,
                                          do_precision=self.do_precision,
                                          record_each=self.record_each,
+<<<<<<< HEAD
                                          record_num_batches=self.record_num_batches,
+=======
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
 )
 
             if self.verbose: print('Training on %d patches' % len(data))
@@ -387,6 +395,7 @@ class SHL_set(object):
             label = '%d' % value
         return  self.tag + ' - {}={}'.format(variable, label)
 
+<<<<<<< HEAD
     def get_values(self, variable, median, N_scan, base, verbose=False):
         values = np.logspace(-1., 1., N_scan, base=base)*median
         values = [check_type(variable, value) for value in values]
@@ -395,6 +404,10 @@ class SHL_set(object):
 
     def run(self, N_scan=None, variables=['eta'], base=1.61803, n_jobs=4,
             list_figures=[], verbose=1):
+=======
+    def run(self, N_scan=None, variables=['eta'], base=1.61803, n_jobs=4,
+            list_figures=[], verbose=0):
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
 
@@ -415,9 +428,13 @@ class SHL_set(object):
         else:
             # We will use the ``joblib`` package do distribute this computation on different CPUs.
             from joblib import Parallel, delayed
+<<<<<<< HEAD
             # , backend="threading"
             Parallel(n_jobs=n_jobs, verbose=15)(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose) for (variable, value) in zip(variables_, values_))
 
+=======
+            Parallel(n_jobs=n_jobs, verbose=15, backend="threading")(delayed(run)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures) for (variable, value) in zip(variables_, values_))
+>>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
 
     def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
                 display='', display_variable='logL',
