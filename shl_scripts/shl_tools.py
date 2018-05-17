@@ -238,6 +238,23 @@ def get_MI(sparse_code):
     MI_[(P_i[:, np.newaxis]*P_i[np.newaxis, :]) == 0] = 0
     return MI_.sum()
 
+def get_KL(p_true, p_obs, do_scipy=False):
+    if p_true.sum()==0 or p_obs.sum()==0:
+        return '>X>X>X KL function:  problem with null histograms! <X<X<X<'
+    if not p_true.sum()==1 or not p_obs.sum()==1:
+        return '>X>X>X KL function:  problem with non normalized histograms! <X<X<X<'
+    if not do_scipy:
+        # p_true /= p_true.sum(axis=-1)
+        # p_obs /= p_obs.sum(axis=-1)
+        surprise = np.log2(p_true/p_obs)
+        surprise[p_true == 0] = 0
+        surprise[p_obs == 0] = 0
+        kl = np.sum(p_true*surprise, axis=-1)
+        return kl
+    else:
+        from scipy.stats import entropy
+        return entropy(p_obs.T, p_true.T, base=2)
+
 
 def print_stats(data, dictionary, sparse_code, max_patches=10, N_show=120, display=True, verbose=True):
     if display:
