@@ -509,7 +509,7 @@ def homeostasis(mean_measure, P_cum, gain,
             p_threshold = target*(1+alpha_homeo)
             gain = 1. * (mean_measure < p_threshold)
 
-    elif homeo_method=='Olshausen':
+    elif homeo_method=='OLS':
         # compute statistics on the variance of coefficients
         if mean_measure is None:
             mean_measure = update_measure(np.zeros(n_dictionary), sparse_code,

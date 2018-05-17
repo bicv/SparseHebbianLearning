@@ -333,11 +333,12 @@ def show_dico_in_order(shl_exp, dico, data=None, title=None, fname=None, dpi=200
     Filter which are selected more often than others are located at the end
 
     """
-    return show_dico(shl_exp, dico=dico, data=data, order=True, title=title, fname=fname, dpi=dpi, **kwargs)
+    return show_dico(shl_exp, dico=dico, data=data, dim_graph=None,
+                     order=True, title=title, fname=fname, dpi=dpi, **kwargs)
 
 
-def show_dico(shl_exp, dico,  data=None, order=False, title=None,
-              do_tiles=False, fname=None, dpi=200, fig=None, ax=None):
+def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None,
+                 do_tiles=False, fname=None, dpi=200, fig=None, ax=None):
     """
     display the dictionary in a random order
     """
@@ -345,15 +346,19 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None,
     subplotpars = matplotlib.figure.SubplotParams(
         left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
 
-    dim_graph = dico.dictionary.shape[0]
+    n_dictionary = dico.dictionary.shape[0]
+    if dim_graph is None:
+        dim_graph = int(np.ceil(np.sqrt(n_dictionary)))
+        dim_graph = (dim_graph, dim_graph)
+    dim_patch = int(np.sqrt(dico.dictionary.shape[1]))
+
     if order:
         # order by activation probability
         sparse_code = shl_exp.code(data=data, dico=dico)
         res_lst = np.count_nonzero(sparse_code, axis=0)
         indices = res_lst.argsort()
     else:
-        indices = range(dim_graph)
-    dim_patch = int(np.sqrt(dico.dictionary.shape[1]))
+        indices = range(np.prod(dim_graph))
 
     import matplotlib.pyplot as plt
     if fig is None:
@@ -362,8 +367,8 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None,
         ax = fig.add_subplot(111)
 
     if do_tiles:
-        for i in range(dim_graph):
-            ax = fig.add_subplot(np.ceil(np.sqrt(dim_graph)), np.ceil(np.sqrt(dim_graph)), i + 1)
+        for i in range(np.prod(dim_graph)):
+            ax = fig.add_subplot(dim_graph[0], dim_graph[1], i + 1)
             dico_to_display = dico.dictionary[indices[i]]
             cmax = np.max(np.abs(dico_to_display))
             if not dico.precision is None:
@@ -388,12 +393,12 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None,
             ax.set_xticks(())
             ax.set_yticks(())
     else:
-        N_col = int(np.ceil(np.sqrt(dim_graph)))
-        image = -np.ones((N_col*(dim_patch+1)+1, N_col*(dim_patch+1)+1))
-        for i in range(dim_graph):
+        # backgroung image
+        image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1))
+        for i in range(np.prod(dim_graph)):
             dico_to_display = dico.dictionary[indices[i]].reshape((dim_patch, dim_patch))
             cmax = np.max(np.abs(dico_to_display))
-            i_col, i_row = i % N_col, i // N_col
+            i_col, i_row = i % dim_graph[1], i // dim_graph[1]
             image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1)                  :((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
 
         if not dico.precision is None:
