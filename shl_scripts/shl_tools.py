@@ -300,9 +300,9 @@ def compute_RMSE(data, dico):
     return rmse
 
 
-def compute_KL(data, dico):
+def compute_distance(data, dico):
     """
-    Compute the Kullback Leibler ratio to compare a distribution to its gaussian equivalent.
+    Compute the distance of a distribution from its gaussian equivalent.
     if the KL is close to 1, the studied distribution is closed to a gaussian
     """
     sparse_code = dico.transform(data)
@@ -310,8 +310,8 @@ def compute_KL(data, dico):
     P_norm = np.mean(sparse_code**2, axis=0)  # /Z
     mom1 = np.sum(P_norm)/dico.dictionary.shape[0]
     mom2 = np.sum((P_norm-mom1)**2)/(dico.dictionary.shape[0]-1)
-    KL = 1/N * np.sum((P_norm-mom1)**2 / mom2**2)
-    return KL
+    distance = 1/N * np.sum((P_norm-mom1)**2 / mom2**2)
+    return distance
 
 
 def compute_kurto(data, dico):
@@ -668,25 +668,27 @@ def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None)
     return fig, ax
 
 
-def plot_P_cum(P_cum, ymin=0.95, title=None, verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
+def plot_P_cum(P_cum, ymin=0.95, ymax=1.001, title='non-linear functions', suptitle=None, ylabel='quantile', verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 8))
     if ax is None:
         ax = fig.add_subplot(111)
     coefficients = np.linspace(0, 1, P_cum.shape[1])
-    ax.plot(coefficients, np.ones_like(coefficients), '--')
+    if ymax>1.:
+        ax.plot(coefficients, np.ones_like(coefficients), '--')
     ax.plot(coefficients, P_cum.T, c=c, alpha=alpha)
-    ax.set_title(' non-linear functions ')
+    if title is not None:
+        ax.set_title(title)
     ax.set_xlabel('rescaled coefficients')
-    ax.set_ylabel('quantile')
+    ax.set_ylabel(ylabel)
     # ax.set_xlim(0)
     ax.set_yticks(np.linspace(0, 1, n_yticks))
     ax.axis('tight')
-    ax.set_ylim(ymin, 1.001)
+    ax.set_ylim(ymin, ymax)
 
-    if title is not None:
-        fig.suptitle(title, fontsize=12, backgroundcolor='white', color='k')
+    if suptitle is not None:
+        fig.suptitle(suptitle, fontsize=12, backgroundcolor='white', color='k')
     return fig, ax
 
 #import seaborn as sns
