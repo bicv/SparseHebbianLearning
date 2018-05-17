@@ -712,7 +712,8 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True
     return fig, ax
 
 
-def time_plot(shl_exp, dico, variable='kurt', N_nosample=0, alpha=.6, color=None, label=None, fname=None, fig=None, ax=None):
+def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
+                color=None, label=None, fname=None, fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(16, 4))
@@ -737,7 +738,10 @@ def time_plot(shl_exp, dico, variable='kurt', N_nosample=0, alpha=.6, color=None
 
     # print(learning_time, A[:, :-N_nosample].shape, df_variable[ind])
     ax.plot(learning_time, A, '-', lw=1, alpha=alpha, color=color, label=label)
-    ax.set_ylabel(variable)
+    if unit is None:
+        ax.set_ylabel(variable)
+    else:
+        ax.set_ylabel(variable + '(' + unit + ')')
     ax.set_xlabel('Learning step')
     ax.set_xlim(0, dico.n_iter)
     # if variable=='entropy' :
