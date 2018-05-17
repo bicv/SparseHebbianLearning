@@ -433,7 +433,6 @@ def dict_learning(X, dictionary=None, precision=None,
                 error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
 
                 # calculation of quantization error
-<<<<<<< HEAD
                 # stick = np.arange(n_dictionary)*nb_quant
                 # q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick)
                 # P_cum_mean = P_cum.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
@@ -442,17 +441,6 @@ def dict_learning(X, dictionary=None, precision=None,
 
                 from shl_scripts.shl_tools import get_perror
                 perror = get_perror(X_train[indx, :], dictionary, precision,
-=======
-                stick = np.arange(n_dictionary)*nb_quant
-                q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick)
-                P_cum_mean = P_cum.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
-                q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
-                qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
-
-                # calculation of generalization error
-                l0_sparseness_noise, l0_sparseness_high = l0_sparseness, l0_sparseness # TODO: simplify
-                sparse_code_bar = sparse_encode(X_train[indx, :], dictionary, precision,
->>>>>>> 939433970198821d7dd603e697a5f907ec7db52e
                                             algorithm=method, fit_tol=fit_tol,
                                              P_cum=P_cum, gain=gain,
                                              C=C, do_sym=do_sym,
@@ -466,7 +454,7 @@ def dict_learning(X, dictionary=None, precision=None,
                                             'logL':logL,
                                             'MI':MI,
                                             'MC':MC,
-                                            'qerror':qerror/SD,
+                                            #'qerror':qerror/SD,
                                             # 'aerror':aerror,
                                             'perror':perror,
                                             'cputime':cputime,
