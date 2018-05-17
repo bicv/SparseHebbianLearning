@@ -239,13 +239,14 @@ def get_MI(sparse_code):
     return MI_.sum()
 
 def get_KL(p_true, p_obs, do_scipy=False):
-    if p_true.sum()==0 or p_obs.sum()==0:
+    if p_true.sum()==0. or p_obs.sum()==0.:
         return '>X>X>X KL function:  problem with null histograms! <X<X<X<'
-    if not p_true.sum()==1 or not p_obs.sum()==1:
-        return '>X>X>X KL function:  problem with non normalized histograms! <X<X<X<'
+    # if not (p_true.sum()==1. and p_obs.sum()==1.):
+    #     print(p_true.sum(), p_obs.sum())
+    #     return '>X>X>X KL function:  problem with non normalized histograms! <X<X<X<'
     if not do_scipy:
-        # p_true /= p_true.sum(axis=-1)
-        # p_obs /= p_obs.sum(axis=-1)
+        p_true /= p_true.sum()
+        p_obs /= p_obs.sum()
         surprise = np.log2(p_true/p_obs)
         surprise[p_true == 0] = 0
         surprise[p_obs == 0] = 0
@@ -254,6 +255,10 @@ def get_KL(p_true, p_obs, do_scipy=False):
     else:
         from scipy.stats import entropy
         return entropy(p_obs.T, p_true.T, base=2)
+
+
+def get_KS(P_true, P_obs):
+    return np.abs(P_true-P_obs).sum(axis=1)
 
 
 def print_stats(data, dictionary, sparse_code, max_patches=10, N_show=120, display=True, verbose=True):
@@ -730,15 +735,7 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True
     ax.axis('equal')
     return fig, ax
 
-
-def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
-                color=None, label=None, fname=None, fig=None, ax=None):
-    import matplotlib.pyplot as plt
-    if fig is None:
-        fig = plt.figure(figsize=(16, 4))
-    if ax is None:
-        ax = fig.add_subplot(111)
-
+def get_record(dico, variable, N_nosample):
     # try:
     df_variable = dico.record[variable]
     learning_time = np.array(df_variable.index)  # np.arange(0, dico.n_iter, dico.record_each)
@@ -754,6 +751,23 @@ def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
         for ii, ind in enumerate(df_variable.index):
             A[ii, :] = df_variable[ind]
         A = A[:, :-N_nosample]
+    return learning_time, A
+
+def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
+                color=None, label=None, fname=None, fig=None, ax=None):
+    import matplotlib.pyplot as plt
+    if fig is None:
+        fig = plt.figure(figsize=(16, 4))
+    if ax is None:
+        ax = fig.add_subplot(111)
+
+    if variable=='F':
+        # print('HACK')
+        learning_time, A1 = get_record(dico, 'error', N_nosample)
+        learning_time, A2 = get_record(dico, 'qerror', N_nosample)
+        A = 80.*A1 + .3*A2
+    else:
+        learning_time, A = get_record(dico, variable, N_nosample)
 
     # print(learning_time, A[:, :-N_nosample].shape, df_variable[ind])
     ax.plot(learning_time, A, '-', lw=1, alpha=alpha, color=color, label=label)

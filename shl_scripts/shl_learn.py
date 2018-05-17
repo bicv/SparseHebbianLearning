@@ -435,9 +435,11 @@ def dict_learning(X, dictionary=None, precision=None,
                 # calculation of quantization error
                 # stick = np.arange(n_dictionary)*nb_quant
                 # q = quantile(P_cum, rescaling(sparse_code_rec, C=C), stick)
-                # P_cum_mean = P_cum.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
+                P_cum_mean = P_cum.mean(axis=0)[np.newaxis, :] * np.ones((n_dictionary, nb_quant))
                 # q_sparse_code = inv_rescaling(inv_quantile(P_cum_mean, q), C=C)
                 # qerror = np.linalg.norm(X_train[indx, :] - (q_sparse_code @ dictionary))/record_num_batches
+                from shl_scripts import get_KS
+                qerror = np.sum(get_KS(P_cum_mean, P_cum))
 
                 from shl_scripts.shl_tools import get_perror
                 perror = get_perror(X_train[indx, :], dictionary, precision,
@@ -454,7 +456,7 @@ def dict_learning(X, dictionary=None, precision=None,
                                             'logL':logL,
                                             'MI':MI,
                                             'MC':MC,
-                                            #'qerror':qerror/SD,
+                                            'qerror':qerror,
                                             # 'aerror':aerror,
                                             'perror':perror,
                                             'cputime':cputime,
