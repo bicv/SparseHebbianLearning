@@ -75,9 +75,9 @@ class SHL(object):
                  l0_sparseness=13,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=.005, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.01, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
-                 eta_homeo=0.07, alpha_homeo=.08,
+                 eta_homeo=0.02, alpha_homeo=.08,
                  C=4., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -453,9 +453,12 @@ class SHL_set(object):
             elif display == 'final':
                 try:
                     # print (dico.record['cputime'])
-                    df_variable = dico.record[display_variable]
+                    # df_variable = dico.record[display_variable]
                     # learning_time = np.array(df_variable.index)
-                    results.append(df_variable[df_variable.index[-1]])
+
+                    learning_time, A = get_record(dico, display_variable, 0)
+
+                    results.append(A[-1])
                 except Exception as e:
                     print('While processing ', self.matname(variable, value), self.shl.LOCK)
                     print('We encountered error', e, ' with', dico)

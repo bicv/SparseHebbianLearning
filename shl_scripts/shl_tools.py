@@ -736,21 +736,28 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True
     return fig, ax
 
 def get_record(dico, variable, N_nosample):
-    # try:
-    df_variable = dico.record[variable]
-    learning_time = np.array(df_variable.index)  # np.arange(0, dico.n_iter, dico.record_each)
-    # if df_variable.ndim==1:
-    #     print(df_variable.index, variable, df_variable.ndim)
-    try:
-        A = np.zeros((len(df_variable.index)))
-        for ii, ind in enumerate(df_variable.index):
-            # print(df_==variable[ind].shape)
-            A[ii] = df_variable[ind]
-    except:
-        A = np.zeros((len(df_variable.index), dico.n_dictionary))
-        for ii, ind in enumerate(df_variable.index):
-            A[ii, :] = df_variable[ind]
-        A = A[:, :-N_nosample]
+    if variable=='F':
+        # print('HACK')
+        learning_time, A1 = get_record(dico, 'error', N_nosample)
+        learning_time, A2 = get_record(dico, 'qerror', N_nosample)
+        A = 80.*A1 + .3*A2
+    else:
+        # try:
+        df_variable = dico.record[variable]
+        learning_time = np.array(df_variable.index)  # np.arange(0, dico.n_iter, dico.record_each)
+        # if df_variable.ndim==1:
+        #     print(df_variable.index, variable, df_variable.ndim)
+        try:
+            A = np.zeros((len(df_variable.index)))
+            for ii, ind in enumerate(df_variable.index):
+                # print(df_==variable[ind].shape)
+                A[ii] = df_variable[ind]
+        except:
+            A = np.zeros((len(df_variable.index), dico.n_dictionary))
+            for ii, ind in enumerate(df_variable.index):
+                A[ii, :] = df_variable[ind]
+            A = A[:, :-N_nosample]
+
     return learning_time, A
 
 def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
@@ -761,13 +768,7 @@ def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
     if ax is None:
         ax = fig.add_subplot(111)
 
-    if variable=='F':
-        # print('HACK')
-        learning_time, A1 = get_record(dico, 'error', N_nosample)
-        learning_time, A2 = get_record(dico, 'qerror', N_nosample)
-        A = 80.*A1 + .3*A2
-    else:
-        learning_time, A = get_record(dico, variable, N_nosample)
+    learning_time, A = get_record(dico, variable, N_nosample)
 
     # print(learning_time, A[:, :-N_nosample].shape, df_variable[ind])
     ax.plot(learning_time, A, '-', lw=1, alpha=alpha, color=color, label=label)
