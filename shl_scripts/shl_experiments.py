@@ -72,10 +72,10 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
-                 l0_sparseness=13,
+                 l0_sparseness=21,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=0.01, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.003, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
                  eta_homeo=0.02, alpha_homeo=.08,
                  C=4., nb_quant=128, P_cum=None,
@@ -362,6 +362,8 @@ class SHL(object):
         return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
 
 from copy import deepcopy
+from shl_scripts import get_record
+
 class SHL_set(object):
     """
 
