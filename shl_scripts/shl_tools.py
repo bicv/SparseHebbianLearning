@@ -740,7 +740,7 @@ def get_record(dico, variable, N_nosample):
         # print('HACK')
         learning_time, A1 = get_record(dico, 'error', N_nosample)
         learning_time, A2 = get_record(dico, 'qerror', N_nosample)
-        A = 80.*A1 + .3*A2
+        A = 61.803*A1 + .15*A2
     else:
         # try:
         df_variable = dico.record[variable]
@@ -775,7 +775,7 @@ def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
     if unit is None:
         ax.set_ylabel(variable)
     else:
-        ax.set_ylabel(variable + '(' + unit + ')')
+        ax.set_ylabel(variable + ' (' + unit + ')')
     ax.set_xlabel('Learning step')
     ax.set_xlim(0, dico.n_iter)
     # if variable=='entropy' :

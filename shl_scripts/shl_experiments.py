@@ -72,13 +72,13 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=False,
-                 l0_sparseness=21,
+                 l0_sparseness=13,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=0.003, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.007, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
                  eta_homeo=0.02, alpha_homeo=.08,
-                 C=4., nb_quant=128, P_cum=None,
+                 C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
@@ -374,10 +374,11 @@ class SHL_set(object):
         - quantitative analysis
 
     """
-    def __init__(self, opts, tag='default', data_matname='data', N_scan=9):
+    def __init__(self, opts, tag='default', data_matname='data', base=4., N_scan=9):
         self.opts = deepcopy(opts)
         self.tag = tag
         self.N_scan = N_scan
+        self.base = base
         self.shl = SHL(**deepcopy(self.opts))
         self.data = self.shl.get_data(matname='data')
 
@@ -389,14 +390,14 @@ class SHL_set(object):
             label = '%d' % value
         return  self.tag + ' - {}={}'.format(variable, label)
 
-    def get_values(self, variable, median, N_scan, base, verbose=False):
-        values = np.logspace(-1., 1., N_scan, base=base)*median
+    def get_values(self, variable, median, N_scan, verbose=False):
+        values = np.logspace(-1., 1., N_scan, base=self.base)*median
         values = [check_type(variable, value) for value in values]
         if verbose: print('DEBUG:', variable, median, values)
         return values
 
-    def run(self, N_scan=None, variables=['eta'], base=1.61803, n_jobs=4,
-            list_figures=[], verbose=1):
+    def run(self, N_scan=None, variables=['eta'], n_jobs=1,
+            list_figures=[], verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
 
@@ -404,7 +405,7 @@ class SHL_set(object):
         variables_, values_ = [], np.zeros(N_scan*len(variables))
         for i, variable in enumerate(variables):
             variables_.extend([variable] * N_scan)
-            values = self.get_values(variable, self.shl.__dict__[variable], N_scan, base, verbose=verbose)
+            values = self.get_values(variable, self.shl.__dict__[variable], N_scan, verbose=verbose)
             values_[(i*N_scan):((i+1)*N_scan)] = values
 
         if n_jobs == 1:
@@ -420,13 +421,13 @@ class SHL_set(object):
             # , backend="threading"
             Parallel(n_jobs=n_jobs, verbose=15)(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose) for (variable, value) in zip(variables_, values_))
 
-    def scan(self, N_scan=None, variable='eta', list_figures=[], base=4,
+    def scan(self, N_scan=None, variable='eta', list_figures=[],
                 display='', display_variable='logL',
                 alpha=.6, color=None, label=None, fname=None,
                 fig=None, ax=None, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
-        self.run(N_scan=N_scan, variables=[variable], base=base, n_jobs=1, verbose=verbose)
+        self.run(N_scan=N_scan, variables=[variable], n_jobs=1, verbose=verbose)
 
         if display == 'dynamic':
             import matplotlib.pyplot as plt
@@ -439,7 +440,7 @@ class SHL_set(object):
             if ax is None:
                 ax = fig.add_subplot(111)
 
-        values = self.get_values(variable, self.shl.__dict__[variable], N_scan, base, verbose=verbose)
+        values = self.get_values(variable, self.shl.__dict__[variable], N_scan, verbose=verbose)
         for value in values:
             shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose)
             dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
