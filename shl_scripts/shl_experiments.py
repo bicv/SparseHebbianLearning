@@ -63,7 +63,7 @@ class SHL(object):
                  patch_width=18,
                  N_patches=2**16,
                  datapath='../database/',
-                 name_database='kodakdb',
+                 name_database='kodakdb', # TODO : fing a larger, more homogeneous database?
                  #name_database='laurent',
                  do_mask=True, do_bandpass=True,
                  over_patches=16,
