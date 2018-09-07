@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*
 from __future__ import division, print_function, absolute_import
-from shl_scripts.shl_tools import get_data, touch
-from shl_scripts.shl_encode import sparse_encode
-from shl_scripts import shl_tools
+from shl_scripts import get_data, touch
+from shl_scripts import sparse_encode
 
 """
 
@@ -12,8 +11,8 @@ Learning filters from natural images using sparse coding
 ========================================================
 
 * When imposing a code representing patches from natural images to be sparse,
-one observes the formation of filters ressembling the receptive field of simple
-cells in primates primary visual cortex.  This was first proposed in the
+one observes the formation of filters resembling the receptive field of simple
+cells in primates primary visual cortex. This was first proposed in the
 framework of the SparseNet algorithm from Bruno Olshausen
 (http://redwood.berkeley.edu/bruno/sparsenet/).
 
@@ -29,7 +28,9 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
         Journal = {Neural Computation},
         Volume = {22},
         Number = {7},
-        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images, Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit, Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
+        Keywords = {Neural population coding, Unsupervised learning, Statistics of natural images,
+        Simple cell receptive fields, Sparse Hebbian Learning, Adaptive Matching Pursuit,
+        Cooperative Homeostasis, Competition-Optimized Matching Pursuit},
         Month = {July},
         }
 
@@ -37,15 +38,8 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
 """
 
 import time
-import os
-
 toolbar_width = 40
-
-# import matplotlib
-
 import numpy as np
-# see https://github.com/bicv/SLIP/blob/master/SLIP.ipynb
-from SLIP import Image
 
 import warnings
 warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -66,67 +60,84 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_size=(16, 16),
-                 #datapath=os.path.join(home, 'quantic/science/BICV/SLIP/database/'), #'database/',
-                 datapath='database/',
-                 name_database='kodakdb',
-                 n_dictionary=18**2,
+                 patch_width=18,
+                 N_patches=2**16,
+                 datapath='../database/',
+                 name_database='kodakdb', # TODO : fing a larger, more homogeneous database?
+                 #name_database='laurent',
+                 do_mask=True, do_bandpass=True,
+                 over_patches=16,
+                 patch_ds=1,
+                 n_dictionary=21**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 do_precision=True,
-                 do_mask=True,
-                 l0_sparseness=16,
-                 n_iter=2**14,
-                 eta=.05,
-                 eta_homeo=.05, nb_quant=128, C=5., do_sym=False,
-                 alpha_homeo=0.05,
-                 max_patches=4096,
+                 do_precision=False,
+                 l0_sparseness=13,
+                 one_over_F=True,
+                 n_iter=2**10 + 1,
+                 eta=0.007, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 homeo_method='HAP',
+                 eta_homeo=0.02, alpha_homeo=.08,
+                 C=3., nb_quant=128, P_cum=None,
+                 do_sym=False,
                  seed=42,
-                 patch_norm=True,
-                 batch_size=128,
-                 record_each=128,
-                 n_image=None, #200,
+                 patch_norm=False,
+                 batch_size=2**10,
+                 record_each=32,
+                 record_num_batches=2**10,
+                 n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='data_cache', # os.path.join(home, 'tmp/data_cache'),
-                 do_HAP=True):
+                 cache_dir='cache_dir',
+                ):
         self.height = height
         self.width = width
+        self.patch_width = patch_width
+        self.patch_ds = patch_ds
+        self.N_patches = int(N_patches/DEBUG_DOWNSCALE)
         self.datapath = datapath
-        self.patch_size = patch_size
+        self.name_database = name_database
         self.n_dictionary = n_dictionary
+        self.learning_algorithm = learning_algorithm
         self.n_iter = int(n_iter/DEBUG_DOWNSCALE)
-        self.max_patches = int(max_patches/DEBUG_DOWNSCALE)
-        self.name_database = name_database #[0],
-        self.seed = seed,
-        self.patch_norm = patch_norm,
+        self.seed = seed
+        self.patch_norm = patch_norm
         if not n_image is None:
             self.n_image = int(n_image/DEBUG_DOWNSCALE)
         else:
             self.n_image = None
         self.batch_size = batch_size
-        self.learning_algorithm = learning_algorithm
         self.fit_tol = fit_tol
         self.do_precision = do_precision
         self.do_mask = do_mask
+        self.do_bandpass = do_bandpass
+        self.over_patches = over_patches
 
         self.l0_sparseness = l0_sparseness
+        # self.l0_sparseness_end = l0_sparseness_end
         self.eta = eta
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
+        self.homeo_method = homeo_method
         self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
-        self.nb_quant = nb_quant
         self.C = C
-        self.do_sym = do_sym
+        self.nb_quant = nb_quant
+        self.P_cum = P_cum
 
+        self.do_sym = do_sym
         self.record_each = int(record_each/DEBUG_DOWNSCALE)
+        self.record_num_batches = record_num_batches
         self.verbose = verbose
         # assigning and create a folder for caching data
-        self.data_cache = data_cache
-        self.do_HAP = do_HAP
+        self.cache_dir = cache_dir
 
-        if not self.data_cache is None:
+        self.one_over_F = one_over_F
+
+        if not self.cache_dir is None:
             try:
-                os.mkdir(self.data_cache)
+                os.mkdir(self.cache_dir)
             except:
                 pass
 
@@ -134,21 +145,18 @@ class SHL(object):
         PID, HOST = os.getpid(), os.uname()[1]
         self.LOCK = '_lock' + '_pid-' + str(PID) + '_host-' + HOST
 
-    def get_data(self, matname=None):
+    def get_data(self, matname=None, patch_width=None):
+        if patch_width is None: patch_width= self.patch_width
         from shl_scripts.shl_tools import get_data
-        # height=256, width=256, n_image=200, patch_size=(12,12),
-        #     datapath='database/', name_database='serre07_distractors',
-        #     max_patches=1024, seed=None, patch_norm=True, verbose=0,
-        #     data_cache='/tmp/data_cache', matname=None
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
-                    patch_size=self.patch_size, datapath=self.datapath,
-                    max_patches=self.max_patches, verbose=self.verbose,
-                    data_cache=self.data_cache, seed=self.seed,
-                    patch_norm=self.patch_norm,
+                    patch_size=(patch_width, patch_width), patch_ds=self.patch_ds, datapath=self.datapath,
+                    N_patches=self.N_patches, verbose=self.verbose,
+                    cache_dir=self.cache_dir, seed=self.seed, do_bandpass=self.do_bandpass,
+                    do_mask=self.do_mask, over_patches = self.over_patches, patch_norm=self.patch_norm,
                     name_database=self.name_database, matname=matname)
 
 
-    def code(self, data, dico, coding_algorithm='mp', matname=None, fit_tol=None, l0_sparseness=None):
+    def code(self, data, dico, coding_algorithm='mp', matname=None, P_cum=None, fit_tol=None, l0_sparseness=None):
         if l0_sparseness is None:
             l0_sparseness = self.l0_sparseness
         if matname is None:
@@ -156,16 +164,16 @@ class SHL(object):
                 print('Coding data with algorithm ', coding_algorithm,  end=' ')
                 t0 = time.time()
             from shl_scripts.shl_encode import sparse_encode
+
             sparse_code = sparse_encode(data, dico.dictionary, dico.precision,
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness,
                                         algorithm=self.learning_algorithm,
-                                        C=self.C, P_cum=dico.P_cum, do_sym=self.do_sym, verbose=0, gain=None)
-            if self.verbose:
-                dt = time.time() - t0
-                print('done in %.2fs.' % dt)
+                                        P_cum=None, do_sym=self.do_sym, verbose=0,
+                                        gain=np.ones(self.n_dictionary))
+
         else:
-            fmatname = os.path.join(self.data_cache, matname) + '_coding.npy'
+            fmatname = os.path.join(self.cache_dir, matname) + '_coding.npy'
             if not(os.path.isfile(fmatname)):
                 if not(os.path.isfile(fmatname + '_lock')):
                     touch(fmatname + '_lock')
@@ -190,8 +198,9 @@ class SHL(object):
     def decode(self, sparse_code, dico):
         return sparse_code @ dico.dictionary
 
-    def learn_dico(self, dictionary=None, precision=None, P_cum=None, data=None,
-                   matname=None, record_each=None, folder_exp=None, list_figures=[], fname=None):
+    def learn_dico(self, dictionary=None, precision=None, P_cum=None,
+                   data=None, matname=None, record_each=None, folder_exp=None,
+                   list_figures=[], fname=None):
 
         if data is None: data = self.get_data(matname=matname)
 
@@ -199,17 +208,32 @@ class SHL(object):
             # Learn the dictionary from reference patches
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(dictionary=dictionary, precision=precision, P_cum=P_cum,
+            dico = SparseHebbianLearning(dictionary=dictionary, precision=precision,
                                          fit_algorithm=self.learning_algorithm,
-                                         nb_quant=self.nb_quant, C=self.C, do_sym=self.do_sym,
-                                         n_dictionary=self.n_dictionary, eta=self.eta, n_iter=self.n_iter,
-                                         eta_homeo=self.eta_homeo, alpha_homeo=self.alpha_homeo,
+                                         do_sym=self.do_sym,
+                                         n_dictionary=self.n_dictionary,
+                                         eta=self.eta,
+                                         beta1=self.beta1,
+                                         beta2=self.beta2,
+                                         epsilon=self.epsilon,
+                                         homeo_method=self.homeo_method,
+                                         eta_homeo=self.eta_homeo,
+                                         alpha_homeo=self.alpha_homeo,
+                                         C=self.C,
+                                         nb_quant=self.nb_quant,
+                                         P_cum=self.P_cum,
+                                         n_iter=self.n_iter,
                                          l0_sparseness=self.l0_sparseness,
-                                         batch_size=self.batch_size, verbose=self.verbose,
-                                         fit_tol=self.fit_tol, do_mask=self.do_mask, do_precision=self.do_precision,
+                                         one_over_F=self.one_over_F,
+                                         batch_size=self.batch_size,
+                                         verbose=self.verbose,
+                                         fit_tol=self.fit_tol,
+                                         do_precision=self.do_precision,
                                          record_each=self.record_each,
-                                         do_HAP=self.do_HAP)
-            if self.verbose: print('Training on %d patches' % len(data), end='... ')
+                                         record_num_batches=self.record_num_batches,
+)
+
+            if self.verbose: print('Training on %d patches' % len(data))
             dico.fit(data)
 
             if self.verbose:
@@ -218,10 +242,10 @@ class SHL(object):
 
         else:
             dico = 'lock'
-            fmatname = os.path.join(self.data_cache, matname) + '_dico.pkl'
+            fmatname = os.path.join(self.cache_dir, matname) + '_dico.pkl'
             import pickle
             if not(os.path.isfile(fmatname)):
-                time.sleep(np.random.rand()*0.1)
+                time.sleep(np.random.rand()*0.01)
                 if not(os.path.isfile(fmatname + '_lock')):
                     touch(fmatname + '_lock')
                     touch(fmatname + self.LOCK)
@@ -233,8 +257,8 @@ class SHL(object):
                                                matname=None)
                         with open(fmatname, 'wb') as fp:
                             pickle.dump(dico, fp)
-                    except AttributeError:
-                        print('Attribute Error')
+                    except ImportError as e:
+                        print('Error', e)
                     finally:
                         try:
                             os.remove(fmatname + self.LOCK)
@@ -250,6 +274,7 @@ class SHL(object):
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
                 if not dictionary is None or not P_cum is None:
+                    if self.verbose: print("resuming the learning on : {0}".format(fmatname))
                     if not (os.path.isfile(fmatname + '_lock')):
                         touch(fmatname + '_lock')
                         touch(fmatname + self.LOCK)
@@ -266,6 +291,10 @@ class SHL(object):
         if not dico == 'lock':
             if 'show_dico' in list_figures:
                 fig, ax = self.show_dico(dico, title=matname, fname=fname)
+            if 'show_Pcum' in list_figures:
+                fig, ax = self.show_Pcum(dico, fname=fname)
+            if 'plot_error' in list_figures:
+                fig, ax = self.plot_error(dico)
             if 'show_dico_in_order' in list_figures:
                 fig,ax = self.show_dico_in_order(dico, title=matname, fname=fname)
             if 'plot_variance' in list_figures:
@@ -283,8 +312,18 @@ class SHL(object):
                 fig, ax = self.time_plot(dico, variable='prob_active', fname=fname)
             if 'time_plot_error' in list_figures:
                 fig, ax = self.time_plot(dico, variable='error', fname=fname)
+            if 'time_plot_qerror' in list_figures:
+                fig, ax = self.time_plot(dico, variable='qerror', fname=fname)
+            if 'time_plot_perror' in list_figures:
+                fig, ax = self.time_plot(dico, variable='perror', fname=fname)
+            if 'time_plot_aerror' in list_figures:
+                fig, ax = self.time_plot(dico, variable='aerror', fname=fname)
             if 'time_plot_entropy' in list_figures:
                 fig, ax = self.time_plot(dico, variable='entropy', fname=fname)
+            if 'time_plot_logL' in list_figures:
+                fig, ax = self.time_plot(dico, variable='logL', fname=fname)
+            if 'time_plot_MC' in list_figures:
+                fig, ax = self.time_plot(dico, variable='MC', fname=fname)
             try:
                 #if fname is None:
                 fig.show()
@@ -293,25 +332,194 @@ class SHL(object):
 
         return dico
 
-    def plot_variance(self, sparse_code, fname=None):
+    def plot_variance(self, sparse_code, fname=None, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_variance
-        return plot_variance(self, sparse_code, fname=fname)
+        return plot_variance(self, sparse_code, fname=fname, fig=fig, ax=ax)
 
-    def plot_variance_histogram(self, sparse_code, fname=None):
+    def plot_variance_histogram(self, sparse_code, fname=None, fig=None, ax=None):
         from shl_scripts.shl_tools import plot_variance_histogram
-        return plot_variance_histogram(self, sparse_code, fname=fname)
+        return plot_variance_histogram(self, sparse_code, fname=fname, fig=fig, ax=ax)
 
-    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1):
+    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1, color=None, label=None, fig=None, ax=None):
         from shl_scripts.shl_tools import time_plot
-        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample)
+        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample, color=color, label=label, fig=fig, ax=ax)
 
-    def show_dico(self, dico, data=None, title=None, fname=None, dpi=200):
+    def show_dico(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico
-        return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
+        return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
 
-    def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200):
+    def show_Pcum(self, dico, title=None, fname=None, verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
+        from shl_scripts.shl_tools import plot_P_cum
+        ymin = 1 - 1.5 * self.l0_sparseness/self.n_dictionary
+        return plot_P_cum(dico.P_cum, ymin=ymin, title=title, verbose=verbose, n_yticks=n_yticks, alpha=alpha, c=c, fig=None, ax=None)
+
+    def plot_error(self, dico, fig=None, ax=None):
+        from shl_scripts.shl_tools import plot_error
+        return plot_error(dico, fig=fig, ax=ax)
+
+    def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
         from shl_scripts.shl_tools import show_dico_in_order
-        return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi)
+        return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
+
+from copy import deepcopy
+from shl_scripts import get_record
+
+class SHL_set(object):
+    """
+
+    Base class to define a set of SHL experiments:
+        - initialization
+        - coding and learning
+        - visualization
+        - quantitative analysis
+
+    """
+    def __init__(self, opts, tag='default', data_matname='data', base=4., N_scan=9):
+        self.opts = deepcopy(opts)
+        self.tag = tag
+        self.N_scan = N_scan
+        self.base = base
+        self.shl = SHL(**deepcopy(self.opts))
+        self.data = self.shl.get_data(matname='data')
+
+    def matname(self, variable, value):
+        value = check_type(variable, value)
+        if not isinstance(value, int):
+            label = '%.5f' % value
+        else:
+            label = '%d' % value
+        return  self.tag + ' - {}={}'.format(variable, label)
+
+    def get_values(self, variable, median, N_scan, verbose=False):
+        values = np.logspace(-1., 1., N_scan, base=self.base)*median
+        values = [check_type(variable, value) for value in values]
+        if verbose: print('DEBUG:', variable, median, values)
+        return values
+
+    def run(self, N_scan=None, variables=['eta'], n_jobs=1,
+            list_figures=[], verbose=0):
+        # defining  the range of the scan
+        if N_scan is None: N_scan = self.N_scan
+
+        # gather all tuples
+        variables_, values_ = [], np.zeros(N_scan*len(variables))
+        for i, variable in enumerate(variables):
+            variables_.extend([variable] * N_scan)
+            values = self.get_values(variable, self.shl.__dict__[variable], N_scan, verbose=verbose)
+            values_[(i*N_scan):((i+1)*N_scan)] = values
+
+        if n_jobs == 1:
+            for variable, value in zip(variables_, values_):
+                shl = prun(variable, value, self.data, self.opts,
+                            self.matname(variable, value), list_figures, verbose)
+                dico = shl.learn_dico(data=self.data,
+                            matname=self.matname(variable, value),
+                            list_figures=list_figures)
+        else:
+            # We will use the ``joblib`` package do distribute this computation on different CPUs.
+            from joblib import Parallel, delayed
+            # , backend="threading"
+            Parallel(n_jobs=n_jobs, verbose=15)(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose) for (variable, value) in zip(variables_, values_))
+
+    def scan(self, N_scan=None, variable='eta', list_figures=[],
+                display='', display_variable='logL',
+                alpha=.6, color=None, label=None, fname=None,
+                fig=None, ax=None, verbose=0):
+        # defining  the range of the scan
+        if N_scan is None: N_scan = self.N_scan
+        self.run(N_scan=N_scan, variables=[variable], n_jobs=1, verbose=verbose)
+
+        if display == 'dynamic':
+            import matplotlib.pyplot as plt
+            fig_error, ax_error = None, None
+        elif display == 'final':
+            import matplotlib.pyplot as plt
+            results = []
+            if fig is None:
+                fig = plt.figure(figsize=(16, 4))
+            if ax is None:
+                ax = fig.add_subplot(111)
+
+        values = self.get_values(variable, self.shl.__dict__[variable], N_scan, verbose=verbose)
+        for value in values:
+            shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose)
+            dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
+                            list_figures=list_figures)
+
+            if display == 'dynamic':
+                if not isinstance(value, int):
+                    label = '%s=%.3f' % (variable, value)
+                else:
+                    label = '%s=%d' % (variable, value)
+                fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
+                        fig=fig_error, ax=ax_error, label=label)
+            elif display == 'final':
+                try:
+                    # print (dico.record['cputime'])
+                    # df_variable = dico.record[display_variable]
+                    # learning_time = np.array(df_variable.index)
+
+                    learning_time, A = get_record(dico, display_variable, 0)
+
+                    results.append(A[-1])
+                except Exception as e:
+                    print('While processing ', self.matname(variable, value), self.shl.LOCK)
+                    print('We encountered error', e, ' with', dico)
+                    results.append(np.nan)
+            else:
+                if len(list_figures)>0:
+                    import matplotlib.pyplot as plt
+                    plt.show()
+            del shl
+
+        if display == 'dynamic':
+            ax_error.legend()
+            if display_variable in ['aerror']:
+                ax_error.set_ylim(0)
+            # if display_variable in ['error', 'qerror']:
+            #     ax_error.set_ylim(0, 1)
+            # elif display_variable in ['perror']:
+            #     ax_error.set_ylim(1.0)
+            # elif display_variable in ['cputime']:
+            #     ax_error.set_yscale('log')
+            return fig_error, ax_error
+        elif display == 'final':
+            try:
+                ax.plot(values, results, '-', lw=1, alpha=alpha, color=color, label=label)
+                ax.set_ylabel(display_variable)
+                ax.set_xlabel(variable)
+                # ax.set_xlim(values.min(), values.max())
+                if display_variable in ['error', 'qerror']:
+                    ax.set_ylim(0, 1)
+                # elif display_variable in ['perror']:
+                #     ax.set_ylim(1.0)
+                elif display_variable in ['cputime']:
+                    #ax.axis('tight')
+                    #ax.set_yscale('log')
+                    ax.set_ylim(0)
+                ax.set_xscale('log')
+            except Exception as e:
+                print('While processing ', self.matname(variable, value), self.shl.LOCK)
+                print('We encountered error', e, ' with', dico)
+            return fig, ax
+
+def check_type(variable, value):
+    if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary', 'batch_size']:
+        value = int(value)
+    return value
+
+def prun(variable, value, data, opts, matname, list_figures, verbose):
+    if verbose: print('Running variable', variable, 'with value', value)
+    value = check_type(variable, value)
+
+    shl = SHL(**deepcopy(opts))
+    shl.__dict__[variable] = value
+    # if verbose: print('DEBUG:', shl.__dict__, self.shl.__dict__)
+    if variable in ['patch_width']:
+        data = shl.get_data(**{variable:value})
+    dico = shl.learn_dico(data=data, matname=matname,
+                list_figures=list_figures)
+    return shl
 
 if __name__ == '__main__':
 

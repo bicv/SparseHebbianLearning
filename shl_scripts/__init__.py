@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, absolute_import
 __author__ = "Laurent Perrinet INT - CNRS"
-__version__ = '2017-02-09'
+__version__ = '20171221'
 __licence__ = 'GPLv2'
 __all__ = ['shl_experiments', 'shl_tools', 'shl_learn', 'shl_encode']
 
@@ -35,11 +35,7 @@ Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet1
 
 
 """
-# from .shl_scripts import *
-# from .shl_tools import *
-# from .shl_encode import *
-# from .shl_learn import *
-from shl_scripts import shl_tools
-from shl_scripts import shl_encode
-from shl_scripts import shl_learn
-from shl_scripts import shl_experiments
+from .shl_encode import *
+from .shl_tools import *
+from .shl_learn import *
+from .shl_experiments import *
