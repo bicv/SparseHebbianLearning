@@ -36,7 +36,6 @@ Installation
 
 * Be sure to have dependencies installed::
 
-   pip3 install -U NeuroTools
    pip3 install -U SLIP
 
 * Then, either install the code directly::

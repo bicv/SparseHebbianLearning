@@ -525,10 +525,21 @@ if __name__ == '__main__':
 
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 0
+
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
 
     fig, ax = dico.show_dico()
-    plt.savefig('../probe/assc.png')
-    plt.show()
+    plt.savefig('../probe/shl_homeo.png')
+    fig, ax = dico.show_Pcum()
+    plt.savefig('../probe/shl_homeo_Pcum.png')
+
+    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', eta_homeo=0., verbose=verbose)
+    dico = shl.learn_dico()
+    import matplotlib.pyplot as plt
+
+    fig, ax = dico.show_dico()
+    plt.savefig('../probe/shl_nohomeo.png')
+    fig, ax = dico.show_Pcum()
+    plt.savefig('../probe/shl_nohomeo_Pcum.png')
