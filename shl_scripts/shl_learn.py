@@ -92,7 +92,7 @@ class SparseHebbianLearning:
                  n_dictionary=None, n_iter=10000,
                  batch_size=100,
                  l0_sparseness=None, fit_tol=None, #  l0_sparseness_end=None,
-                 do_precision=False, do_sym=False,
+                 do_precision=True, do_sym=False,
                  record_each=200, record_num_batches=2**12,
                  verbose=False, one_over_F=True):
         self.fit_algorithm = fit_algorithm
@@ -135,7 +135,7 @@ class SparseHebbianLearning:
         self : object
             Returns the instance itself.
         """
-        return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.precision,
+        return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.do_precision,
                                   eta=self.eta, beta1=self.beta1, beta2=self.beta2,
                                   epsilon=self.epsilon,
                                   homeo_method=self.homeo_method,
@@ -185,7 +185,7 @@ def dict_learning(X, dictionary=None, precision=None,
                   homeo_method = 'HEH',
                   eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
                   n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
-                  do_precision=False, n_iter=100, one_over_F=True,
+                  do_precision=True, n_iter=100, one_over_F=True,
                   batch_size=100, record_each=0, record_num_batches=2**12, verbose=False,
                   method='mp', do_sym=False):
     """
@@ -307,7 +307,9 @@ def dict_learning(X, dictionary=None, precision=None,
 
     t0 = time.time()
     n_samples, n_pixels = X.shape
-
+    print('n_dictionary=', n_dictionary)
+    print('n_pixels=', n_pixels)
+    print('n_samples=', n_samples)
     if dictionary is None:
         if not one_over_F:
             dictionary = np.random.randn(n_dictionary, n_pixels)
@@ -318,9 +320,8 @@ def dict_learning(X, dictionary=None, precision=None,
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
     dictionary /= norm[:, np.newaxis]
 
-    #if not precision is None: do_precision = True
+    # print('do_precision=', do_precision)
     if do_precision:
-        print('dooh! precision not implemented yet')
         precision = np.ones((n_dictionary, n_pixels))
     else:
         precision = None
@@ -392,13 +393,15 @@ def dict_learning(X, dictionary=None, precision=None,
         # we normalise filters
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
-
+        #
         if do_precision:
-            print('dooh precision not implemented')
-            variance = 1./(precision + 1.e-16)
-            variance *= 1-eta
-            variance += eta * sparse_code.T @ (residual**2)
-            precision = 1./(variance + 1.e-16)
+            variance = np.empty((n_dictionary, n_pixels))
+            for i in range(n_dictionary):
+                rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
+                print (rec_i.shape)
+                variance[:, i] = ((this_X - rec_i)**2).mean(axis=0)
+            print('minmax variance', variance.min(), variance.max(), variance.shape)
+            precision += eta * 1./(variance + 1.e-16)
 
         cputime = (time.time() - t0)
 
