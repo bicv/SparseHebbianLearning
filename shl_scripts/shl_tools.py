@@ -60,7 +60,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None, do_
 def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
              datapath='database/', name_database='kodakdb', do_bandpass=True,
              N_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
-             data_cache='/tmp/data_cache', over_patches=8, matname=None):
+             cache_dir='/tmp/cache_dir', over_patches=8, matname=None):
     """
     Extract data:
 
@@ -130,7 +130,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
 
     else:
         import os
-        fmatname = os.path.join(data_cache, matname)
+        fmatname = os.path.join(cache_dir, matname)
         if not(os.path.isfile(fmatname + '_data.npy')):
             if not(os.path.isfile(fmatname + '_data' + '_lock')):
                 touch(fmatname + '_data' + '_lock')
@@ -421,7 +421,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             dico_to_display = dico.dictionary[indices[i]].reshape((dim_patch, dim_patch))
             cmax = np.max(np.abs(dico_to_display))
             i_col, i_row = i % dim_graph[1], i // dim_graph[1]
-            image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1)                  :((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
+            image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
 
         if not dico.precision is None:
             print('not implemented')

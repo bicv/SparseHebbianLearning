@@ -88,7 +88,7 @@ class SHL(object):
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
-                 data_cache='data_cache',
+                 cache_dir='cache_dir',
                 ):
         self.height = height
         self.width = width
@@ -131,13 +131,13 @@ class SHL(object):
         self.record_num_batches = record_num_batches
         self.verbose = verbose
         # assigning and create a folder for caching data
-        self.data_cache = data_cache
+        self.cache_dir = cache_dir
 
         self.one_over_F = one_over_F
 
-        if not self.data_cache is None:
+        if not self.cache_dir is None:
             try:
-                os.mkdir(self.data_cache)
+                os.mkdir(self.cache_dir)
             except:
                 pass
 
@@ -151,7 +151,7 @@ class SHL(object):
         return get_data(height=self.height, width=self.width, n_image=self.n_image,
                     patch_size=(patch_width, patch_width), patch_ds=self.patch_ds, datapath=self.datapath,
                     N_patches=self.N_patches, verbose=self.verbose,
-                    data_cache=self.data_cache, seed=self.seed, do_bandpass=self.do_bandpass,
+                    cache_dir=self.cache_dir, seed=self.seed, do_bandpass=self.do_bandpass,
                     do_mask=self.do_mask, over_patches = self.over_patches, patch_norm=self.patch_norm,
                     name_database=self.name_database, matname=matname)
 
@@ -173,7 +173,7 @@ class SHL(object):
                                         gain=np.ones(self.n_dictionary))
 
         else:
-            fmatname = os.path.join(self.data_cache, matname) + '_coding.npy'
+            fmatname = os.path.join(self.cache_dir, matname) + '_coding.npy'
             if not(os.path.isfile(fmatname)):
                 if not(os.path.isfile(fmatname + '_lock')):
                     touch(fmatname + '_lock')
@@ -242,7 +242,7 @@ class SHL(object):
 
         else:
             dico = 'lock'
-            fmatname = os.path.join(self.data_cache, matname) + '_dico.pkl'
+            fmatname = os.path.join(self.cache_dir, matname) + '_dico.pkl'
             import pickle
             if not(os.path.isfile(fmatname)):
                 time.sleep(np.random.rand()*0.01)

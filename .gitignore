@@ -1,6 +1,6 @@
 .idea
 shl_scripts.egg-info/
-probe/data_cache/
+probe/cache_dir/
 .ipynb_checkpoints
 index_files
 shl_scripts/SHL_scripts.egg-info
@@ -12,7 +12,7 @@ debug.log
 
 shl_scripts/shl_scripts.egg-info/top_level.txt
 
-data_cache
+cache_dir
 probe/sparsenet-HAP-homeostasis.ipynb
 
 probe/sparsenet-HAP-homeostasis.ipynb
