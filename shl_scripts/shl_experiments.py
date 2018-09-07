@@ -133,13 +133,13 @@ class SHL(object):
         # assigning and create a folder for caching data
         self.cache_dir = cache_dir
 
-        self.one_over_F = one_over_F
-
         if not self.cache_dir is None:
             try:
                 os.mkdir(self.cache_dir)
             except:
                 pass
+
+        self.one_over_F = one_over_F
 
         # creating a tag related to this process
         PID, HOST = os.getpid(), os.uname()[1]
