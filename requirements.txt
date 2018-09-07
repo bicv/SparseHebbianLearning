@@ -1,0 +1,8 @@
+numpy
+imageio
+scipy
+SLIP
+matplotlib
+IPython
+watermark
+version_information
