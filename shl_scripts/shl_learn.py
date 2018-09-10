@@ -307,9 +307,9 @@ def dict_learning(X, dictionary=None, precision=None,
 
     t0 = time.time()
     n_samples, n_pixels = X.shape
-    print('n_dictionary=', n_dictionary)
-    print('n_pixels=', n_pixels)
-    print('n_samples=', n_samples)
+    # print('n_dictionary=', n_dictionary)
+    # print('n_pixels=', n_pixels)
+    # print('n_samples=', n_samples)
     if dictionary is None:
         if not one_over_F:
             dictionary = np.random.randn(n_dictionary, n_pixels)
@@ -395,12 +395,13 @@ def dict_learning(X, dictionary=None, precision=None,
         dictionary /= norm[:, np.newaxis]
         #
         if do_precision:
-            variance = np.empty((n_dictionary, n_pixels))
+            precision *= 1-eta
+            variance = np.zeros((n_dictionary, n_pixels))
             for i in range(n_dictionary):
                 rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
-                print (rec_i.shape)
-                variance[:, i] = ((this_X - rec_i)**2).mean(axis=0)
-            print('minmax variance', variance.min(), variance.max(), variance.shape)
+                # print (rec_i.shape)
+                variance[i, :] = ((this_X - rec_i)**2).mean(axis=0)
+            #print('minmax variance', variance.min(), variance.max(), variance.shape)
             precision += eta * 1./(variance + 1.e-16)
 
         cputime = (time.time() - t0)

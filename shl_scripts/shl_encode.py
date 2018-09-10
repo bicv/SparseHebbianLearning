@@ -238,7 +238,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         #SE_0 = np.sum(X*2, axis=1)
     else:
         corr = (X @ (precision*dictionary).T)
-        Xcorr = ((precision*dictionary) @ (precision*dictionary).T)
+        Xcorr = ((dictionary) @ (precision*dictionary).T)
         #SE_0 = np.sum(X*2, axis=1)
 
     # COMP
