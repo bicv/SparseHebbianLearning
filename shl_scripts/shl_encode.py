@@ -233,13 +233,12 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
 
     # starting Matching Pursuit
     if precision is None:
-        corr = (X @ dictionary.T)
         Xcorr = (dictionary @ dictionary.T)
-        #SE_0 = np.sum(X*2, axis=1)
+        corr = (X @ dictionary.T)
     else:
         corr = (X @ (precision*dictionary).T)
         Xcorr = ((dictionary) @ (precision*dictionary).T)
-        #SE_0 = np.sum(X*2, axis=1)
+    #SE_0 = np.sum(X*2, axis=1)
 
     # COMP
     if gain is None: # SLOW
