@@ -236,8 +236,16 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         Xcorr = (dictionary @ dictionary.T)
         corr = (X @ dictionary.T)
     else:
-        corr = (X @ (precision*dictionary).T)
-        Xcorr = ((dictionary) @ (precision*dictionary).T)
+        #weights = np.sqrt(precision)
+        # Xcorr = (weights*dictionary) @ (weights*dictionary).T
+        norm_X = (X**2) @ precision.T
+        norm = np.sum(precision * dictionary**2, axis=1)
+        corr = X @ (precision*dictionary/norm[:, None]).T # scalar projection
+        Xcorr = dictionary @ (precision*dictionary/norm[:, None]).T
+        #
+        # corr = X @ (precision*dictionary / np.diag(Xcorr)[:, None]).T
+        # Xcorr_ = dictionary @ (precision*dictionary / np.diag(Xcorr)[:, None]).T
+
     #SE_0 = np.sum(X*2, axis=1)
 
     # COMP
@@ -252,19 +260,26 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
                 r = rescaling(c, C=C, do_sym=do_sym)
                 q = quantile(P_cum, r, stick, do_fast=do_fast)
 
+                if not precision is None:
+                    q *= (rectify(corr, do_sym=do_sym)**2*norm-norm_X)
+
                 ind = np.argmax(q)
-                c_ind = alpha_MP * c[ind] / Xcorr[ind, ind]
+                c_ind = alpha_MP * c[ind]
 
                 sparse_code[i_sample, ind] += c_ind
                 c -= c_ind * Xcorr[ind, :]
+
     else: # FAST
         gain = gain[np.newaxis, :] * np.ones_like(corr)
         line = np.arange(n_samples)
         for i_l0 in range(int(l0_sparseness)):
+            if precision is None:
                 q = rectify(corr, do_sym=do_sym) * gain
-                ind = np.argmax(q, axis=1)
-                sparse_code[line, ind] += corr[line, ind]
-                corr = corr - (Xcorr[ind, :] * corr[line, ind][:, np.newaxis])
+            else:
+                q = (rectify(corr, do_sym=do_sym)**2*norm - norm_X) * gain
+            ind = np.argmax(q, axis=1)
+            sparse_code[line, ind] += corr[line, ind]
+            corr = corr - (Xcorr[ind, :] * corr[line, ind][:, np.newaxis])
 
     if verbose>0:
         duration=time.time()-t0
