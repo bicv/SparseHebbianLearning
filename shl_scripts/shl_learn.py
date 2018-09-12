@@ -323,7 +323,7 @@ def dict_learning(X, dictionary=None, precision=None,
     # print('do_precision=', do_precision)
     if do_precision:
         precision = None # np.ones((n_dictionary, n_pixels))
-        variance = np.zeros((n_dictionary, n_pixels))
+        variance = np.ones((n_dictionary, n_pixels))
     else:
         precision = None
 
