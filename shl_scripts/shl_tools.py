@@ -416,24 +416,28 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             ax.set_yticks(())
     else:
         # backgroung image
-        image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1))
-        cmax = np.max(np.abs(dico_to_display))
-        dico_cmax = np.max(np.abs(dico.dictionary))
+        if not dico.precision is None:
+            image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1, 3))
+        else:
+            image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1))
         for i in range(np.prod(dim_graph)):
             dico_to_display = dico.dictionary[indices[i]].reshape((dim_patch, dim_patch))
+            cmax = np.max(np.abs(dico_to_display))
+            # dico_cmax = np.max(np.abs(dico.dictionary))
 
             i_col, i_row = i % dim_graph[1], i // dim_graph[1]
             if not dico.precision is None:
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
                 precision_to_display = (precision_to_display - np.min(precision_to_display))
                 precision_to_display /= np.max(precision_to_display)-np.min(precision_to_display)
+                # precision_to_display /= np.max(precision_to_display)
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1)), :] = dico_to_display[:, :, None] / cmax
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1)), 1] *= 1 - precision_to_display
             else:
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
 
         if not dico.precision is None:
-            ax.imshow(image, vmin=-1, vmax=+1,
+            ax.imshow(.5*image+.5,
                       interpolation='nearest')
         else:
             ax.imshow(image,
