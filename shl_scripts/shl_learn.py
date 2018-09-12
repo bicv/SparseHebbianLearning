@@ -374,14 +374,21 @@ def dict_learning(X, dictionary=None, precision=None,
         if do_precision:
             # precision *= 1-eta
             variance *= 1-eta
-            variance_ = np.zeros((n_dictionary, n_pixels))
-            for i in range(n_dictionary):
-                # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
-                rec_i = sparse_code[:, i][:, None] * dictionary[i, :][None, :]
-                #print (rec_i.shape)
-                variance_[i, :] = ((this_X - rec_i)**2).mean(axis=0)
-
-                #variance_[i, :] = (residual**2).mean(axis=0)
+            if True:
+                variance_ = np.zeros((n_dictionary, n_pixels))
+                for i in range(n_dictionary):
+                    if True:
+                        # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
+                        rec_i = sparse_code[:, i][:, None] * dictionary[i, :][None, :]
+                        #print (rec_i.shape)
+                        variance_[i, :] = ((this_X - rec_i)**2).mean(axis=0)
+                    else:
+                        # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
+                        #print (rec_i.shape)
+                        variance_[i, :] = ((this_X / sparse_code[:, i][:, None] - dictionary[i, :][None, :])**2).mean(axis=0)
+            else:
+                variance_ = ((this_X[:, None, :] - dictionary[None, :, :]*sparse_code[:, :, None])**2).mean(axis=0)
+            #variance_[i, :] = (residual**2).mean(axis=0)
             # print('minmax variance_', variance_.min(axis=1), variance_.max(axis=1), variance_.max(axis=1).shape)
             # print('minmax variance_', variance_.min(axis=0).reshape((12, 12)), variance_.max(axis=0).reshape((12, 12)), variance_.max(axis=0).shape)
             # print('minmax variance_', variance_.min(), variance_.max(), variance_.shape)
