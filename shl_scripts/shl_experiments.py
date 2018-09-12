@@ -75,7 +75,7 @@ class SHL(object):
                  l0_sparseness=13,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=0.0001, beta1=.0, beta2=.999, epsilon=1.e-8,
+                 eta=0.01, beta1=.0, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
                  eta_homeo=0.02, alpha_homeo=.08,
                  C=3., nb_quant=128, P_cum=None,
@@ -524,9 +524,9 @@ def prun(variable, value, data, opts, matname, list_figures, verbose):
 if __name__ == '__main__':
 
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
-    DEBUG_DOWNSCALE, verbose = 1, 0
+    DEBUG_DOWNSCALE, verbose = 1, 10
 
-    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', verbose=verbose)
+    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='HAP', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
 
@@ -535,7 +535,7 @@ if __name__ == '__main__':
     fig, ax = dico.show_Pcum()
     plt.savefig('../probe/shl_homeo_Pcum.png')
 
-    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', eta_homeo=0., verbose=verbose)
+    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='None', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
 

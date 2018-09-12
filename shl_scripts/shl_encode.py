@@ -261,7 +261,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
                 q = quantile(P_cum, r, stick, do_fast=do_fast)
 
                 if not precision is None:
-                    q *= (rectify(corr, do_sym=do_sym)**2*norm-norm_X)
+                    q *= (rectify(corr, do_sym=do_sym)**2*norm[None, :]-norm_X)
 
                 ind = np.argmax(q)
                 c_ind = alpha_MP * c[ind]
