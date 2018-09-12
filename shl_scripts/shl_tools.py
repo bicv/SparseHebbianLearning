@@ -360,7 +360,7 @@ def show_dico_in_order(shl_exp, dico, data=None, title=None, fname=None, dpi=200
 
 
 def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None,
-                 do_tiles=False, fname=None, dpi=200, fig=None, ax=None):
+                 do_tiles=True, fname=None, dpi=200, fig=None, ax=None):
     """
     display the dictionary in a random order
     """
@@ -424,7 +424,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
 
         if not dico.precision is None:
-            print('not implemented')
+            print('not implemented') # TODO
             assert(False)
         else:
             ax.imshow(image,
