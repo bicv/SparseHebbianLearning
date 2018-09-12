@@ -396,12 +396,12 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             if not dico.precision is None:
                 dico_to_display = dico_to_display.reshape((dim_patch, dim_patch))/cmax
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
-                precision_cmax = np.max(precision_to_display)
+                precision_to_display = (precision_to_display - np.min(precision_to_display))
+                precision_to_display /= np.max(precision_to_display)-np.min(precision_to_display)
 
                 image = np.dstack((.5 + .5*dico_to_display, .5 + .5 *
                                    dico_to_display, .5 + .5*dico_to_display))
-                image *= np.dstack((np.ones_like(precision_to_display), precision_to_display /
-                                    precision_cmax, np.ones_like(precision_to_display)))
+                image *= np.dstack((np.ones_like(precision_to_display), 1.-precision_to_display, np.ones_like(precision_to_display)))
                 ax.imshow(image, interpolation='nearest')
                 # DEBUG:
                 # ax.imshow(precision_to_display/precision_cmax,
