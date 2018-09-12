@@ -322,7 +322,8 @@ def dict_learning(X, dictionary=None, precision=None,
 
     # print('do_precision=', do_precision)
     if do_precision:
-        precision = np.ones((n_dictionary, n_pixels))
+        precision = None # np.ones((n_dictionary, n_pixels))
+        variance = np.zeros((n_dictionary, n_pixels))
     else:
         precision = None
 
@@ -369,6 +370,26 @@ def dict_learning(X, dictionary=None, precision=None,
                                    gain=gain)
         residual = this_X - sparse_code @ dictionary
 
+        # compute variance
+        if do_precision:
+            # precision *= 1-eta
+            variance *= 1-eta
+            variance_ = np.zeros((n_dictionary, n_pixels))
+            for i in range(n_dictionary):
+                # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
+                rec_i = sparse_code[:, i][:, None] * dictionary[i, :][None, :]
+                #print (rec_i.shape)
+                variance_[i, :] = ((this_X - rec_i)**2).mean(axis=0)
+
+                #variance_[i, :] = (residual**2).mean(axis=0)
+            # print('minmax variance_', variance_.min(axis=1), variance_.max(axis=1), variance_.max(axis=1).shape)
+            # print('minmax variance_', variance_.min(axis=0).reshape((12, 12)), variance_.max(axis=0).reshape((12, 12)), variance_.max(axis=0).shape)
+            # print('minmax variance_', variance_.min(), variance_.max(), variance_.shape)
+            variance += eta * variance_
+            # print('minmax variance', variance.min(), variance.max(), variance.shape)
+            precision = 1./(variance + 1.e-16)
+            # print('minmax precision', precision.min(), precision.max(), precision.shape)
+
         # homeostasis : we compute P_cum and define different strategies
         mean_measure, P_cum, gain = homeostasis(mean_measure, P_cum, gain,
                         homeo_method, sparse_code, eta_homeo, alpha_homeo,
@@ -393,16 +414,6 @@ def dict_learning(X, dictionary=None, precision=None,
         # we normalise filters
         norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
         dictionary /= norm[:, np.newaxis]
-        #
-        if do_precision:
-            precision *= 1-eta
-            variance = np.zeros((n_dictionary, n_pixels))
-            for i in range(n_dictionary):
-                rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
-                # print (rec_i.shape)
-                variance[i, :] = ((this_X - rec_i)**2).mean(axis=0)
-            #print('minmax variance', variance.min(), variance.max(), variance.shape)
-            precision += eta * 1./(variance + 1.e-16)
 
         cputime = (time.time() - t0)
 

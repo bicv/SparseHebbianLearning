@@ -14,7 +14,7 @@ def touch(filename):
 
 
 def preprocessing(image, height=256, width=256, patch_size=(12, 12),
-                  do_bandpass=True, seed=None):
+                  do_bandpass=True, seed=None, do_mask=False):
     slip = Image({'N_X': height, 'N_Y': width,
                   'white_n_learning': 0,
                   'seed': seed,
@@ -23,7 +23,7 @@ def preprocessing(image, height=256, width=256, patch_size=(12, 12),
                   'white_f_0': .4,  # olshausen = 0.2
                   'white_alpha': 1.4,
                   'white_steepness': 4.,
-                  'do_mask': True})
+                  'do_mask': do_mask})
     image = slip.whitening(image)
     if do_bandpass:
         # # print(2*.5*max(height, width)/max(patch_size))
@@ -59,7 +59,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None, do_
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
              datapath='database/', name_database='kodakdb', do_bandpass=True,
-             N_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
+             N_patches=1024, seed=None, do_mask=False, patch_norm=False, verbose=0,
              cache_dir='/tmp/cache_dir', over_patches=8, matname=None):
     """
     Extract data:
@@ -82,7 +82,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
                       'seed': seed, 'N_X': height, 'N_Y': width})
         slip_us = Image({'N_X': height*patch_ds, 'N_Y': width*patch_ds,
                          'datapath': datapath,
-                         'do_mask': True,
+                         'do_mask': False,
                          'N_image': n_image,
                          'seed': seed})
         import os

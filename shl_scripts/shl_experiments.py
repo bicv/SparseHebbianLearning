@@ -60,22 +60,22 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_width=18,
+                 patch_width=12,
                  N_patches=2**16,
                  datapath='../database/',
                  name_database='kodakdb', # TODO : fing a larger, more homogeneous database?
                  #name_database='laurent',
-                 do_mask=True, do_bandpass=True,
+                 do_mask=False, do_bandpass=True,
                  over_patches=16,
                  patch_ds=1,
-                 n_dictionary=21**2,
+                 n_dictionary=15**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=True,
                  l0_sparseness=13,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=0.01, beta1=.0, beta2=.999, epsilon=1.e-8,
+                 eta=0.05, beta1=.0, beta2=.999, epsilon=1.e-8,
                  homeo_method='HAP',
                  eta_homeo=0.02, alpha_homeo=.08,
                  C=3., nb_quant=128, P_cum=None,
@@ -529,17 +529,15 @@ if __name__ == '__main__':
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='HAP', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
-
-    fig, ax = dico.show_dico()
+    fig, ax = shl.show_dico(dico)
     plt.savefig('../probe/shl_homeo.png')
-    fig, ax = dico.show_Pcum()
+    fig, ax = shl.show_Pcum(dico)
     plt.savefig('../probe/shl_homeo_Pcum.png')
 
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='None', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
-
-    fig, ax = dico.show_dico()
+    fig, ax = shl.show_dico(dico)
     plt.savefig('../probe/shl_nohomeo.png')
-    fig, ax = dico.show_Pcum()
+    fig, ax = shl.show_Pcum(dico)
     plt.savefig('../probe/shl_nohomeo_Pcum.png')
