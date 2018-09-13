@@ -418,9 +418,10 @@ def dict_learning(X, dictionary=None, precision=None,
         else:
             dictionary -= eta * gradient
 
-        # we normalise filters
-        norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
-        dictionary /= norm[:, np.newaxis]
+        if not do_precision:
+            # we normalise filters
+            norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
+            dictionary /= norm[:, np.newaxis]
 
         cputime = (time.time() - t0)
 

@@ -260,8 +260,8 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
                 r = rescaling(c, C=C, do_sym=do_sym)
                 q = quantile(P_cum, r, stick, do_fast=do_fast)
 
-                if not precision is None:
-                    q *= (rectify(c, do_sym=do_sym)**2*norm-norm_X[i_sample, :])
+                # if not precision is None:
+                #     q *= ((rectify(c, do_sym=do_sym)**2)*norm-norm_X[i_sample, :])
 
                 ind = np.argmax(q)
                 c_ind = alpha_MP * c[ind]
@@ -276,7 +276,7 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
             if precision is None:
                 q = rectify(corr, do_sym=do_sym) * gain
             else:
-                q = (rectify(corr, do_sym=do_sym)**2*norm - norm_X) * gain
+                q = ((rectify(corr, do_sym=do_sym)**2)*norm - norm_X) * gain
             ind = np.argmax(q, axis=1)
             sparse_code[line, ind] += corr[line, ind]
             corr = corr - (Xcorr[ind, :] * corr[line, ind][:, np.newaxis])
