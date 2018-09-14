@@ -322,7 +322,8 @@ def dict_learning(X, dictionary=None, precision=None,
 
     # print('do_precision=', do_precision)
     if do_precision:
-        precision = None # np.ones((n_dictionary, n_pixels))
+        precision = None #
+        precision = np.ones((n_dictionary, n_pixels))
         variance = np.ones((n_dictionary, n_pixels))
     else:
         precision = None
@@ -372,8 +373,8 @@ def dict_learning(X, dictionary=None, precision=None,
 
         # compute variance
         if do_precision:
-            # precision *= 1-eta
-            variance *= 1-eta
+            precision *= 1-eta
+            #variance *= 1-eta
             if True:
                 variance_ = np.zeros((n_dictionary, n_pixels))
                 for i in range(n_dictionary):
@@ -387,13 +388,14 @@ def dict_learning(X, dictionary=None, precision=None,
                         #print (rec_i.shape)
                         variance_[i, :] = ((this_X / sparse_code[:, i][:, None] - dictionary[i, :][None, :])**2).mean(axis=0)
             else:
-                variance_ = ((this_X[:, None, :] - dictionary[None, :, :]*sparse_code[:, :, None])**2).mean(axis=0)
+                variance_ = ((this_X[:, np.newaxis, :] - dictionary[np.newaxis, :, :]*sparse_code[:, :, np.newaxis])**2).mean(axis=0)
             #variance_[i, :] = (residual**2).mean(axis=0)
             # print('minmax variance_', variance_.min(axis=1), variance_.max(axis=1), variance_.max(axis=1).shape)
             # print('minmax variance_', variance_.min(axis=0).reshape((12, 12)), variance_.max(axis=0).reshape((12, 12)), variance_.max(axis=0).shape)
             # print('minmax variance_', variance_.min(), variance_.max(), variance_.shape)
             variance += eta * variance_
             # print('minmax variance', variance.min(), variance.max(), variance.shape)
+            precision += eta * 1/variance_
             precision = 1./(variance + 1.e-16)
             # print('minmax precision', precision.min(), precision.max(), precision.shape)
 

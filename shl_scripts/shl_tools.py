@@ -428,9 +428,11 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             i_col, i_row = i % dim_graph[1], i // dim_graph[1]
             if not dico.precision is None:
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
-                # precision_to_display = (precision_to_display - np.min(precision_to_display))
-                # precision_to_display /= np.max(precision_to_display)-np.min(precision_to_display)
-                precision_to_display /= np.max(precision_to_display)
+                if True:
+                    precision_to_display = (precision_to_display - np.min(precision_to_display))
+                    precision_to_display /= np.max(precision_to_display)-np.min(precision_to_display)
+                else:
+                    precision_to_display /= np.max(precision_to_display)
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1)), :] = dico_to_display[:, :, None] / cmax
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1)), 1] *= 1-precision_to_display #* np.abs(dico_to_display / cmax)
             else:
