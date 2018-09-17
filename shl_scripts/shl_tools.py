@@ -427,15 +427,18 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
 
             i_col, i_row = i % dim_graph[1], i // dim_graph[1]
             if not dico.precision is None:
-                patch = dico_to_display[:, :, None] / cmax
+                patch = np.ones((dim_patch, dim_patch, 3))#dico_to_display[:, :, None] / cmax
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
                 if True:
                     precision_to_display = (precision_to_display - np.min(precision_to_display))
                     precision_to_display /= np.max(precision_to_display)-np.min(precision_to_display)
                 else:
                     precision_to_display /= np.max(precision_to_display)
-
-                patch[:, :, 1]  *= 1-precision_to_display #* np.abs(dico_to_display / cmax)
+                from matplotlib.colors import hsv_to_rgb
+                patch[:, :, 0]  = 0.8 * np.ones((dim_patch, dim_patch))
+                patch[:, :, 1]  = 1-precision_to_display
+                patch[:, :, 2]  = dico_to_display / cmax
+                patch = hsv_to_rgb(patch)
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1)), :] = patch
 
             else:
