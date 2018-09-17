@@ -195,7 +195,7 @@ def inv_quantile(P_cum, q, do_fast=False):
     return r
 
 
-def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1.,
+def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=.7,
        do_sym=False, P_cum=None, do_fast=True, C=5., verbose=0, gain=None):
     """
     Matching Pursuit
@@ -273,15 +273,15 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         gain = gain[np.newaxis, :] * np.ones_like(corr)
         line = np.arange(n_samples)
         for i_l0 in range(int(l0_sparseness)):
-            if not precision is None:
-                # see Appendix B from VAE paper:
-                # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
-                # https://arxiv.org/abs/1312.6114
-                # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-
-                q = ((rectify(corr, do_sym=do_sym)**2)*norm - norm_X) * gain
-            else:
-                q = rectify(corr, do_sym=do_sym) * gain
+            # if not precision is None:
+            #     # see Appendix B from VAE paper:
+            #     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
+            #     # https://arxiv.org/abs/1312.6114
+            #     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+            #
+            #     q = ((rectify(corr, do_sym=do_sym)**2)*norm - norm_X) * gain
+            # else:
+            q = rectify(corr, do_sym=do_sym) * gain
 
             ind = np.argmax(q, axis=1)
             sparse_code[line, ind] += corr[line, ind]
