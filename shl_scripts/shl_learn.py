@@ -411,6 +411,8 @@ def dict_learning(X, dictionary=None, precision=None,
         gradient = - sparse_code.T @ residual
         # divide by the batch size to get the average in the Hebbian learning:
         gradient /= batch_size
+        if do_precision: # modulates gradient by the precision
+            gradient *= precision
 
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf
