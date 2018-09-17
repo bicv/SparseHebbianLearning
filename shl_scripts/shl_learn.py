@@ -323,8 +323,9 @@ def dict_learning(X, dictionary=None, precision=None,
     # print('do_precision=', do_precision)
     if do_precision:
         precision = None #
-        precision = np.ones((n_dictionary, n_pixels))
-        variance = np.ones((n_dictionary, n_pixels))
+        # precision = np.ones((n_dictionary, n_pixels))
+        variance = (X**2).mean() * np.ones((n_dictionary, n_pixels))
+        precision = 1 / variance
     else:
         precision = None
 
@@ -412,7 +413,7 @@ def dict_learning(X, dictionary=None, precision=None,
         # divide by the batch size to get the average in the Hebbian learning:
         gradient /= batch_size
         if do_precision: # modulates gradient by the precision
-            gradient *= precision
+            gradient *= precision / precision.mean()
 
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf
