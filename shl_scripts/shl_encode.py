@@ -195,7 +195,7 @@ def inv_quantile(P_cum, q, do_fast=False):
     return r
 
 
-def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=.7,
+def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1.,
        do_sym=False, P_cum=None, do_fast=True, C=5., verbose=0, gain=None):
     """
     Matching Pursuit

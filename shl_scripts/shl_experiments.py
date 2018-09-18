@@ -72,12 +72,12 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=True,
-                 l0_sparseness=13,
+                 l0_sparseness=34,
                  one_over_F=True,
                  n_iter=2**12 + 1,
-                 eta=0.005, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.0025, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HEH',
-                 eta_homeo=0.005, alpha_homeo=.005,
+                 eta_homeo=0.0025, alpha_homeo=.005,
                  C=1., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -374,13 +374,14 @@ class SHL_set(object):
         - quantitative analysis
 
     """
-    def __init__(self, opts, tag='default', data_matname='data', base=4., N_scan=5):
+    def __init__(self, opts, tag='default', data_matname='data', base=2.61803, N_scan=5, do_run=True):
         self.opts = deepcopy(opts)
         self.tag = tag
         self.N_scan = N_scan
         self.base = base
         self.shl = SHL(**deepcopy(self.opts))
         self.data = self.shl.get_data(matname='data')
+        self.do_run = do_run
 
     def matname(self, variable, value):
         value = check_type(variable, value)
@@ -388,7 +389,7 @@ class SHL_set(object):
             label = '%.5f' % value
         else:
             label = '%d' % value
-        return  self.tag + ' - {}={}'.format(variable, label)
+        return  self.tag + f'_{variable}={label}'
 
     def get_values(self, variable, median, N_scan, verbose=False):
         values = np.logspace(-1., 1., N_scan, base=self.base)*median

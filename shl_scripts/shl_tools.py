@@ -384,7 +384,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
 
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
+        fig = plt.figure(figsize=(15, 15), subplotpars=subplotpars)
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -435,21 +435,11 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
                 else:
                     precision_to_display /= np.max(precision_to_display)
 
-                # from skimage.color import convert_colorspace#(arr, fromspace, tospace)
                 patch[:, :, 0]  = 0.8 * np.ones((dim_patch, dim_patch))
                 patch[:, :, 1]  = precision_to_display
                 patch[:, :, 2]  = dico_to_display / cmax  /2 + .5
-                #print(patch[:, :, 2].min(), patch[:, :, 2].max())
                 from matplotlib.colors import hsv_to_rgb
                 patch = hsv_to_rgb(patch)
-                # from skimage.color import lab2rgb
-                # patch = lab2rgb(patch*255)
-                # from skimage.color import hsv2rgb
-                # patch = hsv2rgb(patch)
-                # from skimage.color import xyz2rgb
-                # patch = xyz2rgb(patch)
-                # # https://en.wikipedia.org/wiki/CIE_1931_color_space
-                # patch = convert_colorspace(patch, 'LAB', 'RGB')
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1)), :] = patch
 
             else:
@@ -517,7 +507,7 @@ def plot_coeff_distribution(dico, data, title=None, algorithm=None, fname=None, 
     df = pd.DataFrame(res_lst, columns=['Coeff'])
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -568,7 +558,7 @@ def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None, fig=
     bins_max = bins_step(0.0001, np.max(coeff_max), 20)
     bins_min = bins_step(0.0001, np.max(coeff_min), 20)
     import matplotlib.pyplot as plt
-    fig = plt.figure(figsize=(6, 10))
+    fig = plt.figure(figsize=(15, 10))
     ax = plt.subplot(2, 1, 1)
     with sns.axes_style("white"):
         n_max, bins1 = np.histogram(coeff_max, bins_max)
@@ -621,7 +611,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None, fig=N
 
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -657,7 +647,7 @@ def plot_proba_histogram(coding, verbose=False, fig=None, ax=None):
 
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -673,7 +663,7 @@ def plot_error(dico, fig=None, ax=None):
     # TODO : show SE as a function of l0
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
     n = np.arange(dico.n_iter)
@@ -688,7 +678,7 @@ def plot_error(dico, fig=None, ax=None):
 def plot_variance(shl_exp, sparse_code, fname=None, fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
     n_dictionary = sparse_code.shape[1]
@@ -707,7 +697,7 @@ def plot_variance(shl_exp, sparse_code, fname=None, fig=None, ax=None):
 def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
     variance = np.mean(sparse_code**2, axis=0)
@@ -724,7 +714,7 @@ def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None)
 def plot_P_cum(P_cum, ymin=0.95, ymax=1.001, title='non-linear functions', suptitle=None, ylabel='quantile', verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 8))
+        fig = plt.figure(figsize=(15, 8))
     if ax is None:
         ax = fig.add_subplot(111)
     coefficients = np.linspace(0, 1, P_cum.shape[1])
@@ -751,7 +741,7 @@ def plot_P_cum(P_cum, ymin=0.95, ymax=1.001, title='non-linear functions', supti
 def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True', ylabel='MP', fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 16))
+        fig = plt.figure(figsize=(15, 15))
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -795,7 +785,7 @@ def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
                 color=None, label=None, fname=None, fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
 
