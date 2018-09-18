@@ -417,7 +417,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
     else:
         # backgroung image
         if not dico.precision is None:
-            image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1, 3))
+            image = np.zeros((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1, 3))
         else:
             image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1))
         for i in range(np.prod(dim_graph)):
@@ -430,23 +430,33 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
                 patch = np.ones((dim_patch, dim_patch, 3))#dico_to_display[:, :, None] / cmax
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
                 if True:
-                    precision_to_display = (precision_to_display - np.min(precision_to_display))
-                    precision_to_display /= np.max(precision_to_display)-np.min(precision_to_display)
+                    precision_to_display -= np.min(precision_to_display)
+                    precision_to_display /= np.max(precision_to_display)
                 else:
                     precision_to_display /= np.max(precision_to_display)
-                from matplotlib.colors import hsv_to_rgb
+
+                # from skimage.color import convert_colorspace#(arr, fromspace, tospace)
                 patch[:, :, 0]  = 0.8 * np.ones((dim_patch, dim_patch))
-                patch[:, :, 1]  = 1-precision_to_display
-                patch[:, :, 2]  = dico_to_display / cmax
+                patch[:, :, 1]  = precision_to_display
+                patch[:, :, 2]  = dico_to_display / cmax  /2 + .5
+                #print(patch[:, :, 2].min(), patch[:, :, 2].max())
+                from matplotlib.colors import hsv_to_rgb
                 patch = hsv_to_rgb(patch)
+                # from skimage.color import lab2rgb
+                # patch = lab2rgb(patch*255)
+                # from skimage.color import hsv2rgb
+                # patch = hsv2rgb(patch)
+                # from skimage.color import xyz2rgb
+                # patch = xyz2rgb(patch)
+                # # https://en.wikipedia.org/wiki/CIE_1931_color_space
+                # patch = convert_colorspace(patch, 'LAB', 'RGB')
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1)), :] = patch
 
             else:
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
 
         if not dico.precision is None:
-            ax.imshow(.5*image+.5,
-                      interpolation='nearest')
+            ax.imshow(image, interpolation='nearest')
         else:
             ax.imshow(image,
                       cmap=plt.cm.gray_r, vmin=-1, vmax=+1,
