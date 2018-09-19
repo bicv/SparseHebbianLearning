@@ -349,7 +349,7 @@ def compute_kurto(data, dico):
 # To adapt with shl_exp
 
 
-def show_dico_in_order(shl_exp, dico, data=None, title=None, fname=None, dpi=200, **kwargs):
+def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, **kwargs):
     """
     Displays the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end
@@ -360,13 +360,13 @@ def show_dico_in_order(shl_exp, dico, data=None, title=None, fname=None, dpi=200
 
 
 def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None,
-                 do_tiles=False, fname=None, dpi=200, fig=None, ax=None):
+                 do_tiles=False, fname=None, fig=None, ax=None, **kwargs):
     """
     display the dictionary in a random order
     """
-    import matplotlib
-    subplotpars = matplotlib.figure.SubplotParams(
-        left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
+    # import matplotlib
+    # subplotpars = matplotlib.figure.SubplotParams(
+    #     left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
 
     n_dictionary = dico.dictionary.shape[0]
     if dim_graph is None:
@@ -384,7 +384,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
 
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(15, 15), subplotpars=subplotpars)
+        fig = plt.figure(figsize=(15, 15*dim_graph[1]/dim_graph[0]))#, subplotpars=subplotpars)
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -454,9 +454,9 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
         ax.set_xticks(())
         ax.set_yticks(())
         ax.set_axis_off()
-
-    if title is not None:
-        fig.suptitle(title, fontsize=12, backgroundcolor='white', color='k')
+    # 
+    # if title is not None:
+    #     fig.suptitle(title, fontsize=12, backgroundcolor='white', color='k')
     if not fname is None:
         fig.savefig(fname, dpi=dpi)
     return fig, ax

@@ -290,40 +290,40 @@ class SHL(object):
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
-                fig, ax = self.show_dico(dico, title=matname, fname=fname)
+                fig, ax = self.show_dico(dico, title=matname, **fig_kwargs)
             if 'show_Pcum' in list_figures:
-                fig, ax = self.show_Pcum(dico, fname=fname)
+                fig, ax = self.show_Pcum(dico, **fig_kwargs)
             if 'plot_error' in list_figures:
                 fig, ax = self.plot_error(dico)
             if 'show_dico_in_order' in list_figures:
-                fig,ax = self.show_dico_in_order(dico, title=matname, fname=fname)
+                fig,ax = self.show_dico_in_order(dico, title=matname, **fig_kwargs)
             if 'plot_variance' in list_figures:
                 sparse_code = self.code(data, dico,
                                             fit_tol=self.fit_tol, l0_sparseness=self.l0_sparseness, matname=matname)
-                fig, ax = self.plot_variance(sparse_code, fname=fname)
+                fig, ax = self.plot_variance(sparse_code, **fig_kwargs)
             if 'plot_variance_histogram' in list_figures:
                 sparse_code = self.code(data, dico, matname=matname)
-                fig, ax = self.plot_variance_histogram(sparse_code, fname=fname)
+                fig, ax = self.plot_variance_histogram(sparse_code, **fig_kwargs)
             if 'time_plot_var' in list_figures:
-                fig, ax = self.time_plot(dico, variable='var', fname=fname)
+                fig, ax = self.time_plot(dico, variable='var', **fig_kwargs)
             if 'time_plot_kurt' in list_figures:
-                fig, ax = self.time_plot(dico, variable='kurt', fname=fname)
+                fig, ax = self.time_plot(dico, variable='kurt', **fig_kwargs)
             if 'time_plot_prob' in list_figures:
-                fig, ax = self.time_plot(dico, variable='prob_active', fname=fname)
+                fig, ax = self.time_plot(dico, variable='prob_active', **fig_kwargs)
             if 'time_plot_error' in list_figures:
-                fig, ax = self.time_plot(dico, variable='error', fname=fname)
+                fig, ax = self.time_plot(dico, variable='error', **fig_kwargs)
             if 'time_plot_qerror' in list_figures:
-                fig, ax = self.time_plot(dico, variable='qerror', fname=fname)
+                fig, ax = self.time_plot(dico, variable='qerror', **fig_kwargs)
             if 'time_plot_perror' in list_figures:
-                fig, ax = self.time_plot(dico, variable='perror', fname=fname)
+                fig, ax = self.time_plot(dico, variable='perror', **fig_kwargs)
             if 'time_plot_aerror' in list_figures:
-                fig, ax = self.time_plot(dico, variable='aerror', fname=fname)
+                fig, ax = self.time_plot(dico, variable='aerror', **fig_kwargs)
             if 'time_plot_entropy' in list_figures:
-                fig, ax = self.time_plot(dico, variable='entropy', fname=fname)
+                fig, ax = self.time_plot(dico, variable='entropy', **fig_kwargs)
             if 'time_plot_logL' in list_figures:
-                fig, ax = self.time_plot(dico, variable='logL', fname=fname)
+                fig, ax = self.time_plot(dico, variable='logL', **fig_kwargs)
             if 'time_plot_MC' in list_figures:
-                fig, ax = self.time_plot(dico, variable='MC', fname=fname)
+                fig, ax = self.time_plot(dico, variable='MC', **fig_kwargs)
             try:
                 #if fname is None:
                 fig.show()
@@ -332,34 +332,35 @@ class SHL(object):
 
         return dico
 
-    def plot_variance(self, sparse_code, fname=None, fig=None, ax=None):
+    def plot_variance(self, sparse_code, **fig_kwargs):
         from shl_scripts.shl_tools import plot_variance
-        return plot_variance(self, sparse_code, fname=fname, fig=fig, ax=ax)
+        return plot_variance(self, sparse_code, **fig_kwargs)
 
-    def plot_variance_histogram(self, sparse_code, fname=None, fig=None, ax=None):
+    def plot_variance_histogram(self, sparse_code, **fig_kwargs):
         from shl_scripts.shl_tools import plot_variance_histogram
-        return plot_variance_histogram(self, sparse_code, fname=fname, fig=fig, ax=ax)
+        return plot_variance_histogram(self, sparse_code, **fig_kwargs)
 
-    def time_plot(self, dico, variable='kurt', fname=None, N_nosample=1, color=None, label=None, fig=None, ax=None):
+    def time_plot(self, dico, variable='kurt', N_nosample=1, **fig_kwargs):
         from shl_scripts.shl_tools import time_plot
-        return time_plot(self, dico, variable=variable, fname=fname, N_nosample=N_nosample, color=color, label=label, fig=fig, ax=ax)
+        return time_plot(self, dico, variable=variable, N_nosample=N_nosample, **fig_kwargs)
 
-    def show_dico(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
+    def show_dico(self, dico, data=None, title=None, **fig_kwargs):
         from shl_scripts.shl_tools import show_dico
-        return show_dico(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
+        return show_dico(self, dico=dico, data=data, title=title, **fig_kwargs)
 
-    def show_Pcum(self, dico, title=None, fname=None, verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
+    def show_dico_in_order(self, dico, data=None, title=None, **fig_kwargs):
+        from shl_scripts.shl_tools import show_dico_in_order
+        return show_dico_in_order(self, dico=dico, data=data, title=title, **fig_kwargs)
+
+    def show_Pcum(self, dico, title=None, verbose=False, n_yticks=21, alpha=.05, c='g', **fig_kwargs):
         from shl_scripts.shl_tools import plot_P_cum
         ymin = 1 - 1.5 * self.l0_sparseness/self.n_dictionary
-        return plot_P_cum(dico.P_cum, ymin=ymin, title=title, verbose=verbose, n_yticks=n_yticks, alpha=alpha, c=c, fig=None, ax=None)
+        return plot_P_cum(dico.P_cum, ymin=ymin, title=title, verbose=verbose, n_yticks=n_yticks, alpha=alpha, c=c, **fig_kwargs)
 
-    def plot_error(self, dico, fig=None, ax=None):
+    def plot_error(self, dico, **fig_kwargs):
         from shl_scripts.shl_tools import plot_error
-        return plot_error(dico, fig=fig, ax=ax)
+        return plot_error(dico, **fig_kwargs)
 
-    def show_dico_in_order(self, dico, data=None, title=None, fname=None, dpi=200, fig=None, ax=None):
-        from shl_scripts.shl_tools import show_dico_in_order
-        return show_dico_in_order(self, dico=dico, data=data, title=title, fname=fname, dpi=dpi, fig=fig, ax=ax)
 
 from copy import deepcopy
 from shl_scripts import get_record
@@ -369,8 +370,8 @@ class SHL_set(object):
 
     Base class to define a set of SHL experiments:
         - initialization
-        - coding and learning
-        - visualization
+        - run: coding and learning
+        - scan: visualization
         - quantitative analysis
 
     """
@@ -391,14 +392,14 @@ class SHL_set(object):
             label = '%d' % value
         return  self.tag + f'_{variable}={label}'
 
-    def get_values(self, variable, median, N_scan, verbose=False):
+    def get_values(self, variable, median, N_scan, verbose=0):
         values = np.logspace(-1., 1., N_scan, base=self.base)*median
         values = [check_type(variable, value) for value in values]
-        if verbose: print('DEBUG:', variable, median, values)
+        if verbose>1: print('DEBUG: variable, median, values = ', variable, median, values)
         return values
 
     def run(self, N_scan=None, variables=['eta'], n_jobs=1,
-            list_figures=[], verbose=0):
+            list_figures=[], fig_kwargs={}, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
 
@@ -412,23 +413,24 @@ class SHL_set(object):
         if n_jobs == 1:
             for variable, value in zip(variables_, values_):
                 shl = prun(variable, value, self.data, self.opts,
-                            self.matname(variable, value), list_figures, verbose)
+                            self.matname(variable, value), list_figures, fig_kwargs, verbose)
                 dico = shl.learn_dico(data=self.data,
                             matname=self.matname(variable, value),
-                            list_figures=list_figures)
+                            list_figures=list_figures, fig_kwargs=fig_kwargs)
         else:
             # We will use the ``joblib`` package do distribute this computation on different CPUs.
             from joblib import Parallel, delayed
             # , backend="threading"
-            Parallel(n_jobs=n_jobs, verbose=15)(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose) for (variable, value) in zip(variables_, values_))
+            Parallel(n_jobs=n_jobs, verbose=15)(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, fig_kwargs, verbose) for (variable, value) in zip(variables_, values_))
 
     def scan(self, N_scan=None, variable='eta', list_figures=[],
                 display='', display_variable='logL',
                 alpha=.6, color=None, label=None, fname=None,
-                fig=None, ax=None, verbose=0):
+                fig=None, ax=None, fig_kwargs={}, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
-        self.run(N_scan=N_scan, variables=[variable], n_jobs=1, verbose=verbose)
+        # running all jobs (run the self.run function before to perform multi-processing)
+        self.run(N_scan=N_scan, variables=[variable], n_jobs=1, verbose=0, fig_kwargs=fig_kwargs)
 
         if display == 'dynamic':
             import matplotlib.pyplot as plt
@@ -443,10 +445,12 @@ class SHL_set(object):
 
         values = self.get_values(variable, self.shl.__dict__[variable], N_scan, verbose=verbose)
         for value in values:
-            shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, verbose)
+            # one run to retrieve the SHL object
+            shl = prun(variable, value, self.data, self.opts, self.matname(variable, value), [], {}, verbose)
+            # now performing all computations on that object
             dico = shl.learn_dico(data=self.data, matname=self.matname(variable, value),
-                            list_figures=list_figures)
-
+                            list_figures=list_figures, fig_kwargs=fig_kwargs)
+            # using that object to perform quantitative visualizations.
             if display == 'dynamic':
                 if not isinstance(value, int):
                     label = '%s=%.3f' % (variable, value)
@@ -456,12 +460,7 @@ class SHL_set(object):
                         fig=fig_error, ax=ax_error, label=label)
             elif display == 'final':
                 try:
-                    # print (dico.record['cputime'])
-                    # df_variable = dico.record[display_variable]
-                    # learning_time = np.array(df_variable.index)
-
                     learning_time, A = get_record(dico, display_variable, 0)
-
                     results.append(A[-1])
                 except Exception as e:
                     print('While processing ', self.matname(variable, value), self.shl.LOCK)
@@ -471,6 +470,7 @@ class SHL_set(object):
                 if len(list_figures)>0:
                     import matplotlib.pyplot as plt
                     plt.show()
+
             del shl
 
         if display == 'dynamic':
@@ -509,8 +509,12 @@ def check_type(variable, value):
         value = int(value)
     return value
 
-def prun(variable, value, data, opts, matname, list_figures, verbose):
-    if verbose: print('Running variable', variable, 'with value', value)
+def prun(variable, value, data, opts, matname, list_figures, fig_kwargs, verbose):
+    if isinstance(value, int):
+        value_str = str(value)
+    else:
+        value_str = '%.3f' % value
+    if verbose: print('Running variable', variable, 'with value', value_str)
     value = check_type(variable, value)
 
     shl = SHL(**deepcopy(opts))
@@ -519,7 +523,7 @@ def prun(variable, value, data, opts, matname, list_figures, verbose):
     if variable in ['patch_width']:
         data = shl.get_data(**{variable:value})
     dico = shl.learn_dico(data=data, matname=matname,
-                list_figures=list_figures)
+                list_figures=list_figures, fig_kwargs=fig_kwargs)
     return shl
 
 if __name__ == '__main__':
