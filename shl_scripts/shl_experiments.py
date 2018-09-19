@@ -72,9 +72,10 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=True,
-                 l0_sparseness=34,
+                 l0_sparseness=21,
+                 alpha_MP = .61803,
                  one_over_F=True,
-                 n_iter=2**12 + 1,
+                 n_iter=2**13 + 1,
                  eta=0.0025, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HEH',
                  eta_homeo=0.0025, alpha_homeo=.005,
@@ -83,7 +84,7 @@ class SHL(object):
                  seed=42,
                  patch_norm=False,
                  batch_size=2**5,
-                 record_each=32,
+                 record_each=2**7,
                  record_num_batches=2**10,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
@@ -114,7 +115,7 @@ class SHL(object):
         self.over_patches = over_patches
 
         self.l0_sparseness = l0_sparseness
-        # self.l0_sparseness_end = l0_sparseness_end
+        self.alpha_MP = alpha_MP
         self.eta = eta
         self.beta1 = beta1
         self.beta2 = beta2
@@ -167,7 +168,7 @@ class SHL(object):
 
             sparse_code = sparse_encode(data, dico.dictionary, dico.precision,
                                         fit_tol=fit_tol,
-                                        l0_sparseness=l0_sparseness,
+                                        l0_sparseness=l0_sparseness, alpha_MP=self.alpha_MP,
                                         algorithm=self.learning_algorithm,
                                         P_cum=None, do_sym=self.do_sym, verbose=0,
                                         gain=np.ones(self.n_dictionary))
@@ -200,7 +201,7 @@ class SHL(object):
 
     def learn_dico(self, dictionary=None, precision=None, P_cum=None,
                    data=None, matname=None, record_each=None, folder_exp=None,
-                   list_figures=[], fname=None):
+                   list_figures=[], fig_kwargs={'fig':None, 'ax':None}):
 
         if data is None: data = self.get_data(matname=matname)
 
@@ -224,6 +225,7 @@ class SHL(object):
                                          P_cum=self.P_cum,
                                          n_iter=self.n_iter,
                                          l0_sparseness=self.l0_sparseness,
+                                         alpha_MP=self.alpha_MP,
                                          one_over_F=self.one_over_F,
                                          batch_size=self.batch_size,
                                          verbose=self.verbose,

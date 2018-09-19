@@ -7,7 +7,7 @@ import time
 
 def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
                   P_cum=None, l0_sparseness=10, C=5., do_sym=False, verbose=0,
-                  gain=None):
+                  gain=None, alpha_MP=1.):
     """Generic sparse coding
 
     Each column of the result is the solution to a sparse coding problem.
@@ -113,7 +113,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
     elif algorithm == 'mp':
         sparse_code = mp(X, dictionary, precision, l0_sparseness=l0_sparseness,
                          fit_tol=fit_tol, P_cum=P_cum, C=C, do_sym=do_sym,
-                         verbose=verbose, gain=gain)
+                         verbose=verbose, gain=gain, alpha_MP=alpha_MP)
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
                          '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'
