@@ -227,21 +227,23 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
     if X.ndim == 1:
         X = X[:, np.newaxis]
 
-    n_samples, n_pixels = X.shape
-    n_dictionary, n_pixels = dictionary.shape
-    sparse_code = np.zeros((n_samples, n_dictionary))
+    n_samples, n_pixels = X.shape  # (K, M)
+    n_dictionary, n_pixels = dictionary.shape  # (N, M)
+    sparse_code = np.zeros((n_samples, n_dictionary))  # size (K, N)
 
     # starting Matching Pursuit
     if precision is None:
-        Xcorr = (dictionary @ dictionary.T)
-        corr = (X @ dictionary.T)
+        Xcorr = (dictionary @ dictionary.T) # size (N, N)
+        corr = (X @ dictionary.T) # size (K, N)
     else:
         #weights = np.sqrt(precision)
         # Xcorr = (weights*dictionary) @ (weights*dictionary).T
-        norm_X = (X**2) @ precision.T
-        norm = np.sum(precision * dictionary**2, axis=1)
-        corr = X @ (precision*dictionary/norm[:, None]).T # scalar projection
-        Xcorr = dictionary @ (precision*dictionary/norm[:, None]).T
+        # norm_X = (X**2) @ precision.T
+        # norm = np.sum(precision * dictionary**2, axis=1)
+        # print(norm, norm.shape)
+        Xcorr = dictionary @ (precision*dictionary).T  # size (N, N)
+        norm = np.diagonal(Xcorr)   # size (N,)
+        corr = X @ (precision*dictionary).T / norm[np.newaxis, :] # scalar projection
         #
         # corr = X @ (precision*dictionary / np.diag(Xcorr)[:, None]).T
         # Xcorr_ = dictionary @ (precision*dictionary / np.diag(Xcorr)[:, None]).T
@@ -254,24 +256,24 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
         stick = np.arange(n_dictionary)*nb_quant
 
         for i_sample in range(n_samples):
-            c = corr[i_sample, :].copy()
+            c = corr[i_sample, :].copy() # size (N, )
             #while (i_l0 < l0_sparseness) or (SE > fit_tol * SE_0):
             for i_l0 in range(int(l0_sparseness)) :
-                r = rescaling(c, C=C, do_sym=do_sym)
-                q = quantile(P_cum, r, stick, do_fast=do_fast)
+                r = rescaling(c, C=C, do_sym=do_sym) # size (N, )
+                q = quantile(P_cum, r, stick, do_fast=do_fast) # size (N, )
 
                 # if not precision is None:
                 #     q *= ((rectify(c, do_sym=do_sym)**2)*norm-norm_X[i_sample, :])
 
-                ind = np.argmax(q)
-                c_ind = alpha_MP * c[ind]
+                ind = np.argmax(q) # type int
+                c_ind = alpha_MP * c[ind] # type float
 
-                sparse_code[i_sample, ind] += c_ind
-                c -= c_ind * Xcorr[ind, :]
+                sparse_code[i_sample, ind] += c_ind # type float
+                c -= c_ind * Xcorr[ind, :] / norm[ind] # size (N, )
 
     else: # FAST
-        gain = gain[np.newaxis, :] * np.ones_like(corr)
-        line = np.arange(n_samples)
+        gain = gain[np.newaxis, :] #* np.ones_like(corr)  # size (K, N)
+        line = np.arange(n_samples) # size (K,)
         for i_l0 in range(int(l0_sparseness)):
             # if not precision is None:
             #     # see Appendix B from VAE paper:
@@ -281,11 +283,11 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
             #
             #     q = ((rectify(corr, do_sym=do_sym)**2)*norm - norm_X) * gain
             # else:
-            q = rectify(corr, do_sym=do_sym) * gain
+            q = rectify(corr, do_sym=do_sym) * gain  # size (K, N)
 
-            ind = np.argmax(q, axis=1)
-            sparse_code[line, ind] += corr[line, ind]
-            corr = corr - (Xcorr[ind, :] * corr[line, ind][:, np.newaxis])
+            ind = np.argmax(q, axis=1) # size (K,)
+            sparse_code[line, ind] += corr[line, ind] # size (K,)
+            corr -= (Xcorr[ind, :] / norm[ind][:, np.newaxis]) * sparse_code[line, ind][:, np.newaxis]
 
     if verbose>0:
         duration=time.time()-t0

@@ -72,14 +72,14 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  do_precision=True,
-                 l0_sparseness=21,
-                 alpha_MP = .61803,
+                 l0_sparseness=14,
+                 alpha_MP = .3297,
                  one_over_F=True,
                  n_iter=2**13 + 1,
-                 eta=0.0025, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.0004, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HEH',
-                 eta_homeo=0.0025, alpha_homeo=.005,
-                 C=1., nb_quant=128, P_cum=None,
+                 eta_homeo=0.0004, alpha_homeo=.015,
+                 C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
@@ -377,7 +377,7 @@ class SHL_set(object):
         - quantitative analysis
 
     """
-    def __init__(self, opts, tag='default', data_matname='data', base=2.61803, N_scan=5, do_run=True):
+    def __init__(self, opts, tag='default', data_matname='data', base=4.61803, N_scan=9, do_run=True):
         self.opts = deepcopy(opts)
         self.tag = tag
         self.N_scan = N_scan
