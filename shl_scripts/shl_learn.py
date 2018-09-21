@@ -384,16 +384,20 @@ def dict_learning(X, dictionary=None, precision=None,
                         # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
                         rec_i = sparse_code[:, i][:, None] * dictionary[i, :][None, :]
                         #print (rec_i.shape)
-                        variance_[i, :] = ((this_X - rec_i)**2).mean(axis=0)
+                        # variance_[i, :] = ((this_X - rec_i)**2).mean(axis=0)
+                        variance_[i, :] = (sparse_code[:, i][:, None]**2 * (this_X - rec_i)**2).mean(axis=0)
+                        m = (sparse_code[:, i]**2).mean()
+                        if m>0:
+                            variance_[i, :] /= m
                     # else:
                     #     # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
                     #     #print (rec_i.shape)
                     #     variance_[i, :] = ((this_X / sparse_code[:, i][:, None] - dictionary[i, :][None, :])**2).mean(axis=0)
-            else:
-                # variance_ = ((this_X[:, np.newaxis, :] - dictionary[np.newaxis, :, :]*sparse_code[:, :, np.newaxis])**2).mean(axis=0)
-            #variance_[i, :] = (residual**2).mean(axis=0)
-                variance_ = - sparse_code.T @ (residual**2)
-                variance_ /= batch_size
+            # else:
+            #     # variance_ = ((this_X[:, np.newaxis, :] - dictionary[np.newaxis, :, :]*sparse_code[:, :, np.newaxis])**2).mean(axis=0)
+            # #variance_[i, :] = (residual**2).mean(axis=0)
+            #     variance_ = - sparse_code.T @ (residual**2)
+            #     variance_ /= batch_size
 
             # print('minmax variance_', variance_.min(axis=1), variance_.max(axis=1), variance_.max(axis=1).shape)
             # print('minmax variance_', variance_.min(axis=0).reshape((12, 12)), variance_.max(axis=0).reshape((12, 12)), variance_.max(axis=0).shape)
@@ -430,6 +434,10 @@ def dict_learning(X, dictionary=None, precision=None,
         if not do_precision:
             # we normalise filters
             norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
+            dictionary /= norm[:, np.newaxis]
+        else:
+            # we normalise filters
+            norm = np.sqrt(np.diagonal(dictionary @ (precision*dictionary).T))
             dictionary /= norm[:, np.newaxis]
 
         cputime = (time.time() - t0)

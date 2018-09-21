@@ -454,7 +454,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
         ax.set_xticks(())
         ax.set_yticks(())
         ax.set_axis_off()
-    # 
+    #
     # if title is not None:
     #     fig.suptitle(title, fontsize=12, backgroundcolor='white', color='k')
     if not fname is None:
@@ -711,7 +711,7 @@ def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None)
     return fig, ax
 
 
-def plot_P_cum(P_cum, ymin=0.95, ymax=1.001, title='non-linear functions', suptitle=None, ylabel='quantile', verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
+def plot_P_cum(P_cum, ymin=0.75, ymax=1.001, title='non-linear functions', suptitle=None, ylabel='quantile', verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(15, 8))
