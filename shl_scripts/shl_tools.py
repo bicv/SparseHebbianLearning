@@ -14,7 +14,7 @@ def touch(filename):
 
 
 def preprocessing(image, height=256, width=256, patch_size=(12, 12),
-                  do_bandpass=True, seed=None):
+                  do_bandpass=True, seed=None, do_mask=False):
     slip = Image({'N_X': height, 'N_Y': width,
                   'white_n_learning': 0,
                   'seed': seed,
@@ -23,7 +23,7 @@ def preprocessing(image, height=256, width=256, patch_size=(12, 12),
                   'white_f_0': .4,  # olshausen = 0.2
                   'white_alpha': 1.4,
                   'white_steepness': 4.,
-                  'do_mask': True})
+                  'do_mask': do_mask})
     image = slip.whitening(image)
     if do_bandpass:
         # # print(2*.5*max(height, width)/max(patch_size))
@@ -59,7 +59,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None, do_
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
              datapath='database/', name_database='kodakdb', do_bandpass=True,
-             N_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
+             N_patches=1024, seed=None, do_mask=False, patch_norm=False, verbose=0,
              cache_dir='/tmp/cache_dir', over_patches=8, matname=None):
     """
     Extract data:
@@ -82,7 +82,7 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
                       'seed': seed, 'N_X': height, 'N_Y': width})
         slip_us = Image({'N_X': height*patch_ds, 'N_Y': width*patch_ds,
                          'datapath': datapath,
-                         'do_mask': True,
+                         'do_mask': False,
                          'N_image': n_image,
                          'seed': seed})
         import os
@@ -349,7 +349,7 @@ def compute_kurto(data, dico):
 # To adapt with shl_exp
 
 
-def show_dico_in_order(shl_exp, dico, data=None, title=None, fname=None, dpi=200, **kwargs):
+def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, **kwargs):
     """
     Displays the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end
@@ -360,13 +360,13 @@ def show_dico_in_order(shl_exp, dico, data=None, title=None, fname=None, dpi=200
 
 
 def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None,
-                 do_tiles=True, fname=None, dpi=200, fig=None, ax=None):
+                 do_tiles=False, fname=None, fig=None, ax=None, **kwargs):
     """
     display the dictionary in a random order
     """
-    import matplotlib
-    subplotpars = matplotlib.figure.SubplotParams(
-        left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
+    # import matplotlib
+    # subplotpars = matplotlib.figure.SubplotParams(
+    #     left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
 
     n_dictionary = dico.dictionary.shape[0]
     if dim_graph is None:
@@ -384,7 +384,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
 
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(10, 10), subplotpars=subplotpars)
+        fig = plt.figure(figsize=(15, 15*dim_graph[1]/dim_graph[0]))#, subplotpars=subplotpars)
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -396,12 +396,12 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             if not dico.precision is None:
                 dico_to_display = dico_to_display.reshape((dim_patch, dim_patch))/cmax
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
-                precision_cmax = np.max(precision_to_display)
+                precision_to_display = (precision_to_display - np.min(precision_to_display))
+                precision_to_display /= np.max(precision_to_display)-np.min(precision_to_display)
 
                 image = np.dstack((.5 + .5*dico_to_display, .5 + .5 *
                                    dico_to_display, .5 + .5*dico_to_display))
-                image *= np.dstack((np.ones_like(precision_to_display), precision_to_display /
-                                    precision_cmax, np.ones_like(precision_to_display)))
+                image *= np.dstack((np.ones_like(precision_to_display), 1.-precision_to_display, np.ones_like(precision_to_display)))
                 ax.imshow(image, interpolation='nearest')
                 # DEBUG:
                 # ax.imshow(precision_to_display/precision_cmax,
@@ -416,16 +416,37 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             ax.set_yticks(())
     else:
         # backgroung image
-        image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1))
+        if not dico.precision is None:
+            image = np.zeros((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1, 3))
+        else:
+            image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1))
         for i in range(np.prod(dim_graph)):
             dico_to_display = dico.dictionary[indices[i]].reshape((dim_patch, dim_patch))
             cmax = np.max(np.abs(dico_to_display))
+            # dico_cmax = np.max(np.abs(dico.dictionary))
+
             i_col, i_row = i % dim_graph[1], i // dim_graph[1]
-            image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
+            if not dico.precision is None:
+                patch = np.ones((dim_patch, dim_patch, 3))#dico_to_display[:, :, None] / cmax
+                precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
+                if True:
+                    precision_to_display -= np.min(precision_to_display)
+                    precision_to_display /= np.max(precision_to_display)
+                else:
+                    precision_to_display /= np.max(precision_to_display)
+
+                patch[:, :, 0]  = 0.8 * np.ones((dim_patch, dim_patch))
+                patch[:, :, 1]  = precision_to_display
+                patch[:, :, 2]  = dico_to_display / cmax  /2 + .5
+                from matplotlib.colors import hsv_to_rgb
+                patch = hsv_to_rgb(patch)
+                image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1)), :] = patch
+
+            else:
+                image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
 
         if not dico.precision is None:
-            print('not implemented') # TODO
-            assert(False)
+            ax.imshow(image, interpolation='nearest')
         else:
             ax.imshow(image,
                       cmap=plt.cm.gray_r, vmin=-1, vmax=+1,
@@ -433,9 +454,9 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
         ax.set_xticks(())
         ax.set_yticks(())
         ax.set_axis_off()
-
-    if title is not None:
-        fig.suptitle(title, fontsize=12, backgroundcolor='white', color='k')
+    #
+    # if title is not None:
+    #     fig.suptitle(title, fontsize=12, backgroundcolor='white', color='k')
     if not fname is None:
         fig.savefig(fname, dpi=dpi)
     return fig, ax
@@ -486,7 +507,7 @@ def plot_coeff_distribution(dico, data, title=None, algorithm=None, fname=None, 
     df = pd.DataFrame(res_lst, columns=['Coeff'])
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -537,7 +558,7 @@ def plot_dist_max_min(shl_exp, dico, data=None, algorithm=None, fname=None, fig=
     bins_max = bins_step(0.0001, np.max(coeff_max), 20)
     bins_min = bins_step(0.0001, np.max(coeff_min), 20)
     import matplotlib.pyplot as plt
-    fig = plt.figure(figsize=(6, 10))
+    fig = plt.figure(figsize=(15, 10))
     ax = plt.subplot(2, 1, 1)
     with sns.axes_style("white"):
         n_max, bins1 = np.histogram(coeff_max, bins_max)
@@ -590,7 +611,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None, fig=N
 
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -626,7 +647,7 @@ def plot_proba_histogram(coding, verbose=False, fig=None, ax=None):
 
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -642,7 +663,7 @@ def plot_error(dico, fig=None, ax=None):
     # TODO : show SE as a function of l0
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
     n = np.arange(dico.n_iter)
@@ -657,7 +678,7 @@ def plot_error(dico, fig=None, ax=None):
 def plot_variance(shl_exp, sparse_code, fname=None, fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
     n_dictionary = sparse_code.shape[1]
@@ -676,7 +697,7 @@ def plot_variance(shl_exp, sparse_code, fname=None, fig=None, ax=None):
 def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
     variance = np.mean(sparse_code**2, axis=0)
@@ -693,7 +714,7 @@ def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None)
 def plot_P_cum(P_cum, ymin=0.95, ymax=1.001, title='non-linear functions', suptitle=None, ylabel='quantile', verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 8))
+        fig = plt.figure(figsize=(15, 8))
     if ax is None:
         ax = fig.add_subplot(111)
     coefficients = np.linspace(0, 1, P_cum.shape[1])
@@ -720,7 +741,7 @@ def plot_P_cum(P_cum, ymin=0.95, ymax=1.001, title='non-linear functions', supti
 def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True', ylabel='MP', fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 16))
+        fig = plt.figure(figsize=(15, 15))
     if ax is None:
         ax = fig.add_subplot(111)
 
@@ -764,7 +785,7 @@ def time_plot(shl_exp, dico, variable='kurt', unit=None, N_nosample=0, alpha=.6,
                 color=None, label=None, fname=None, fig=None, ax=None):
     import matplotlib.pyplot as plt
     if fig is None:
-        fig = plt.figure(figsize=(16, 4))
+        fig = plt.figure(figsize=(15, 5))
     if ax is None:
         ax = fig.add_subplot(111)
 

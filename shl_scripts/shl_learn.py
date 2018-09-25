@@ -88,10 +88,10 @@ class SparseHebbianLearning:
     def __init__(self, fit_algorithm, dictionary=None, precision=None,
                  eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HEH',
-                 eta_homeo=0.05, alpha_homeo=0.0, C=5., nb_quant=256, P_cum=None,
+                 eta_homeo=0.05, alpha_homeo=0.0, C=1., nb_quant=256, P_cum=None,
                  n_dictionary=None, n_iter=10000,
-                 batch_size=100,
-                 l0_sparseness=None, fit_tol=None, #  l0_sparseness_end=None,
+                 batch_size=32,
+                 l0_sparseness=None, fit_tol=None, alpha_MP=1.,
                  do_precision=True, do_sym=False,
                  record_each=200, record_num_batches=2**12,
                  verbose=False, one_over_F=True):
@@ -113,7 +113,7 @@ class SparseHebbianLearning:
         self.do_sym = do_sym
         self.batch_size = batch_size
         self.l0_sparseness = l0_sparseness
-        # self.l0_sparseness_end = l0_sparseness_end
+        self.alpha_MP = alpha_MP
         self.fit_tol = fit_tol
         self.do_precision = do_precision
         self.record_each = record_each
@@ -145,7 +145,7 @@ class SparseHebbianLearning:
                                   nb_quant=self.nb_quant,
                                   P_cum=self.P_cum,
                                   n_dictionary=self.n_dictionary,
-                                  l0_sparseness=self.l0_sparseness, #l0_sparseness_end=self.l0_sparseness_end,
+                                  l0_sparseness=self.l0_sparseness, alpha_MP=self.alpha_MP,
                                   n_iter=self.n_iter, method=self.fit_algorithm,
                                   do_sym=self.do_sym, one_over_F=self.one_over_F,
                                   batch_size=self.batch_size,
@@ -159,7 +159,7 @@ class SparseHebbianLearning:
         else:
             self.dictionary, self.precision, self.P_cum, self.record = return_fn
 
-    def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None):
+    def transform(self, X, algorithm=None, l0_sparseness=None, fit_tol=None, alpha_MP=None):
         """Fit the model from data in X.
 
         Parameters
@@ -176,15 +176,16 @@ class SparseHebbianLearning:
         if algorithm is None:  algorithm = self.fit_algorithm
         if l0_sparseness is None:  l0_sparseness = self.l0_sparseness
         if fit_tol is None:  fit_tol = self.fit_tol
+        if alpha_MP is None:  alpha_MP = self.alpha_MP
         return sparse_encode(X, self.dictionary, self.precision, algorithm=algorithm, P_cum=self.P_cum,
-                                fit_tol=fit_tol, l0_sparseness=l0_sparseness)
+                                fit_tol=fit_tol, l0_sparseness=l0_sparseness, alpha_MP=alpha_MP)
 
 
 def dict_learning(X, dictionary=None, precision=None,
                   eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
                   homeo_method = 'HEH',
                   eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
-                  n_dictionary=2, l0_sparseness=10, fit_tol=None, # l0_sparseness_end=None,
+                  n_dictionary=2, l0_sparseness=10, fit_tol=None, alpha_MP=1.,
                   do_precision=True, n_iter=100, one_over_F=True,
                   batch_size=100, record_each=0, record_num_batches=2**12, verbose=False,
                   method='mp', do_sym=False):
@@ -322,7 +323,10 @@ def dict_learning(X, dictionary=None, precision=None,
 
     # print('do_precision=', do_precision)
     if do_precision:
-        precision = np.ones((n_dictionary, n_pixels))
+        precision = None #
+        # precision = np.ones((n_dictionary, n_pixels))
+        variance = (X**2).mean() * np.ones((n_dictionary, n_pixels))
+        precision = 1 / variance
     else:
         precision = None
 
@@ -366,8 +370,43 @@ def dict_learning(X, dictionary=None, precision=None,
         # Sparse coding
         sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
                                    P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
-                                   gain=gain)
+                                   gain=gain, alpha_MP=alpha_MP)
         residual = this_X - sparse_code @ dictionary
+
+        # compute variance
+        if do_precision:
+            # precision *= 1-eta
+            variance *= 1-eta
+            if True:
+                variance_ = np.zeros((n_dictionary, n_pixels))
+                for i in range(n_dictionary):
+                    if True:
+                        # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
+                        rec_i = sparse_code[:, i][:, None] * dictionary[i, :][None, :]
+                        #print (rec_i.shape)
+                        variance_[i, :] = ((this_X - rec_i)**2).mean(axis=0)
+                        # variance_[i, :] = (sparse_code[:, i][:, None]**2 * (this_X - rec_i)**2).mean(axis=0)
+                        # m = (sparse_code[:, i]**2).mean()
+                        # if m>0:
+                        #     variance_[i, :] /= m
+                    # else:
+                    #     # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
+                    #     #print (rec_i.shape)
+                    #     variance_[i, :] = ((this_X / sparse_code[:, i][:, None] - dictionary[i, :][None, :])**2).mean(axis=0)
+            # else:
+            #     # variance_ = ((this_X[:, np.newaxis, :] - dictionary[np.newaxis, :, :]*sparse_code[:, :, np.newaxis])**2).mean(axis=0)
+            # #variance_[i, :] = (residual**2).mean(axis=0)
+            #     variance_ = - sparse_code.T @ (residual**2)
+            #     variance_ /= batch_size
+
+            # print('minmax variance_', variance_.min(axis=1), variance_.max(axis=1), variance_.max(axis=1).shape)
+            # print('minmax variance_', variance_.min(axis=0).reshape((12, 12)), variance_.max(axis=0).reshape((12, 12)), variance_.max(axis=0).shape)
+            # print('minmax variance_', variance_.min(), variance_.max(), variance_.shape)
+            variance += eta * variance_
+            # print('minmax variance', variance.min(), variance.max(), variance.shape)
+            # precision += eta * 1/variance_
+            precision = 1./(variance + 1.e-16)
+            # print('minmax precision', precision.min(), precision.max(), precision.shape)
 
         # homeostasis : we compute P_cum and define different strategies
         mean_measure, P_cum, gain = homeostasis(mean_measure, P_cum, gain,
@@ -378,6 +417,8 @@ def dict_learning(X, dictionary=None, precision=None,
         gradient = - sparse_code.T @ residual
         # divide by the batch size to get the average in the Hebbian learning:
         gradient /= batch_size
+        if do_precision: # modulates gradient by the precision
+            gradient *= precision / precision.mean()
 
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf
@@ -390,19 +431,14 @@ def dict_learning(X, dictionary=None, precision=None,
         else:
             dictionary -= eta * gradient
 
-        # we normalise filters
-        norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
-        dictionary /= norm[:, np.newaxis]
-        #
-        if do_precision:
-            precision *= 1-eta
-            variance = np.zeros((n_dictionary, n_pixels))
-            for i in range(n_dictionary):
-                rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
-                # print (rec_i.shape)
-                variance[i, :] = ((this_X - rec_i)**2).mean(axis=0)
-            #print('minmax variance', variance.min(), variance.max(), variance.shape)
-            precision += eta * 1./(variance + 1.e-16)
+        if not do_precision:
+            # we normalise filters
+            norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
+            dictionary /= norm[:, np.newaxis]
+        else:
+            # we normalise filters
+            norm = np.sqrt(np.diagonal(dictionary @ (precision*dictionary).T))
+            dictionary /= norm[:, np.newaxis]
 
         cputime = (time.time() - t0)
 
