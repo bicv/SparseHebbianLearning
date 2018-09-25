@@ -75,7 +75,7 @@ class SHL(object):
                  l0_sparseness=14,
                  alpha_MP = .9,
                  one_over_F=True,
-                 n_iter=2**13 + 1,
+                 n_iter=2**10 + 1,
                  eta=0.02, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HEH',
                  eta_homeo=0.08, alpha_homeo=.005,
