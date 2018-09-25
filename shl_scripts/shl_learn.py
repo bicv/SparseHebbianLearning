@@ -384,11 +384,11 @@ def dict_learning(X, dictionary=None, precision=None,
                         # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
                         rec_i = sparse_code[:, i][:, None] * dictionary[i, :][None, :]
                         #print (rec_i.shape)
-                        # variance_[i, :] = ((this_X - rec_i)**2).mean(axis=0)
-                        variance_[i, :] = (sparse_code[:, i][:, None]**2 * (this_X - rec_i)**2).mean(axis=0)
-                        m = (sparse_code[:, i]**2).mean()
-                        if m>0:
-                            variance_[i, :] /= m
+                        variance_[i, :] = ((this_X - rec_i)**2).mean(axis=0)
+                        # variance_[i, :] = (sparse_code[:, i][:, None]**2 * (this_X - rec_i)**2).mean(axis=0)
+                        # m = (sparse_code[:, i]**2).mean()
+                        # if m>0:
+                        #     variance_[i, :] /= m
                     # else:
                     #     # rec_i = (sparse_code[:, i][:, None]) @ (dictionary[i, :][None, :])
                     #     #print (rec_i.shape)

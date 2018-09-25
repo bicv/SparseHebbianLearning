@@ -73,12 +73,12 @@ class SHL(object):
                  fit_tol=None,
                  do_precision=True,
                  l0_sparseness=14,
-                 alpha_MP = .3297,
+                 alpha_MP = .9,
                  one_over_F=True,
                  n_iter=2**13 + 1,
-                 eta=0.0004, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.02, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method='HEH',
-                 eta_homeo=0.0004, alpha_homeo=.015,
+                 eta_homeo=0.08, alpha_homeo=.005,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -455,7 +455,7 @@ class SHL_set(object):
             # using that object to perform quantitative visualizations.
             if display == 'dynamic':
                 if not isinstance(value, int):
-                    label = '%s=%.3f' % (variable, value)
+                    label = '%s=%.4f' % (variable, value)
                 else:
                     label = '%s=%d' % (variable, value)
                 fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
@@ -515,7 +515,7 @@ def prun(variable, value, data, opts, matname, list_figures, fig_kwargs, verbose
     if isinstance(value, int):
         value_str = str(value)
     else:
-        value_str = '%.3f' % value
+        value_str = '%.4f' % value
     if verbose: print('Running variable', variable, 'with value', value_str)
     value = check_type(variable, value)
 

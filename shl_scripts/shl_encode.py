@@ -234,6 +234,8 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
     # starting Matching Pursuit
     if precision is None:
         Xcorr = (dictionary @ dictionary.T) # size (N, N)
+        #norm = np.sum(dictionary**2, axis=1)
+        norm = np.diagonal(Xcorr)   # size (N,)
         corr = (X @ dictionary.T) # size (K, N)
     else:
         #weights = np.sqrt(precision)
