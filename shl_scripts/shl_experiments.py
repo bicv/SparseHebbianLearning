@@ -60,7 +60,7 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_width=14,
+                 patch_width=16,
                  N_patches=2**16,
                  datapath='../database/',
                  name_database='kodakdb', # TODO : fing a larger, more homogeneous database?
@@ -68,15 +68,15 @@ class SHL(object):
                  do_mask=False, do_bandpass=True,
                  over_patches=16,
                  patch_ds=1,
-                 n_dictionary=35**2,
+                 n_dictionary=21**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  l0_sparseness=14,
                  alpha_MP=.9,
                  one_over_F=True,
-                 n_iter=2**13 + 1,
+                 n_iter=2**11 + 1,
                  eta=0.02, beta1=.9, beta2=.999, epsilon=1.e-8,
-                 do_precision=True, eta_precision=0.0005,
+                 do_precision=False, eta_precision=0.0005,
                  homeo_method='HEH',
                  eta_homeo=0.02, alpha_homeo=.5,
                  C=3., nb_quant=128, P_cum=None,
@@ -540,7 +540,7 @@ if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 10
 
-    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='HAP', verbose=verbose)
+    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='HEH', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
     fig, ax = shl.show_dico(dico)
