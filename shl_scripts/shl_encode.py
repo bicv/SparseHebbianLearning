@@ -288,8 +288,9 @@ def mp(X, dictionary, precision=None, l0_sparseness=10, fit_tol=None, alpha_MP=1
             q = rectify(corr, do_sym=do_sym) * gain  # size (K, N)
 
             ind = np.argmax(q, axis=1) # size (K,)
-            sparse_code[line, ind] += corr[line, ind] # size (K,)
-            corr -= (Xcorr[ind, :] / norm[ind][:, np.newaxis]) * sparse_code[line, ind][:, np.newaxis]
+            c_ind = corr[line, ind]
+            sparse_code[line, ind] += c_ind # size (K,)
+            corr -= (Xcorr[ind, :] / norm[ind][:, np.newaxis]) * c_ind[:, np.newaxis]
 
     if verbose>0:
         duration=time.time()-t0

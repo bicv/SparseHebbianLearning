@@ -88,11 +88,11 @@ class SparseHebbianLearning:
     def __init__(self, fit_algorithm, dictionary=None, precision=None,
                  eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
                  homeo_method = 'HEH',
-                 eta_homeo=0.05, alpha_homeo=0.0, C=1., nb_quant=256, P_cum=None,
+                 eta_homeo=0.05, alpha_homeo=0.0, C=5., nb_quant=256, P_cum=None,
                  n_dictionary=None, n_iter=10000,
                  batch_size=32,
                  l0_sparseness=None, fit_tol=None, alpha_MP=1.,
-                 do_precision=True, eta_precision=0.01, do_sym=False,
+                 do_precision=False, eta_precision=0.01, do_sym=False,
                  record_each=200, record_num_batches=2**12,
                  verbose=False, one_over_F=True):
         self.fit_algorithm = fit_algorithm
@@ -188,7 +188,7 @@ def dict_learning(X, dictionary=None, precision=None,
                   homeo_method = 'HEH',
                   eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
                   n_dictionary=2, l0_sparseness=10, fit_tol=None, alpha_MP=1.,
-                  do_precision=True, eta_precision=0.001,
+                  do_precision=False, eta_precision=0.001,
                   n_iter=100, one_over_F=True,
                   batch_size=100, record_each=0, record_num_batches=2**12, verbose=False,
                   method='mp', do_sym=False):
