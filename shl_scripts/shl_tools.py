@@ -349,7 +349,7 @@ def compute_kurto(data, dico):
 # To adapt with shl_exp
 
 
-def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, do_precision=False, **kwargs):
+def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, **kwargs):
     """
     Displays the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end
@@ -360,7 +360,7 @@ def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, do_precisi
 
 
 def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None,
-                 do_tiles=False, fname=None, fig=None, ax=None, do_precision=False, **kwargs):
+                 do_tiles=False, fname=None, fig=None, ax=None, **kwargs):
     """
     display the dictionary in a random order
     """
@@ -393,7 +393,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             ax = fig.add_subplot(dim_graph[0], dim_graph[1], i + 1)
             dico_to_display = dico.dictionary[indices[i]]
             cmax = np.max(np.abs(dico_to_display))
-            if do_precision:
+            if shl_exp.do_precision:
                 dico_to_display = dico_to_display.reshape((dim_patch, dim_patch))/cmax
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
                 precision_to_display = (precision_to_display - np.min(precision_to_display))
@@ -416,7 +416,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             ax.set_yticks(())
     else:
         # backgroung image
-        if do_precision:
+        if shl_exp.do_precision:
             image = np.zeros((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1, 3))
         else:
             image = -np.ones((dim_graph[0]*(dim_patch+1)+1, dim_graph[1]*(dim_patch+1)+1))
@@ -426,7 +426,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             # dico_cmax = np.max(np.abs(dico.dictionary))
 
             i_col, i_row = i % dim_graph[1], i // dim_graph[1]
-            if do_precision:
+            if shl_exp.do_precision:
                 patch = np.ones((dim_patch, dim_patch, 3))#dico_to_display[:, :, None] / cmax
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
                 if True:
@@ -445,7 +445,7 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
             else:
                 image[(i_row*(dim_patch+1)+1):((i_row+1)*(dim_patch+1)), (i_col*(dim_patch+1)+1):((i_col+1)*(dim_patch+1))] = dico_to_display / cmax
 
-        if do_precision:
+        if shl_exp.do_precision:
             ax.imshow(image, interpolation='nearest')
         else:
             ax.imshow(image,
