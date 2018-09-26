@@ -68,7 +68,7 @@ class SHL(object):
                  do_mask=False, do_bandpass=True,
                  over_patches=16,
                  patch_ds=1,
-                 n_dictionary=21**2,
+                 n_dictionary=35**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  l0_sparseness=14,
