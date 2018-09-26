@@ -71,14 +71,14 @@ class SHL(object):
                  n_dictionary=35**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 do_precision=True,
                  l0_sparseness=14,
-                 alpha_MP = .9,
+                 alpha_MP=.9,
                  one_over_F=True,
-                 n_iter=2**10 + 1,
-                 eta=0.02, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 n_iter=2**13 + 1,
+                 eta=0.0005, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 do_precision=True, eta_precision=0.0005,
                  homeo_method='HEH',
-                 eta_homeo=0.08, alpha_homeo=.005,
+                 eta_homeo=0.0001, alpha_homeo=.5,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -109,7 +109,6 @@ class SHL(object):
             self.n_image = None
         self.batch_size = batch_size
         self.fit_tol = fit_tol
-        self.do_precision = do_precision
         self.do_mask = do_mask
         self.do_bandpass = do_bandpass
         self.over_patches = over_patches
@@ -120,6 +119,8 @@ class SHL(object):
         self.beta1 = beta1
         self.beta2 = beta2
         self.epsilon = epsilon
+        self.do_precision = do_precision
+        self.eta_precision = eta_precision
         self.homeo_method = homeo_method
         self.eta_homeo = eta_homeo
         self.alpha_homeo = alpha_homeo
@@ -217,6 +218,8 @@ class SHL(object):
                                          beta1=self.beta1,
                                          beta2=self.beta2,
                                          epsilon=self.epsilon,
+                                         do_precision=self.do_precision,
+                                         eta_precision=self.eta_precision,
                                          homeo_method=self.homeo_method,
                                          eta_homeo=self.eta_homeo,
                                          alpha_homeo=self.alpha_homeo,
@@ -230,7 +233,6 @@ class SHL(object):
                                          batch_size=self.batch_size,
                                          verbose=self.verbose,
                                          fit_tol=self.fit_tol,
-                                         do_precision=self.do_precision,
                                          record_each=self.record_each,
                                          record_num_batches=self.record_num_batches,
 )
@@ -395,7 +397,10 @@ class SHL_set(object):
         return  self.tag + f'_{variable}={label}'
 
     def get_values(self, variable, median, N_scan, verbose=0):
-        values = np.logspace(-1., 1., N_scan, base=self.base)*median
+        if variable is 'alpha_MP':
+            values = np.logspace(-1., 0., N_scan, base=self.base)
+        else:
+            values = np.logspace(-1., 1., N_scan, base=self.base)*median
         values = [check_type(variable, value) for value in values]
         if verbose>1: print('DEBUG: variable, median, values = ', variable, median, values)
         return values
