@@ -75,10 +75,10 @@ class SHL(object):
                  alpha_MP=.9,
                  one_over_F=True,
                  n_iter=2**13 + 1,
-                 eta=0.0005, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.02, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=True, eta_precision=0.0005,
                  homeo_method='HEH',
-                 eta_homeo=0.0001, alpha_homeo=.5,
+                 eta_homeo=0.02, alpha_homeo=.5,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -399,6 +399,8 @@ class SHL_set(object):
     def get_values(self, variable, median, N_scan, verbose=0):
         if variable is 'alpha_MP':
             values = np.logspace(-1., 0., N_scan, base=self.base)
+        elif variable in ['beta1', 'beta2']:
+            values = 1 - np.logspace(-1., 1., N_scan, base=self.base)*(1-median)
         else:
             values = np.logspace(-1., 1., N_scan, base=self.base)*median
         values = [check_type(variable, value) for value in values]
