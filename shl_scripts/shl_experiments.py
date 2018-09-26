@@ -72,11 +72,7 @@ class SHL(object):
                  learning_algorithm='mp',
                  fit_tol=None,
                  l0_sparseness=13,
-<<<<<<< HEAD
-                 alpha_MP=.9,
-=======
                  alpha_MP=1.,
->>>>>>> 26da0bb07b795a6bb78921fae5f140d73d4a7854
                  one_over_F=True,
                  n_iter=2**13 + 1,
                  eta=0.007, beta1=.9, beta2=.999, epsilon=1.e-8,
