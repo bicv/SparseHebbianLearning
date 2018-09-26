@@ -401,6 +401,8 @@ class SHL_set(object):
             values = np.logspace(-1., 0., N_scan, base=self.base)
         elif variable in ['beta1', 'beta2']:
             values = 1 - np.logspace(-1., 1., N_scan, base=self.base)*(1-median)
+        elif variable in ['seed']:
+            values = median + np.arange(N_scan)
         else:
             values = np.logspace(-1., 1., N_scan, base=self.base)*median
         values = [check_type(variable, value) for value in values]
@@ -514,7 +516,7 @@ class SHL_set(object):
             return fig, ax
 
 def check_type(variable, value):
-    if variable in ['n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary', 'batch_size']:
+    if variable in ['seed', 'n_iter', 'nb_quant', 'l0_sparseness', 'patch_width', 'n_dictionary', 'batch_size']:
         value = int(value)
     return value
 
