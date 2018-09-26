@@ -92,7 +92,7 @@ class SparseHebbianLearning:
                  n_dictionary=None, n_iter=10000,
                  batch_size=32,
                  l0_sparseness=None, fit_tol=None, alpha_MP=1.,
-                 do_precision=True, do_sym=False,
+                 do_precision=True, eta_precision=0.01, do_sym=False,
                  record_each=200, record_num_batches=2**12,
                  verbose=False, one_over_F=True):
         self.fit_algorithm = fit_algorithm
@@ -116,6 +116,7 @@ class SparseHebbianLearning:
         self.alpha_MP = alpha_MP
         self.fit_tol = fit_tol
         self.do_precision = do_precision
+        self.eta_precision = eta_precision
         self.record_each = record_each
         self.record_num_batches = record_num_batches
         self.verbose = verbose
@@ -135,7 +136,8 @@ class SparseHebbianLearning:
         self : object
             Returns the instance itself.
         """
-        return_fn = dict_learning(X, dictionary=self.dictionary, do_precision=self.do_precision,
+        return_fn = dict_learning(X, dictionary=self.dictionary,
+                                  do_precision=self.do_precision, eta_precision=self.eta_precision,
                                   eta=self.eta, beta1=self.beta1, beta2=self.beta2,
                                   epsilon=self.epsilon,
                                   homeo_method=self.homeo_method,
@@ -186,7 +188,8 @@ def dict_learning(X, dictionary=None, precision=None,
                   homeo_method = 'HEH',
                   eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
                   n_dictionary=2, l0_sparseness=10, fit_tol=None, alpha_MP=1.,
-                  do_precision=True, n_iter=100, one_over_F=True,
+                  do_precision=True, eta_precision=0.001,
+                  n_iter=100, one_over_F=True,
                   batch_size=100, record_each=0, record_num_batches=2**12, verbose=False,
                   method='mp', do_sym=False):
     """
@@ -277,6 +280,9 @@ def dict_learning(X, dictionary=None, precision=None,
     do_precision: boolean
         Switch to perform or not a precision-weighted learning.
 
+    eta_precision: float
+        Gives the learning parameter for computing the precision.
+
     do_mask: boolean
         A switch to learn the filters just on a disk. This allows to control for potential
         problems with the fact that images atre sampled on a square grid.
@@ -321,14 +327,8 @@ def dict_learning(X, dictionary=None, precision=None,
     norm = np.sqrt(np.sum(dictionary**2, axis=1))
     dictionary /= norm[:, np.newaxis]
 
-    # print('do_precision=', do_precision)
-    if do_precision:
-        precision = None #
-        # precision = np.ones((n_dictionary, n_pixels))
-        variance = (X**2).mean() * np.ones((n_dictionary, n_pixels))
-        precision = 1 / variance
-    else:
-        precision = None
+    variance = (X**2).mean() * np.ones((n_dictionary, n_pixels))
+    precision = 1 / variance
 
     if verbose==1:
         print('[dict_learning]', end=' ')
@@ -368,15 +368,16 @@ def dict_learning(X, dictionary=None, precision=None,
     for ii, this_X in zip(range(n_iter), batches):
 
         # Sparse coding
-        sparse_code = sparse_encode(this_X, dictionary, precision, algorithm=method, fit_tol=fit_tol,
-                                   P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
-                                   gain=gain, alpha_MP=alpha_MP)
+        sparse_code = sparse_encode(this_X, dictionary, None if do_precision else precision,
+                                    algorithm=method, fit_tol=fit_tol,
+                                    P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
+                                    gain=gain, alpha_MP=alpha_MP)
         residual = this_X - sparse_code @ dictionary
 
         # compute variance
-        if do_precision:
+        if eta_precision>0:
             # precision *= 1-eta
-            variance *= 1-eta
+            variance *= 1-eta_precision
             if True:
                 variance_ = np.zeros((n_dictionary, n_pixels))
                 for i in range(n_dictionary):
@@ -402,7 +403,7 @@ def dict_learning(X, dictionary=None, precision=None,
             # print('minmax variance_', variance_.min(axis=1), variance_.max(axis=1), variance_.max(axis=1).shape)
             # print('minmax variance_', variance_.min(axis=0).reshape((12, 12)), variance_.max(axis=0).reshape((12, 12)), variance_.max(axis=0).shape)
             # print('minmax variance_', variance_.min(), variance_.max(), variance_.shape)
-            variance += eta * variance_
+            variance += eta_precision    * variance_
             # print('minmax variance', variance.min(), variance.max(), variance.shape)
             # precision += eta * 1/variance_
             precision = 1./(variance + 1.e-16)
@@ -417,8 +418,9 @@ def dict_learning(X, dictionary=None, precision=None,
         gradient = - sparse_code.T @ residual
         # divide by the batch size to get the average in the Hebbian learning:
         gradient /= batch_size
-        if do_precision: # modulates gradient by the precision
-            gradient *= precision / precision.mean()
+
+        # if do_precision: # modulates gradient by the precision
+        #     gradient *= precision / precision.mean()
 
         if do_adam:
             # ADAM https://arxiv.org/pdf/1412.6980.pdf
@@ -431,14 +433,12 @@ def dict_learning(X, dictionary=None, precision=None,
         else:
             dictionary -= eta * gradient
 
-        if not do_precision:
-            # we normalise filters
-            norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
-            dictionary /= norm[:, np.newaxis]
-        else:
-            # we normalise filters
+        # we normalise filters
+        if do_precision:
             norm = np.sqrt(np.diagonal(dictionary @ (precision*dictionary).T))
-            dictionary /= norm[:, np.newaxis]
+        else:
+            norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
+        dictionary /= norm[:, np.newaxis]
 
         cputime = (time.time() - t0)
 
@@ -452,12 +452,13 @@ def dict_learning(X, dictionary=None, precision=None,
                 MC = mutual_coherence(dictionary)
 
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
-                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary, precision,
-                                            algorithm=method, fit_tol=fit_tol,
-                                             # P_cum=P_cum, gain=gain,
-                                             P_cum=None, gain=np.ones(n_dictionary),
-                                             C=C, do_sym=do_sym,
-                                             l0_sparseness=l0_sparseness)
+                sparse_code_rec = sparse_encode(X_train[indx, :], dictionary,
+                                                None if do_precision else precision,
+                                                algorithm=method, fit_tol=fit_tol,
+                                                 # P_cum=P_cum, gain=gain,
+                                                 P_cum=None, gain=np.ones(n_dictionary),
+                                                 C=C, do_sym=do_sym,
+                                                 l0_sparseness=l0_sparseness)
 
                 from shl_scripts.shl_tools import get_logL
                 logL = get_logL(sparse_code_rec).mean()
