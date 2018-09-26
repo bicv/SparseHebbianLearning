@@ -60,12 +60,12 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_width=16,
+                 patch_width=18,
                  N_patches=2**16,
                  datapath='../database/',
                  name_database='kodakdb', # TODO : fing a larger, more homogeneous database?
                  #name_database='laurent',
-                 do_mask=False, do_bandpass=True,
+                 do_mask=True, do_bandpass=True,
                  over_patches=16,
                  patch_ds=1,
                  n_dictionary=21**2,
@@ -74,7 +74,7 @@ class SHL(object):
                  l0_sparseness=13,
                  alpha_MP=1.,
                  one_over_F=True,
-                 n_iter=2**13 + 1,
+                 n_iter=2**10 + 1,
                  eta=0.007, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HEH',
@@ -83,8 +83,8 @@ class SHL(object):
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
-                 batch_size=2**5,
-                 record_each=2**6,
+                 batch_size=2**10,
+                 record_each=2**5,
                  record_num_batches=2**10,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment

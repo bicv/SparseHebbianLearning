@@ -368,7 +368,7 @@ def dict_learning(X, dictionary=None, precision=None,
     for ii, this_X in zip(range(n_iter), batches):
 
         # Sparse coding
-        sparse_code = sparse_encode(this_X, dictionary, None if do_precision else precision,
+        sparse_code = sparse_encode(this_X, dictionary, precision if do_precision else None,
                                     algorithm=method, fit_tol=fit_tol,
                                     P_cum=P_cum, C=C, do_sym=do_sym, l0_sparseness=l0_sparseness,
                                     gain=gain, alpha_MP=alpha_MP)
@@ -435,10 +435,10 @@ def dict_learning(X, dictionary=None, precision=None,
 
         # we normalise filters
         if do_precision:
-            norm = np.sqrt(np.diagonal(dictionary @ (precision*dictionary).T))
+            squared_norm = np.sqrt(np.diagonal(dictionary @ (precision*dictionary).T))
         else:
-            norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
-        dictionary /= norm[:, np.newaxis]
+            squared_norm = np.sqrt(np.sum(dictionary**2, axis=1)).T
+        dictionary /= squared_norm[:, np.newaxis]
 
         cputime = (time.time() - t0)
 
@@ -453,7 +453,7 @@ def dict_learning(X, dictionary=None, precision=None,
 
                 indx = np.random.permutation(X_train.shape[0])[:record_num_batches]
                 sparse_code_rec = sparse_encode(X_train[indx, :], dictionary,
-                                                None if do_precision else precision,
+                                                precision if do_precision else None,
                                                 algorithm=method, fit_tol=fit_tol,
                                                  # P_cum=P_cum, gain=gain,
                                                  P_cum=None, gain=np.ones(n_dictionary),
