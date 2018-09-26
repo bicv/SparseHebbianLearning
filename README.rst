@@ -2,9 +2,9 @@ Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 
-.. image:: probe/ssc_homeo.png
+.. image:: probe/shl_homeo.png
    :scale: 100%
-   :alt: Set of RFs after aSSC learning.
+   :alt: Set of RFs after Sparse Hebbian Learning.
 
 
 Object
