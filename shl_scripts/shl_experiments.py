@@ -79,7 +79,7 @@ class SHL(object):
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HEH',
                  eta_homeo=0.02, alpha_homeo=.5,
-                 C=3., nb_quant=128, P_cum=None,
+                 C=2., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,

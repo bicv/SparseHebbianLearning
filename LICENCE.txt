@@ -1,2 +1,2 @@
-SHL_scripts - Licence
+SparseHebbianLearning - Licence
 ========================

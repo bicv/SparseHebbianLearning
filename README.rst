@@ -40,19 +40,19 @@ Installation
 
 * Then, either install the code directly::
 
-   pip3 install git+https://github.com/bicv/SHL_scripts.git
+   pip3 install git+https://github.com/bicv/SparseHebbianLearning.git
 
-* or if you wish to tinker with the code, download the code @ https://github.com/bicv/shl_scripts/archive/master.zip. You may also grab it directly using the command-line::
+* or if you wish to tinker with the code, download the code @ https://github.com/bicv/SparseHebbianLearning//archive/master.zip. You may also grab it directly using the command-line::
 
-   wget https://github.com/bicv/shl_scripts/archive/master.zip
-   unzip master.zip -d shl_scripts
-   cd shl_scripts/
+   wget https://github.com/bicv/SparseHebbianLearning//archive/master.zip
+   unzip master.zip -d SparseHebbianLearning/
+   cd SparseHebbianLearning/
    ipython setup.py clean build install
    jupyter notebook
 
 * developpers may use all the power of git with::
 
-   git clone https://github.com/bicv/SHL_scripts.git
+   git clone https://github.com/bicv/SparseHebbianLearning.git
 
 Licence
 --------
