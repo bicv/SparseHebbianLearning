@@ -71,7 +71,7 @@ class SHL(object):
                  n_dictionary=21**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 l0_sparseness=14,
+                 l0_sparseness=13,
                  alpha_MP=.9,
                  one_over_F=True,
                  n_iter=2**13 + 1,
@@ -350,9 +350,9 @@ class SHL(object):
 
     def show_dico(self, dico, data=None, title=None, **fig_kwargs):
         from shl_scripts.shl_tools import show_dico
-        return show_dico(self, dico=dico, data=data, title=title, **fig_kwargs)
+        return show_dico(self, dico=dico, data=data, title=title, do_precision=self.do_precision, **fig_kwargs)
 
-    def show_dico_in_order(self, dico, data=None, title=None, **fig_kwargs):
+    def show_dico_in_order(self, dico, data=None, title=None, do_precision=self.do_precision, **fig_kwargs):
         from shl_scripts.shl_tools import show_dico_in_order
         return show_dico_in_order(self, dico=dico, data=data, title=title, **fig_kwargs)
 
