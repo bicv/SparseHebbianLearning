@@ -74,7 +74,7 @@ class SHL(object):
                  l0_sparseness=14,
                  alpha_MP=.9,
                  one_over_F=True,
-                 n_iter=2**11 + 1,
+                 n_iter=2**13 + 1,
                  eta=0.007, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HEH',
@@ -84,7 +84,7 @@ class SHL(object):
                  seed=42,
                  patch_norm=False,
                  batch_size=2**5,
-                 record_each=2**7,
+                 record_each=2**6,
                  record_num_batches=2**10,
                  n_image=None,
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
