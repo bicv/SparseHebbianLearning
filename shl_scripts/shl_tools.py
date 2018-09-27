@@ -711,7 +711,7 @@ def plot_variance_histogram(shl_exp, sparse_code, fname=None, fig=None, ax=None)
     return fig, ax
 
 
-def plot_P_cum(P_cum, ymin=0.95, ymax=1.001, title='non-linear functions', suptitle=None, ylabel='quantile', verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None):
+def plot_P_cum(P_cum, ymin=0.95, ymax=1.001, title='non-linear functions', suptitle=None, ylabel='quantile', verbose=False, n_yticks=21, alpha=.05, c='g', fig=None, ax=None,  **kwargs):
     import matplotlib.pyplot as plt
     if fig is None:
         fig = plt.figure(figsize=(15, 8))
