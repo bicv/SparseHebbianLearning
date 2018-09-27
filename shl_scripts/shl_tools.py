@@ -348,19 +348,18 @@ def compute_kurto(data, dico):
 
 # To adapt with shl_exp
 
-
-def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, **kwargs):
+def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, dim_graph=None, seed=None,  **kwargs):
     """
     Displays the dictionary of filter in order of probability of selection.
     Filter which are selected more often than others are located at the end
 
     """
-    return show_dico(shl_exp, dico=dico, data=data, dim_graph=None,
+    return show_dico(shl_exp, dico=dico, data=data, dim_graph=dim_graph, seed=seed,
                      order=True, title=title, fname=fname, dpi=dpi, **kwargs)
 
 
 def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None,
-                 do_tiles=False, fname=None, fig=None, ax=None, **kwargs):
+                 seed=None, do_tiles=False, fname=None, fig=None, ax=None, **kwargs):
     """
     display the dictionary in a random order
     """
@@ -380,7 +379,8 @@ def show_dico(shl_exp, dico,  data=None, order=False, title=None, dim_graph=None
         res_lst = np.count_nonzero(sparse_code, axis=0)
         indices = res_lst.argsort()
     else:
-        indices = range(np.prod(dim_graph))
+        np.random.seed(seed)
+        indices = np.random.permutation(np.arange(n_dictionary))[:np.prod(dim_graph)]
 
     import matplotlib.pyplot as plt
     if fig is None:
