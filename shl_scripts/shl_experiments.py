@@ -75,15 +75,15 @@ class SHL(object):
                  alpha_MP=1.,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=0.007, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.0033, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
-                 homeo_method='HEH',
-                 eta_homeo=0.02, alpha_homeo=.08,
+                 homeo_method='HAP',
+                 eta_homeo=0.05, alpha_homeo=.5,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
-                 batch_size=2**10,
+                 batch_size=2**8, # HACK
                  record_each=2**5,
                  record_num_batches=2**10,
                  n_image=None,
@@ -398,7 +398,7 @@ class SHL_set(object):
 
     def get_values(self, variable, median, N_scan, verbose=0):
         if variable is 'alpha_MP':
-            values = np.logspace(-1., 0., N_scan, base=self.base)
+            values = np.logspace(-1., 0., N_scan, base=self.base, endpoint=True)
         elif variable in ['beta1', 'beta2']:
             values = 1 - np.logspace(-1., 1., N_scan, base=self.base)*(1-median)
         elif variable in ['seed']:
@@ -501,7 +501,7 @@ class SHL_set(object):
                 ax.set_ylabel(display_variable)
                 ax.set_xlabel(variable)
                 # ax.set_xlim(values.min(), values.max())
-                if display_variable in ['error', 'qerror']:
+                if display_variable in ['error']:
                     ax.set_ylim(0, 1)
                 # elif display_variable in ['perror']:
                 #     ax.set_ylim(1.0)
