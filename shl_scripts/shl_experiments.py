@@ -75,15 +75,15 @@ class SHL(object):
                  alpha_MP=1.,
                  one_over_F=True,
                  n_iter=2**10 + 1,
-                 eta=0.007, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.005, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HAP',
-                 eta_homeo=0.005, alpha_homeo=5.,
+                 eta_homeo=0.005, alpha_homeo=2.5,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
-                 batch_size=2**8, # HACK
+                 batch_size=2**10,
                  record_each=2**5,
                  record_num_batches=2**10,
                  n_image=None,
@@ -379,7 +379,7 @@ class SHL_set(object):
         - quantitative analysis
 
     """
-    def __init__(self, opts, tag='default', data_matname='data', base=4.61803, N_scan=9, do_run=True):
+    def __init__(self, opts, tag='default', data_matname='data', base=4., N_scan=9, do_run=True):
         self.opts = deepcopy(opts)
         self.tag = tag
         self.N_scan = N_scan
