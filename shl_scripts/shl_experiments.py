@@ -171,7 +171,7 @@ class SHL(object):
                                         fit_tol=fit_tol,
                                         l0_sparseness=l0_sparseness, alpha_MP=self.alpha_MP,
                                         algorithm=self.learning_algorithm,
-                                        P_cum=None, do_sym=self.do_sym, verbose=0,
+                                        P_cum=P_cum, do_sym=self.do_sym, verbose=0,
                                         gain=np.ones(self.n_dictionary))
 
         else:

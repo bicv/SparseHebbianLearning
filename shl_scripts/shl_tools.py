@@ -375,16 +375,17 @@ def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=N
 
     if order == 'minmax':
         # order by activation probability
-        sparse_code = shl_exp.code(data=data, dico=dico)
+        sparse_code = shl_exp.code(data=data, dico=dico, P_cum=shl_exp.P_cum)
         res_lst = np.count_nonzero(sparse_code, axis=0)
         full_indices = res_lst.argsort()
 
         n_min = np.prod(dim_graph)//2
         n_max = np.prod(dim_graph)- np.prod(dim_graph)//2
-        print('n_min', n_min)
-        print('n_max', n_max)
-        indices = full_indices[:n_min]
-        indices.extend(full_indices[-n_max:])
+        # print('n_min', n_min)
+        # print('n_max', n_max)
+        print('p_min', res_lst[full_indices[:n_min]])
+        print('p_max', res_lst[full_indices[-n_max:]])
+        indices = np.concatenate((full_indices[:n_min], full_indices[-n_max:]))
 
     elif order is True:
         # order by activation probability
