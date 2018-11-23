@@ -294,13 +294,13 @@ class SHL(object):
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
-                fig, ax = self.show_dico(dico, title=matname, **fig_kwargs)
+                fig, ax = self.show_dico(dico, data=data, title=matname, **fig_kwargs)
             if 'show_Pcum' in list_figures:
                 fig, ax = self.show_Pcum(dico, **fig_kwargs)
             if 'plot_error' in list_figures:
                 fig, ax = self.plot_error(dico)
             if 'show_dico_in_order' in list_figures:
-                fig,ax = self.show_dico_in_order(dico, title=matname, **fig_kwargs)
+                fig,ax = self.show_dico_in_order(dico, data=data, title=matname, **fig_kwargs)
             if 'plot_variance' in list_figures:
                 sparse_code = self.code(data, dico,
                                             fit_tol=self.fit_tol, l0_sparseness=self.l0_sparseness, matname=matname)
@@ -542,10 +542,18 @@ if __name__ == '__main__':
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 10
 
+    shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='HAP', verbose=verbose)
+    dico = shl.learn_dico()
+    import matplotlib.pyplot as plt
+    fig, ax = shl.show_dico(dico, order=False)
+    plt.savefig('../probe/shl_homeo.png')
+    fig, ax = shl.show_Pcum(dico)
+    plt.savefig('../probe/shl_homeo_HAP.png')
+
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='HEH', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
-    fig, ax = shl.show_dico(dico)
+    fig, ax = shl.show_dico(dico, order=False)
     plt.savefig('../probe/shl_homeo.png')
     fig, ax = shl.show_Pcum(dico)
     plt.savefig('../probe/shl_homeo_Pcum.png')
@@ -553,7 +561,7 @@ if __name__ == '__main__':
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='None', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
-    fig, ax = shl.show_dico(dico)
+    fig, ax = shl.show_dico(dico, order=False)
     plt.savefig('../probe/shl_nohomeo.png')
     fig, ax = shl.show_Pcum(dico)
-    plt.savefig('../probe/shl_nohomeo_Pcum.png')
+    plt.savefig('../probe/shl_nohomeo.png')
