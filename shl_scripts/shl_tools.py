@@ -359,7 +359,7 @@ def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, dim_graph=
 
 
 def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=None,
-                 seed=None, do_tiles=False, fname=None, fig=None, ax=None, **kwargs):
+                 seed=None, do_tiles=False, fname=None, fig=None, ax=None, do_show_proba=False, **kwargs):
     """
     display the dictionary in a random order
     """
@@ -377,14 +377,16 @@ def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=N
         # order by activation probability
         sparse_code = shl_exp.code(data=data, dico=dico, P_cum=shl_exp.P_cum)
         res_lst = np.count_nonzero(sparse_code, axis=0)
+        sum_rest_lst = res_lst.sum()
         full_indices = res_lst.argsort()
 
         n_min = np.prod(dim_graph)//2
         n_max = np.prod(dim_graph)- np.prod(dim_graph)//2
         # print('n_min', n_min)
         # print('n_max', n_max)
-        print('p_min', res_lst[full_indices[:n_min]])
-        print('p_max', res_lst[full_indices[-n_max:]])
+        if do_show_proba:
+            print('p_min/p0= %.3f' % (res_lst[full_indices[:n_min]]/sum_rest_lst*n_dictionary))
+            print('p_max/p0= %.3f' % (res_lst[full_indices[-n_max:]]/sum_rest_lst*n_dictionary))
         indices = np.concatenate((full_indices[:n_min], full_indices[-n_max:]))
 
     elif order is True:

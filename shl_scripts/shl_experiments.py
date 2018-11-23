@@ -75,10 +75,10 @@ class SHL(object):
                  alpha_MP=1.,
                  one_over_F=True,
                  n_iter=2**13 + 1,
-                 eta=0.001, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.005, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HAP',
-                 eta_homeo=0.01, alpha_homeo=2.5,
+                 eta_homeo=0.005, alpha_homeo=2.5,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -546,17 +546,17 @@ if __name__ == '__main__':
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
     fig, ax = shl.show_dico(dico, order=False)
-    plt.savefig('../probe/shl_homeo.png')
+    plt.savefig('../probe/shl_HAP.png')
     fig, ax = shl.show_Pcum(dico)
-    plt.savefig('../probe/shl_homeo_HAP.png')
+    plt.savefig('../probe/shl_HAP_Pcum.png')
 
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='HEH', verbose=verbose)
     dico = shl.learn_dico()
     import matplotlib.pyplot as plt
     fig, ax = shl.show_dico(dico, order=False)
-    plt.savefig('../probe/shl_homeo.png')
+    plt.savefig('../probe/shl_HEH.png')
     fig, ax = shl.show_Pcum(dico)
-    plt.savefig('../probe/shl_homeo_Pcum.png')
+    plt.savefig('../probe/shl_HEH_Pcum.png')
 
     shl = SHL(DEBUG_DOWNSCALE=DEBUG_DOWNSCALE, learning_algorithm='mp', homeo_method='None', verbose=verbose)
     dico = shl.learn_dico()
@@ -564,4 +564,4 @@ if __name__ == '__main__':
     fig, ax = shl.show_dico(dico, order=False)
     plt.savefig('../probe/shl_nohomeo.png')
     fig, ax = shl.show_Pcum(dico)
-    plt.savefig('../probe/shl_nohomeo.png')
+    plt.savefig('../probe/shl_nohomeo_Pcum.png')
