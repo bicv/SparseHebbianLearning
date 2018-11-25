@@ -59,7 +59,7 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None, do_
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
              datapath='database/', name_database='kodakdb', do_bandpass=True,
-             N_patches=1024, seed=None, do_mask=False, patch_norm=False, verbose=0,
+             N_patches=1024, seed=None, do_mask=True, patch_norm=False, verbose=0,
              cache_dir='/tmp/cache_dir', over_patches=8, matname=None):
     """
     Extract data:
@@ -777,7 +777,7 @@ def get_record(dico, variable, N_nosample):
         # print('HACK')
         learning_time, A1 = get_record(dico, 'error', N_nosample)
         learning_time, A2 = get_record(dico, 'qerror', N_nosample)
-        A = 61.803*A1 + .06*A2
+        A = 61.803*A1 + .05*A2
     else:
         # try:
         df_variable = dico.record[variable]

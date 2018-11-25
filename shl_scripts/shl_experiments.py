@@ -385,7 +385,7 @@ class SHL_set(object):
         self.N_scan = N_scan
         self.base = base
         self.shl = SHL(**deepcopy(self.opts))
-        self.data = self.shl.get_data(matname='data')
+        self.data = self.shl.get_data(matname=data_matname)
         self.do_run = do_run
 
     def matname(self, variable, value):
