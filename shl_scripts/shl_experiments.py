@@ -60,22 +60,22 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_width=18,
+                 patch_width=22,
                  N_patches=2**16,
                  datapath='../database/',
                  name_database='kodakdb', # TODO : fing a larger, more homogeneous database?
                  #name_database='laurent',
-                 do_mask=False, do_bandpass=True,
+                 do_mask=True, do_bandpass=True,
                  over_patches=16,
                  patch_ds=1,
                  n_dictionary=21**2,
                  learning_algorithm='mp',
                  fit_tol=None,
                  l0_sparseness=13,
-                 alpha_MP=1.,
+                 alpha_MP=.9,
                  one_over_F=True,
                  n_iter=2**12 + 1,
-                 eta=0.002, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.003, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HAP',
                  eta_homeo=0.01, alpha_homeo=2.5,
@@ -158,7 +158,9 @@ class SHL(object):
                     name_database=self.name_database, matname=matname)
 
 
-    def code(self, data, dico, coding_algorithm='mp', matname=None, P_cum=None, fit_tol=None, l0_sparseness=None):
+    def code(self, data, dico, coding_algorithm='mp', matname=None, P_cum=None, fit_tol=None, l0_sparseness=None, gain=None):
+        if gain is None:
+            gain = np.ones(self.n_dictionary)
         if l0_sparseness is None:
             l0_sparseness = self.l0_sparseness
         if matname is None:
@@ -172,7 +174,7 @@ class SHL(object):
                                         l0_sparseness=l0_sparseness, alpha_MP=self.alpha_MP,
                                         algorithm=self.learning_algorithm,
                                         P_cum=P_cum, do_sym=self.do_sym, verbose=0,
-                                        gain=np.ones(self.n_dictionary))
+                                        gain=gain)
 
         else:
             fmatname = os.path.join(self.cache_dir, matname) + '_coding.npy'
