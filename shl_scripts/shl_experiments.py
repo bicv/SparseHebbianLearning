@@ -78,7 +78,7 @@ class SHL(object):
                  eta=0.002, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HAP',
-                 eta_homeo=0.002, alpha_homeo=2.5,
+                 eta_homeo=0.01, alpha_homeo=2.5,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -538,7 +538,9 @@ def prun(variable, value, data, opts, matname, list_figures, fig_kwargs, verbose
     return shl
 
 if __name__ == '__main__':
-
+    import matplotlib
+    matplotlib.use('Agg')
+    
     DEBUG_DOWNSCALE, verbose = 10, 100 #faster, with verbose output
     DEBUG_DOWNSCALE, verbose = 1, 10
 

@@ -92,6 +92,18 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
         lars.fit(dictionary.T, X.T, Xy=cov)
         sparse_code = lars.coef_
 
+    elif algorithm == 'elastic':
+
+        # Not passing in verbose=max(0, verbose-1) because Lars.fit already
+        # corrects the verbosity level.
+        from sklearn.linear_model import Lars
+        cov = np.dot(dictionary, X.T)
+        method = ElasticNet(fit_intercept=False, verbose=verbose, normalize=False,
+                    precompute=True, n_nonzero_coefs=l0_sparseness,
+                    fit_path=False)
+        method.fit(dictionary.T, X.T, Xy=cov)
+        sparse_code = method.coef_
+
     elif algorithm == 'threshold':
         regularization = 1.
         cov = np.dot(dictionary, X.T)
@@ -116,7 +128,7 @@ def sparse_encode(X, dictionary, precision=None, algorithm='mp', fit_tol=None,
                          verbose=verbose, gain=gain, alpha_MP=alpha_MP)
     else:
         raise ValueError('Sparse coding method must be "mp", "lasso_lars" '
-                         '"lasso_cd",  "lasso", "threshold" or "omp", got %s.'
+                         '"lasso_cd",  "elastic", lasso", "threshold" or "omp", got %s.'
                          % algorithm)
     return sparse_code
 
