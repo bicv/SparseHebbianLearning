@@ -65,7 +65,7 @@ class SHL(object):
                  datapath='../database/',
                  name_database='kodakdb', # TODO : fing a larger, more homogeneous database?
                  #name_database='laurent',
-                 do_mask=True, do_bandpass=True,
+                 do_mask=False, do_bandpass=True,
                  over_patches=16,
                  patch_ds=1,
                  n_dictionary=21**2,

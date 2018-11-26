@@ -56,6 +56,11 @@ def ovf_dictionary(n_dictionary, n_pixels, height=256, width=256, seed=None, do_
 
     return dictionary
 
+def get_mask(patch_size):
+    x, y = np.meshgrid(
+                    np.linspace(-1, 1, patch_size[0], endpoint=True), 
+                    np.linspace(-1, 1, patch_size[1], endpoint=True))
+    return (np.sqrt(x ** 2 + y ** 2) <= 1.).astype(np.float).ravel()
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
              datapath='database/', name_database='kodakdb', do_bandpass=True,
@@ -88,10 +93,8 @@ def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1
         import os
 
         if do_mask:
-            x, y = np.meshgrid(
-                np.linspace(-1, 1, patch_size[0], endpoint=True), np.linspace(-1, 1, patch_size[1], endpoint=True))
-            mask = (np.sqrt(x ** 2 + y ** 2) < 1).astype(np.float).ravel()
-
+            mask = get_mask(patch_size) 
+            
         imagelist = slip_us.make_imagelist(name_database=name_database)
         for filename, croparea in imagelist:
             image, filename_, croparea_ = slip_us.patch(
@@ -366,7 +369,8 @@ def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=N
     # import matplotlib
     # subplotpars = matplotlib.figure.SubplotParams(
     #     left=0., right=1., bottom=0., top=1., wspace=0.05, hspace=0.05,)
-
+        
+    
     n_dictionary = dico.dictionary.shape[0]
     if dim_graph is None:
         dim_graph = int(np.ceil(np.sqrt(n_dictionary)))
@@ -404,11 +408,17 @@ def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=N
     if ax is None:
         ax = fig.add_subplot(111)
 
+    if shl_exp.do_mask:
+        mask = get_mask((dim_patch, dim_patch)).reshape((dim_patch, dim_patch))
+        print(mask)
+
     if do_tiles:
         for i in range(np.prod(dim_graph)):
             ax = fig.add_subplot(dim_graph[0], dim_graph[1], i + 1)
             dico_to_display = dico.dictionary[indices[i]]
             cmax = np.max(np.abs(dico_to_display))
+            if shl_exp.do_mask:
+                dico_to_display += cmax*(1-mask)
             if shl_exp.do_precision:
                 dico_to_display = dico_to_display.reshape((dim_patch, dim_patch))/cmax
                 precision_to_display = dico.precision[indices[i]].reshape((dim_patch, dim_patch))
@@ -439,6 +449,9 @@ def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=N
         for i in range(np.prod(dim_graph)):
             dico_to_display = dico.dictionary[indices[i]].reshape((dim_patch, dim_patch))
             cmax = np.max(np.abs(dico_to_display))
+            if shl_exp.do_mask:
+                #dico_to_display += cmax*(1-mask)
+                dico_to_display[mask==0] = -cmax
             # dico_cmax = np.max(np.abs(dico.dictionary))
 
             i_col, i_row = i % dim_graph[1], i // dim_graph[1]
