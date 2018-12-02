@@ -362,7 +362,7 @@ def show_dico_in_order(shl_exp, dico, data=None, title=None, dpi=200, dim_graph=
 
 
 def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=None,
-                 seed=None, do_tiles=False, fname=None, fig=None, ax=None, do_show_proba=True, **kwargs):
+                 seed=None, do_tiles=False, fname=None, fig=None, ax=None, do_show_proba=False, **kwargs):
     """
     display the dictionary in a random order
     """
@@ -379,11 +379,16 @@ def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=N
 
     if order == 'minmax':
         sparse_code = shl_exp.code(data=data, dico=dico, P_cum=shl_exp.P_cum)#, gain=shl_exp.gain)
-        if False:
+        if True:
             # order by activation probability
             res_lst = np.count_nonzero(sparse_code, axis=0)
         else:
-            res_lst = np.sum(sparse_code**2, axis=0)
+            #from scipy.stats import kurtosis
+            #res_lst = np.sum(sparse_code**2, axis=0)
+            #res_lst = kurtosis(sparse_code, axis=0)
+            #res_lst = np.sum(np.abs(sparse_code), axis=0) / np.count_nonzero(sparse_code, axis=0)
+            res_lst = np.sqrt(np.sum(sparse_code**2, axis=0)) / np.count_nonzero(sparse_code, axis=0)
+            #print(res_lst)
             
         full_indices = res_lst.argsort()
 
@@ -414,6 +419,8 @@ def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=N
 
     if shl_exp.do_mask:
         mask = get_mask((dim_patch, dim_patch)).reshape((dim_patch, dim_patch))
+        # HACK
+        mask = np.ones_like(mask)
         # print(mask)
 
     if do_tiles:
