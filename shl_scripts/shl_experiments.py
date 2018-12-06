@@ -71,7 +71,7 @@ class SHL(object):
                  n_dictionary=21**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 l0_sparseness=13,
+                 l0_sparseness=21,
                  alpha_MP=.9,
                  one_over_F=True,
                  n_iter=2**12 + 1,
