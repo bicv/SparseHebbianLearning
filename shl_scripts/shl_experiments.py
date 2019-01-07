@@ -75,7 +75,7 @@ class SHL(object):
                  alpha_MP=.9,
                  one_over_F=True,
                  n_iter=2**12 + 1,
-                 eta=0.01, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.006, beta1=.9, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HAP',
                  eta_homeo=0.01, alpha_homeo=2.5,
