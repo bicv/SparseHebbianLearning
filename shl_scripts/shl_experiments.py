@@ -17,13 +17,13 @@ framework of the SparseNet algorithm from Bruno Olshausen
 (http://redwood.berkeley.edu/bruno/sparsenet/).
 
 * This particular implementation has been published as Perrinet, Neural
-Computation (2010) (see http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl )::
+Computation (2010) (see https://laurentperrinet.github.io/publication/perrinet-10-shl )::
 
    @article{Perrinet10shl,
         Author = {Perrinet, Laurent U.},
         Title = {Role of homeostasis in learning sparse representations},
         Year = {2010}
-        Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
+        Url = {https://laurentperrinet.github.io/publication/perrinet-10-shl},
         Doi = {10.1162/neco.2010.05-08-795},
         Journal = {Neural Computation},
         Volume = {22},

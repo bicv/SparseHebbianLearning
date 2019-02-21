@@ -12,13 +12,13 @@ Object
 
 * This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the SparseNet algorithm from Bruno Olshausen (http://redwood.berkeley.edu/bruno/sparsenet/).
 
-* this has been published as Perrinet, Neural Computation (2010) (see  http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl )::
+* this has been published as Perrinet, Neural Computation (2010) (see  https://laurentperrinet.github.io/publication/perrinet-10-shl )::
 
    @article{Perrinet10shl,
         Author = {Perrinet, Laurent U.},
         Title = {Role of homeostasis in learning sparse representations},
         Year = {2010}
-        Url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet10shl},
+        Url = {https://laurentperrinet.github.io/publication/perrinet-10-shl},
         Doi = {10.1162/neco.2010.05-08-795},
         Journal = {Neural Computation},
         Volume = {22},
@@ -28,7 +28,7 @@ Object
         }
 
 * all comments and bug corrections should be submitted to Laurent Perrinet at Laurent.Perrinet@univ-amu.fr
-* find out updates on http://invibe.net/LaurentPerrinet/SparseHebbianLearning
+* find out updates on https://github.com/bicv/SparseHebbianLearning
 
 
 Installation
@@ -71,7 +71,7 @@ Contents
 Changelog
 ---------
 
-* 3.0 - 2017-06-06: refactored the code for http://invibe.net/LaurentPerrinet/Publications/BoutinRuffierPerrinet17spars
+* 3.0 - 2017-06-06: refactored the code for https://laurentperrinet.github.io/publication/boutin-ruffier-perrinet-17-spars/
 
 * 2.1 - 2015-10-20:
  * finalizing the code to reproduce the sparsenet algorithm
