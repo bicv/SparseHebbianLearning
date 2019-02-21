@@ -71,11 +71,11 @@ class SHL(object):
                  n_dictionary=21**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 l0_sparseness=21,
-                 alpha_MP=.9,
+                 l0_sparseness=29,
+                 alpha_MP=.95,
                  one_over_F=True,
                  n_iter=2**12 + 1,
-                 eta=0.006, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=0.015, beta1=.95, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HAP',
                  eta_homeo=0.01, alpha_homeo=2.5,
@@ -402,7 +402,7 @@ class SHL_set(object):
         if variable is 'alpha_MP':
             values = np.logspace(-1., 0., N_scan, base=self.base, endpoint=True)
         elif variable in ['beta1', 'beta2']:
-            values = 1 - np.logspace(-1., 1., N_scan, base=self.base)*(1-median)
+            values = 1. - np.logspace(-0.3, 1., N_scan, base=self.base)*(1-median)
         elif variable in ['seed']:
             values = median + np.arange(N_scan)
         else:
