@@ -60,7 +60,7 @@ class SHL(object):
     def __init__(self,
                  height=256, # of image
                  width=256, # of image
-                 patch_width=22,
+                 patch_width=21,
                  N_patches=2**16,
                  datapath='../database/',
                  name_database='kodakdb', # TODO : fing a larger, more homogeneous database?
@@ -68,10 +68,10 @@ class SHL(object):
                  do_mask=True, do_bandpass=True,
                  over_patches=16,
                  patch_ds=1,
-                 n_dictionary=21**2,
+                 n_dictionary=26**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 l0_sparseness=29,
+                 l0_sparseness=34,
                  alpha_MP=.95,
                  one_over_F=True,
                  n_iter=2**12 + 1,

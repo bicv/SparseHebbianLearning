@@ -801,7 +801,7 @@ def get_record(dico, variable, N_nosample):
         # print('HACK')
         learning_time, A1 = get_record(dico, 'error', N_nosample)
         learning_time, A2 = get_record(dico, 'qerror', N_nosample)
-        A = 61.803*A1 + .05*A2
+        A = 100.*A1 + .0025*A2
     else:
         # try:
         df_variable = dico.record[variable]
