@@ -539,13 +539,15 @@ def homeostasis(mean_measure, P_cum, gain,
     elif homeo_method=='HEH':
         assert(gain is None)
 
-    elif homeo_method in ['EXP', 'HAP', 'EMP']:
+    elif homeo_method in ['EXP', 'HAP', 'eHAP', 'EMP']:
         target = (sparse_code>0).mean()
         # apply different heuristics on the gain
         if homeo_method=='EXP':
             # cf. https://github.com/VictorBoutin/CHAMP/blob/caa2a77cc65d0043db1aeb11eedb707633a93df4/CHAMP/CHAMP_Layer.py#L365
             gain = np.exp(-(1 / alpha_homeo) * (mean_measure-target))
         elif homeo_method=='HAP':
+            gain = np.log(mean_measure)/np.log(target)
+        elif homeo_method=='eHAP':
             gain = (mean_measure/target)**(-alpha_homeo)#
             # gain /= gain.mean()
         elif homeo_method=='EMP':

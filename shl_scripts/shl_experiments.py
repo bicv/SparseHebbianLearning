@@ -75,10 +75,10 @@ class SHL(object):
                  alpha_MP=.95,
                  one_over_F=True,
                  n_iter=2**12 + 1,
-                 eta=0.015, beta1=.95, beta2=.999, epsilon=1.e-8,
+                 eta=0.005, beta1=.95, beta2=.999, epsilon=1.e-8,
                  do_precision=False, eta_precision=0.0005,
                  homeo_method='HAP',
-                 eta_homeo=0.01, alpha_homeo=2.5,
+                 eta_homeo=0.04, alpha_homeo=2.5,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
@@ -430,6 +430,7 @@ class SHL_set(object):
                 dico = shl.learn_dico(data=self.data,
                             matname=self.matname(variable, value),
                             list_figures=list_figures, fig_kwargs=fig_kwargs)
+                # print('shape =', dico.)
         else:
             # We will use the ``joblib`` package do distribute this computation on different CPUs.
             from joblib import Parallel, delayed
