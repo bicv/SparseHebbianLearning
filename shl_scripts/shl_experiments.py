@@ -71,19 +71,19 @@ class SHL(object):
                  n_dictionary=26**2,
                  learning_algorithm='mp',
                  fit_tol=None,
-                 l0_sparseness=34,
+                 l0_sparseness=21,
                  alpha_MP=.95,
                  one_over_F=True,
                  n_iter=2**12 + 1,
-                 eta=0.005, beta1=.95, beta2=.999, epsilon=1.e-8,
+                 eta=0.05, beta1=.99, beta2=.999, epsilon=8,
                  do_precision=False, eta_precision=0.000,
                  homeo_method='HAP',
-                 eta_homeo=0.08, alpha_homeo=.65,
+                 eta_homeo=0.02, alpha_homeo=.07,
                  C=3., nb_quant=128, P_cum=None,
                  do_sym=False,
                  seed=42,
                  patch_norm=False,
-                 batch_size=2**10,
+                 batch_size=2**12,
                  record_each=2**5,
                  record_num_batches=2**10,
                  n_image=None,
@@ -402,7 +402,7 @@ class SHL_set(object):
         if variable is 'alpha_MP':
             values = np.logspace(-1., 0., N_scan, base=self.base, endpoint=True)
         elif variable in ['beta1', 'beta2']:
-            values = 1. - np.logspace(-0.3, 1., N_scan, base=self.base)*(1-median)
+            values = 1. - np.logspace(-1, 1., N_scan, base=self.base)*(1-median)
         elif variable in ['seed']:
             values = median + np.arange(N_scan)
         else:
@@ -470,8 +470,12 @@ class SHL_set(object):
                     label = '%s=%.4f' % (variable, value)
                 else:
                     label = '%s=%d' % (variable, value)
-                fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
+                try:
+                    fig_error, ax_error = shl.time_plot(dico, variable=display_variable,
                         fig=fig_error, ax=ax_error, label=label)
+                except Exception as e:
+                    print('While doing the time plot for ', self.matname(variable, value), self.shl.LOCK)
+                    print('We encountered error', e, ' with', dico)
             elif display == 'final':
                 try:
                     learning_time, A = get_record(dico, display_variable, 0)

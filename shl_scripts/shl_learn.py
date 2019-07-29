@@ -86,7 +86,7 @@ class SparseHebbianLearning:
 
     """
     def __init__(self, fit_algorithm, dictionary=None, precision=None,
-                 eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
+                 eta=.003, beta1=.9, beta2=.999, epsilon=8,
                  homeo_method = 'HEH',
                  eta_homeo=0.05, alpha_homeo=0.0, C=5., nb_quant=256, P_cum=None,
                  n_dictionary=None, n_iter=10000,
@@ -184,7 +184,7 @@ class SparseHebbianLearning:
 
 
 def dict_learning(X, dictionary=None, precision=None,
-                  eta=.003, beta1=.9, beta2=.999, epsilon=1.e-8,
+                  eta=.003, beta1=.9, beta2=.999, epsilon=8,
                   homeo_method = 'HEH',
                   eta_homeo=0.05, alpha_homeo=0.0,  C=5., nb_quant=256, P_cum=None,
                   n_dictionary=2, l0_sparseness=10, fit_tol=None, alpha_MP=1.,
@@ -428,7 +428,7 @@ def dict_learning(X, dictionary=None, precision=None,
             moment = beta1 * moment + (1 - beta1) * gradient
             # biased second raw moment estimate
             energy = beta2 * energy + (1 - beta2) * (gradient**2)
-            energy_ = (np.sqrt(energy / (1-beta2**(ii+1))) + epsilon)
+            energy_ = (np.sqrt(energy / (1-beta2**(ii+1))) + 10**(-epsilon))
             dictionary -= eta * (moment / (1-beta1**(ii+1))) / energy_
         else:
             dictionary -= eta * gradient
