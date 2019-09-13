@@ -328,7 +328,7 @@ def dict_learning(X, dictionary=None, precision=None,
     dictionary /= norm[:, np.newaxis]
 
     variance = (X**2).mean() * np.ones((n_dictionary, n_pixels))
-    precision = 1 / variance
+    precision = 1 / variance if do_precision else None
 
     if verbose==1:
         print('[dict_learning]', end=' ')
@@ -469,6 +469,7 @@ def dict_learning(X, dictionary=None, precision=None,
                 p_ = np.count_nonzero(sparse_code_rec, axis=0) / (sparse_code_rec.shape[1])
                 p_ /= p_.sum()
                 rel_ent = np.sum(-p_ * np.log(p_)) / np.log(sparse_code_rec.shape[1])
+                
                 # relative error
                 SD = np.linalg.norm(X_train[indx, :])/record_num_batches
                 error = np.linalg.norm(X_train[indx, :] - (sparse_code_rec @ dictionary))/record_num_batches
