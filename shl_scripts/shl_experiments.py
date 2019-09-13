@@ -75,7 +75,7 @@ class SHL(object):
                  alpha_MP=.95,
                  one_over_F=True,
                  n_iter=2**12 + 1,
-                 eta=0.02, beta1=.95, beta2=.990, epsilon=10,
+                 eta=0.02, beta1=.990, beta2=.990, epsilon=10,
                  do_precision=False, eta_precision=0.000,
                  homeo_method='HAP',
                  eta_homeo=0.01, alpha_homeo=.05,
@@ -258,6 +258,9 @@ class SHL(object):
                     try:
                         if self.verbose != 0 :
                             print('No cache found {}: Learning the dictionary with algo = {} \n'.format(fmatname, self.learning_algorithm), end=' ')
+                            
+                            if not dictionary is None or not P_cum is None:
+                                print("resuming the learning on : {0}".format(fmatname))
 
                         dico = self.learn_dico(data=data, dictionary=dictionary, precision=precision, P_cum=P_cum,
                                                matname=None)
@@ -279,20 +282,6 @@ class SHL(object):
                 # Une seule fois mp ici
                 with open(fmatname, 'rb') as fp:
                     dico = pickle.load(fp)
-                if not dictionary is None or not P_cum is None:
-                    if self.verbose: print("resuming the learning on : {0}".format(fmatname))
-                    if not (os.path.isfile(fmatname + '_lock')):
-                        touch(fmatname + '_lock')
-                        touch(fmatname + self.LOCK)
-                        dico = self.learn_dico(data=data, dictionary=dictionary, precision=precision, P_cum=P_cum,
-                                               matname=None)
-                        with open(fmatname, 'wb') as fp:
-                            pickle.dump(dico, fp)
-                        try:
-                            os.remove(fmatname + self.LOCK)
-                            os.remove(fmatname + '_lock')
-                        except:
-                            if self.verbose: print('Coud not remove ', fmatname + self.LOCK)
 
         if not dico == 'lock':
             if 'show_dico' in list_figures:
