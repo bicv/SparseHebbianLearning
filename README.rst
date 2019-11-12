@@ -12,7 +12,31 @@ Object
 
 * This is a collection of python scripts to test learning strategies to efficiently code natural image patches.  This is here restricted  to the framework of the SparseNet algorithm from Bruno Olshausen (http://redwood.berkeley.edu/bruno/sparsenet/).
 
-* this has been published as Perrinet, Neural Computation (2010) (see  https://laurentperrinet.github.io/publication/perrinet-10-shl )::
+* this has been published as Perrinet (2019) (see  https://laurentperrinet.github.io/publication/perrinet-19-hulk/ )
+
+   @article{Perrinet19hulk,
+    abstract = {The formation of structure in the visual system, that is, of the connections between cells within neural populations, is by large an unsupervised learning process: the emergence of this architecture is mostly self-organized. In the primary visual cortex of mammals, for example, one can observe during development the formation of cells selective to localized, oriented features which results in the development of a representation of contours in area V1. We modeled such a process using sparse Hebbian learning algorithms. These algorithms alternate a coding step to encode the information with a learning step to find the proper encoder. We identified here a major difficulty of classical solutions in their ability to deduce a good representation while knowing immature encoders, and to learn good encoders with a non-optimal representation. To solve this problem, we propose to introduce a new regulation process between learning and coding, called homeostasis. It is compatible with a neuromimetic architecture and allows for a more efficient emergence of localized filters sensitive to orientation. The key to this algorithm lies in a simple adaptation mechanism based on non-linear functions that reconciles the antagonistic processes that occur at the coding and learning time scales. We tested this unsupervised algorithm with this homeostasis rule for a series of learning algorithms coupled with different neural coding algorithms. In addition, we propose a simplification of this optimal homeostasis rule by implementing a simple heuristic on the probability of activation of neurons. Compared to the optimal homeostasis rule, we show that this heuristic allows to implement a faster unsupervised learning algorithm while retaining much of its effectiveness. These results demonstrate the potential application of such a strategy in computer vision and machine learning and we illustrate it with a result in a convolutional neural network.},
+    author = {Perrinet, Laurent U},
+    bdsk-url-1 = {https://github.com/SpikeAI/HULK},
+    date-added = {2019-09-01 16:14:10 +0300},
+    date-modified = {2019-09-19 12:00:01 +0200},
+    doi = {10.3390/vision3030047},
+    grants = {anr-horizontal-v1,spikeai; mesocentre},
+    journal = {Vision},
+    keywords = {area-v1,gain control,homeostasis,matching pursuit,sparse coding,sparse hebbian learning,unsupervised learning},
+    month = {sep},
+    number = {3},
+    pages = {47},
+    time_start = {2019-04-18T13:00:00},
+    title = {An adaptive homeostatic algorithm for the unsupervised learning of visual features},
+    url = {https://spikeai.github.io/HULK/},
+    volume = {3},
+    year = {2019}
+   }
+
+
+
+* ... and initially as Perrinet, Neural Computation (2010) (see  https://laurentperrinet.github.io/publication/perrinet-10-shl )::
 
    @article{Perrinet10shl,
         Author = {Perrinet, Laurent U.},
@@ -70,6 +94,8 @@ Contents
 
 Changelog
 ---------
+
+* 4.0 - 2019-06-06: finalized the code for https://laurentperrinet.github.io/publication/perrinet-19-hulk/
 
 * 3.0 - 2017-06-06: refactored the code for https://laurentperrinet.github.io/publication/boutin-ruffier-perrinet-17-spars/
 
