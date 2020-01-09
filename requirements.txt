@@ -2,6 +2,7 @@ numpy
 imageio
 scipy
 SLIP
+pandas
 matplotlib
 IPython
 watermark

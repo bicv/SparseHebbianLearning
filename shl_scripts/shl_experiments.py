@@ -212,8 +212,8 @@ class SHL(object):
             # Learn the dictionary from reference patches
             t0 = time.time()
             from shl_scripts.shl_learn import SparseHebbianLearning
-            dico = SparseHebbianLearning(dictionary=dictionary, precision=precision,
-                                         fit_algorithm=self.learning_algorithm,
+            dico = SparseHebbianLearning(fit_algorithm=self.learning_algorithm,
+                                         dictionary=dictionary, precision=precision,
                                          do_sym=self.do_sym,
                                          n_dictionary=self.n_dictionary,
                                          eta=self.eta,
@@ -227,7 +227,7 @@ class SHL(object):
                                          alpha_homeo=self.alpha_homeo,
                                          C=self.C,
                                          nb_quant=self.nb_quant,
-                                         P_cum=self.P_cum,
+                                         P_cum=P_cum,
                                          n_iter=self.n_iter,
                                          l0_sparseness=self.l0_sparseness,
                                          alpha_MP=self.alpha_MP,
@@ -236,6 +236,7 @@ class SHL(object):
                                          verbose=self.verbose,
                                          fit_tol=self.fit_tol,
                                          record_each=self.record_each,
+                                         #record_snapshot=self.record_snapshot,
                                          record_num_batches=self.record_num_batches,
 )
 

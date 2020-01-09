@@ -85,7 +85,7 @@ class SparseHebbianLearning:
     http://scikit-learn.org/stable/auto_examples/decomposition/plot_image_denoising.html
 
     """
-    def __init__(self, fit_algorithm, dictionary=None, precision=None,
+    def __init__(self, fit_algorithm='mp', dictionary=None, precision=None,
                  eta=.003, beta1=.9, beta2=.999, epsilon=8,
                  homeo_method = 'HEH',
                  eta_homeo=0.05, alpha_homeo=0.0, C=5., nb_quant=256, P_cum=None,

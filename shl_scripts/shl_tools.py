@@ -407,9 +407,11 @@ def show_dico(shl_exp, dico,  data=None, order='minmax', title=None, dim_graph=N
         sparse_code = shl_exp.code(data=data, dico=dico)
         res_lst = np.count_nonzero(sparse_code, axis=0)
         indices = res_lst.argsort()
-    else:
+    elif order == 'random':
         np.random.seed(seed)
         indices = np.random.permutation(np.arange(n_dictionary))[:np.prod(dim_graph)]
+    else:
+        indices = np.arange(n_dictionary)[:np.prod(dim_graph)]
 
     import matplotlib.pyplot as plt
     if fig is None:
@@ -674,7 +676,7 @@ def plot_variance_and_proxy(dico, data, title, algorithm=None, fname=None, fig=N
     return fig, ax
 
 
-def plot_proba_histogram(coding, verbose=False, fig=None, ax=None):
+def plot_proba_histogram(coding, alpha=.6, lw=.3, color='k', fontsize=16, verbose=False, fig=None, ax=None):
     n_dictionary = coding.shape[1]
 
     n = np.count_nonzero(coding, axis=0) # counts for each neuron
@@ -695,13 +697,13 @@ def plot_proba_histogram(coding, verbose=False, fig=None, ax=None):
         ax = fig.add_subplot(111)
 
     #ax.bar(np.arange(n_dictionary), p)#, color='k', edgecolor='none')
-    ax.vlines(np.arange(n_dictionary), 0, p, color='k', alpha=.5)
-    ax.plot(np.arange(n_dictionary), p, '.k')
+    ax.hlines(np.arange(n_dictionary), 0, p, color=color, alpha=alpha, lw=lw)
+    ax.plot(p, np.arange(n_dictionary), '.k')
     #ax.set_title('activation probability - relative entropy=%.3f' % rel_ent)
-    ax.set_ylabel('relative activation probability')
-    ax.set_xlabel('address of neurons')
+    ax.set_xlabel('relative activation probability', fontsize=fontsize)
+    ax.set_ylabel('address of neurons', fontsize=fontsize)
     ax.axis('tight')
-    ax.set_xlim(0, n_dictionary)
+    ax.set_ylim(0, n_dictionary)
     return fig, ax
 
 
@@ -804,10 +806,9 @@ def plot_scatter_MpVsTrue(sparse_vector, my_sparse_code, alpha=.01, xlabel='True
 
 def get_record(dico, variable, N_nosample):
     if variable=='F':
-        # print('HACK')
         learning_time, A1 = get_record(dico, 'error', N_nosample)
         learning_time, A2 = get_record(dico, 'qerror', N_nosample)
-        A = 1.*A1 + .0005*A2
+        A = A1 + .0005*A2 # TODO: proper normalization of the total qerror distance
     else:
         # try:
         df_variable = dico.record[variable]
