@@ -149,7 +149,7 @@ def rescaling(code, C=5., do_sym=False, verbose=False):
     """
     See
 
-    - http://blog.invibe.net/posts/2017-11-07-meul-with-a-non-parametric-homeostasis.html
+    - https://laurentperrinet.github.io/sciblog/posts/2017-11-07-meul-with-a-non-parametric-homeostasis.html
 
     for a derivation of the following function.
 
@@ -171,14 +171,14 @@ def quantile(P_cum, p_c, stick, do_fast=True):
     """
     See
 
-    - http://blog.invibe.net/posts/2017-03-29-testing-comps-pcum.html
-    - http://blog.invibe.net/posts/2017-03-29-testing-comps-fastpcum_scripted.html
+    - https://laurentperrinet.github.io/sciblog/posts/2017-03-29-testing-comps-pcum.html
+    - https://laurentperrinet.github.io/sciblog/posts/2017-03-29-testing-comps-fastpcum_scripted.html
 
     for tests of this function
 
     for a derivation of the following line in the fast mode, see:
 
-    - http://blog.invibe.net/posts/2017-03-29-testing-comps-fastpcum.html
+    - https://laurentperrinet.github.io/sciblog/posts/2017-03-29-testing-comps-fastpcum.html
 
     """
     if do_fast:
