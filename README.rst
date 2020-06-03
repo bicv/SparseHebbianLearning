@@ -2,7 +2,7 @@ Reproducible research : Python implementation of SparseHebbianLearning
 ======================================================================
 
 
-.. image:: probe/shl_homeo.png
+.. image:: probe/shl_HEH.png
    :scale: 100%
    :alt: Set of RFs after Sparse Hebbian Learning.
 
