@@ -60,7 +60,7 @@ def get_mask(patch_size):
     x, y = np.meshgrid(
                     np.linspace(-1, 1, patch_size[0], endpoint=True), 
                     np.linspace(-1, 1, patch_size[1], endpoint=True))
-    return (np.sqrt(x ** 2 + y ** 2) <= 1.).astype(np.float).ravel()
+    return (np.sqrt(x ** 2 + y ** 2) <= 1.).astype(float).ravel()
 
 def get_data(height=256, width=256, n_image=200, patch_size=(12, 12), patch_ds=1,
              datapath='database/', name_database='kodakdb', do_bandpass=True,
