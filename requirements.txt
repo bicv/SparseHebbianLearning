@@ -6,4 +6,3 @@ pandas
 matplotlib
 IPython
 watermark
-version_information
