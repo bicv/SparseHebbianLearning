@@ -182,7 +182,7 @@ def quantile(P_cum, p_c, stick, do_fast=True):
 
     """
     if do_fast:
-        indices = (p_c * P_cum.shape[1]).astype(np.int)  # (floor) index of each p_c in the respective line of P_cum
+        indices = (p_c * P_cum.shape[1]).astype(int)  # (floor) index of each p_c in the respective line of P_cum
         p = p_c * P_cum.shape[1] - indices  # ratio between floor and ceil
         floor = P_cum.ravel()[indices - (p_c == 1) + stick]  # floor, accounting for extremes, and moved on the raveled P_cum matrix
         ceil = P_cum.ravel()[indices + 1 - (p_c == 0) - (p_c == 1) -
