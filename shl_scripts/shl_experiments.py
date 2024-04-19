@@ -90,6 +90,7 @@ class SHL(object):
                  DEBUG_DOWNSCALE=1, # set to 10 to perform a rapid experiment
                  verbose=0,
                  cache_dir='cache_dir',
+                 n_jobs=1,
                 ):
         self.height = height
         self.width = width
@@ -134,6 +135,7 @@ class SHL(object):
         self.verbose = verbose
         # assigning and create a folder for caching data
         self.cache_dir = cache_dir
+        self.n_jobs = n_jobs
 
         if not self.cache_dir is None:
             try:
@@ -401,7 +403,7 @@ class SHL_set(object):
         if verbose>1: print('DEBUG: variable, median, values = ', variable, median, values)
         return values
 
-    def run(self, N_scan=None, variables=['eta'], n_jobs=1,
+    def run(self, N_scan=None, variables=['eta'], 
             list_figures=[], fig_kwargs={}, verbose=0):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
@@ -413,7 +415,7 @@ class SHL_set(object):
             values = self.get_values(variable, self.shl.__dict__[variable], N_scan, verbose=verbose)
             values_[(i*N_scan):((i+1)*N_scan)] = values
 
-        if n_jobs == 1:
+        if self.n_jobs == 1:
             for variable, value in zip(variables_, values_):
                 shl = prun(variable, value, self.data, self.opts,
                             self.matname(variable, value), list_figures, fig_kwargs, verbose)
@@ -425,7 +427,7 @@ class SHL_set(object):
             # We will use the ``joblib`` package do distribute this computation on different CPUs.
             from joblib import Parallel, delayed
             # , backend="threading"
-            Parallel(n_jobs=n_jobs, verbose=15)(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, fig_kwargs, verbose) for (variable, value) in zip(variables_, values_))
+            Parallel(n_jobs=self.n_jobs, verbose=15)(delayed(prun)(variable, value, self.data, self.opts, self.matname(variable, value), list_figures, fig_kwargs, verbose) for (variable, value) in zip(variables_, values_))
 
     def scan(self, N_scan=None, variable='eta', list_figures=[],
                 display='', display_variable='logL',
@@ -434,7 +436,7 @@ class SHL_set(object):
         # defining  the range of the scan
         if N_scan is None: N_scan = self.N_scan
         # running all jobs (run the self.run function before to perform multi-processing)
-        self.run(N_scan=N_scan, variables=[variable], n_jobs=1, verbose=0, fig_kwargs=fig_kwargs)
+        self.run(N_scan=N_scan, variables=[variable], verbose=0, fig_kwargs=fig_kwargs)
 
         if display == 'dynamic':
             import matplotlib.pyplot as plt
