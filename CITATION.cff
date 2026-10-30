@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: If you use this software, please cite the accompanying publication (preferred-citation below).
+type: software
+title: Role of homeostasis in learning sparse representations
+authors:
+- family-names: Perrinet
+  given-names: Laurent U
+  orcid: https://orcid.org/0000-0002-9536-010X
+repository-code: https://github.com/bicv/SparseHebbianLearning
+url: https://laurentperrinet.github.io/publication/perrinet-10-shl/
+keywords:
+- homeostasis
+- motion-perception
+- primary-visual-cortex
+- sparse-coding
+preferred-citation:
+  type: article
+  title: Role of homeostasis in learning sparse representations
+  authors:
+  - family-names: Perrinet
+    given-names: Laurent U
+    orcid: https://orcid.org/0000-0002-9536-010X
+  journal: Neural Computation
+  volume: 22
+  issue: 7
+  start: '1812'
+  end: '36'
+  publisher:
+    name: MIT Press
+  doi: 10.1162/neco.2010.05-08-795
+  year: 2010
+  url: https://laurentperrinet.github.io/publication/perrinet-10-shl/
+references:
+- type: conference-paper
+  title: An efficiency razor for model selection and adaptation in the primary visual cortex
+  authors:
+  - family-names: Perrinet
+    given-names: Laurent U
+    orcid: https://orcid.org/0000-0002-9536-010X
+  conference:
+    name: 'Fifteenth Annual Computational Neuroscience Meeting: CNS*2006'
+  year: 2006
+  url: https://laurentperrinet.github.io/publication/perrinet-06-cns/
